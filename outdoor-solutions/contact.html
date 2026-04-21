@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Book a Free Survey — Contact Outdoor Solutions</title>
+  <meta name="description" content="Book a free, no-obligation glass balustrade survey with Outdoor Solutions. Tell us about your project and we'll arrange a site visit at a time that suits you.">
+
+  <link rel="canonical" href="https://www.outdoorsolutionsuk.co.uk/contact.html">
+
+  <meta property="og:type"        content="website">
+  <meta property="og:url"         content="https://www.outdoorsolutionsuk.co.uk/contact.html">
+  <meta property="og:title"       content="Book a Free Survey — Contact Outdoor Solutions">
+  <meta property="og:description" content="Book a free glass balustrade site survey. No obligation, no pressure. We cover the whole of the UK.">
+  <meta property="og:image"       content="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=80">
+  <meta name="twitter:card"       content="summary_large_image">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+
+  <!-- EmailJS -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
+</head>
+<body>
+
+  <!-- ═══ HEADER ═══ -->
+  <header class="site-header" role="banner">
+    <div class="container header-inner">
+      <a href="index.html" class="logo" aria-label="Outdoor Solutions — Home">
+        <span class="logo-text">Outdoor Solutions</span>
+        <span class="logo-line" aria-hidden="true"></span>
+      </a>
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a href="index.html">Home</a>
+        <a href="services.html">Services</a>
+        <a href="residential.html">Residential</a>
+        <a href="commercial.html">Commercial</a>
+        <a href="contact.html" class="active">Contact</a>
+      </nav>
+      <a href="contact.html" class="btn btn--primary nav-cta">Book a Free Survey</a>
+      <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation">
+    <a href="index.html">Home</a>
+    <a href="services.html">Services</a>
+    <a href="residential.html">Residential</a>
+    <a href="commercial.html">Commercial</a>
+    <a href="contact.html">Contact</a>
+    <a href="contact.html" class="btn btn--primary">Book a Free Survey</a>
+  </nav>
+
+  <main>
+
+    <!-- ═══ PAGE HEADER ═══ -->
+    <section style="padding-top:calc(var(--header-h) + clamp(3rem,6vw,5rem)); padding-bottom:clamp(3rem,5vw,4rem); background:var(--bg-2); border-bottom:1px solid var(--border);" aria-labelledby="contact-page-heading">
+      <div class="container">
+        <nav aria-label="Breadcrumb" style="display:flex; align-items:center; gap:0.5rem; font-size:0.72rem; color:var(--text-muted); margin-bottom:1.25rem;">
+          <a href="index.html" style="color:var(--text-muted); transition:color 0.2s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-muted)'">Home</a>
+          <span aria-hidden="true">/</span>
+          <strong style="color:var(--text-soft); font-weight:500;">Contact</strong>
+        </nav>
+        <span class="eyebrow">Get in Touch</span>
+        <h1 id="contact-page-heading" style="font-size:clamp(2.2rem,5vw,3.8rem); letter-spacing:-0.025em; max-width:16ch;">Book a Free Survey</h1>
+        <p style="margin-top:1rem; font-size:1.05rem; max-width:55ch; color:var(--text-soft); line-height:1.8;">
+          Tell us about your project and we'll arrange a free, no-obligation site survey at a time that suits you. Most surveys take around 30 minutes. We cover the whole of the UK.
+        </p>
+      </div>
+    </section>
+
+    <!-- ═══ CONTACT LAYOUT ═══ -->
+    <section class="section" aria-label="Contact form and details">
+      <div class="container">
+        <div class="contact-layout">
+
+          <!-- ── Form ── -->
+          <div>
+            <div class="contact-form-wrap reveal">
+              <h2>Request Your Free Survey</h2>
+              <p>Fill in the form below and we'll be in touch within one working day to confirm your survey appointment.</p>
+
+              <form id="surveyForm" novalidate aria-label="Survey request form">
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="name">Full Name <span aria-hidden="true" style="color:#f87171;">*</span></label>
+                    <input type="text" id="name" name="name" placeholder="Your full name" required autocomplete="name">
+                    <span class="field-error" role="alert">Please enter your full name.</span>
+                  </div>
+                  <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" placeholder="07700 000000" autocomplete="tel">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="email">Email Address <span aria-hidden="true" style="color:#f87171;">*</span></label>
+                  <input type="email" id="email" name="email" placeholder="you@example.com" required autocomplete="email">
+                  <span class="field-error" role="alert">Please enter a valid email address.</span>
+                </div>
+
+                <div class="form-group">
+                  <label for="project_type">Project Type <span aria-hidden="true" style="color:#f87171;">*</span></label>
+                  <select id="project_type" name="project_type" required>
+                    <option value="">Select project type…</option>
+                    <option value="Residential">Residential</option>
+                    <option value="Commercial">Commercial</option>
+                    <option value="Not Sure">Not Sure</option>
+                  </select>
+                  <span class="field-error" role="alert">Please select a project type.</span>
+                </div>
+
+                <div class="form-group">
+                  <label for="message">Brief Description of Your Project <span aria-hidden="true" style="color:#f87171;">*</span></label>
+                  <textarea id="message" name="message" placeholder="Tell us what you're looking to install, where, and any relevant details (e.g. number of metres, height, indoor/outdoor)…" required></textarea>
+                  <span class="field-error" role="alert">Please describe your project briefly.</span>
+                </div>
+
+                <div class="form-group">
+                  <label for="referral">How Did You Hear About Us?</label>
+                  <select id="referral" name="referral">
+                    <option value="">Select an option…</option>
+                    <option value="Google">Google</option>
+                    <option value="Social Media">Social Media</option>
+                    <option value="Recommendation">Recommendation / Word of Mouth</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <p class="form-submit-error" style="display:none; font-size:0.8rem; color:#f87171; margin-bottom:1rem;" role="alert">
+                  Something went wrong. Please try again or call us directly.
+                </p>
+
+                <button type="submit" class="btn btn--primary" style="width:100%; justify-content:center; padding:1rem;">
+                  Request My Free Survey
+                </button>
+
+                <p style="font-size:0.72rem; color:var(--text-muted); margin-top:0.75rem; text-align:center; line-height:1.5;">
+                  By submitting this form you agree to be contacted regarding your enquiry. We do not share your data with third parties.
+                </p>
+
+              </form>
+
+              <!-- Success state -->
+              <div class="form-success" id="formSuccess" role="status" aria-live="polite">
+                <div class="success-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <h3>Survey Request Received</h3>
+                <p>Thank you — we'll be in touch within one working day to confirm your survey appointment. If you need to speak with us sooner, call us on <a href="tel:PLACEHOLDER_PHONE" style="color:var(--accent);">PLACEHOLDER_PHONE</a>.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Info Panel ── -->
+          <aside class="contact-info-panel reveal reveal-d1" aria-label="Contact information">
+            <span class="eyebrow">Contact Details</span>
+            <h2>Get in Touch Directly</h2>
+            <p>Prefer to speak to someone? Call us during office hours and one of the team will be happy to help.</p>
+
+            <div class="contact-detail">
+              <div class="contact-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.06 1.18 2 2 0 012 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+              </div>
+              <div>
+                <div class="contact-detail-label">Phone</div>
+                <div class="contact-detail-value"><a href="tel:PLACEHOLDER_PHONE" style="color:inherit;">PLACEHOLDER_PHONE</a></div>
+              </div>
+            </div>
+
+            <div class="contact-detail">
+              <div class="contact-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              </div>
+              <div>
+                <div class="contact-detail-label">Email</div>
+                <div class="contact-detail-value"><a href="mailto:PLACEHOLDER_EMAIL" style="color:inherit;">PLACEHOLDER_EMAIL</a></div>
+              </div>
+            </div>
+
+            <div class="contact-detail">
+              <div class="contact-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div>
+                <div class="contact-detail-label">Office Hours</div>
+                <div class="contact-detail-value">Monday – Friday, 8am – 6pm</div>
+              </div>
+            </div>
+
+            <!-- What to expect -->
+            <div style="margin-top:2.5rem; padding:1.75rem; background:var(--bg-2); border:1px solid var(--border); border-radius:var(--radius-md);">
+              <h3 style="font-size:1rem; margin-bottom:1rem; color:var(--text);">What to Expect From Your Survey</h3>
+              <ul class="bullet-list" style="margin-top:0;" aria-label="What happens during a survey">
+                <li>One of our specialists visits your site at an agreed time</li>
+                <li>We assess the space, take precise measurements, and discuss your requirements</li>
+                <li>We advise on the right system for your application and budget</li>
+                <li>A detailed, fixed-price quote is sent to you within 48 hours</li>
+                <li>No obligation — the quote is yours to consider in your own time</li>
+              </ul>
+            </div>
+
+            <!-- Coverage note -->
+            <div style="margin-top:1.25rem; padding:1.25rem 1.5rem; border-left:2px solid var(--accent); background:rgba(168,196,212,0.04);">
+              <p style="font-size:0.82rem; color:var(--text-muted); line-height:1.6;">
+                <strong style="color:var(--text-soft);">UK-Wide Coverage</strong><br>
+                We carry out surveys and installations across England, Wales, and Scotland. Whether you're in a city centre or a rural location, we can visit.
+              </p>
+            </div>
+          </aside>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="logo" aria-label="Outdoor Solutions">
+            <span class="logo-text">Outdoor Solutions</span>
+            <span class="logo-line" aria-hidden="true"></span>
+          </a>
+          <span class="footer-tagline">Precision. Clarity. Confidence.</span>
+        </div>
+        <div class="footer-col">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="residential.html">Residential</a></li>
+            <li><a href="commercial.html">Commercial</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Contact</h4>
+          <ul>
+            <li><a href="tel:PLACEHOLDER_PHONE">PLACEHOLDER_PHONE</a></li>
+            <li><a href="mailto:PLACEHOLDER_EMAIL">PLACEHOLDER_EMAIL</a></li>
+            <li><span style="color:var(--text-muted);font-size:0.82rem;">Mon–Fri, 8am–6pm</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; <span id="year"></span> Outdoor Solutions. All rights reserved.</p>
+        <p>Glass Balustrade Specialists — United Kingdom</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
