@@ -1,0 +1,35 @@
+<svg viewBox="0 0 300 72" xmlns="http://www.w3.org/2000/svg" fill="none" role="img" aria-label="Credvanta Recovery Group">
+  <title>Credvanta Recovery Group</title>
+  <defs>
+    <linearGradient id="lgC" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1851C4"/>
+      <stop offset="100%" stop-color="#60A5FA"/>
+    </linearGradient>
+    <linearGradient id="lgV" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#93C5FD"/>
+      <stop offset="100%" stop-color="#FFFFFF"/>
+    </linearGradient>
+  </defs>
+
+  <!-- C arc: center (36,36), radius 26, opening ~70° on right side -->
+  <!-- Top of gap: (36 + 26·cos35°, 36 − 26·sin35°) = (57, 21) -->
+  <!-- Bottom of gap: (57, 51) -->
+  <path d="M 57 21 A 26 26 0 1 0 57 51"
+    stroke="url(#lgC)" stroke-width="11" stroke-linecap="round"/>
+
+  <!-- V / checkmark overlapping the C -->
+  <polyline points="17,37 30,52 64,11"
+    stroke="url(#lgV)" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Wordmark -->
+  <text x="84" y="46"
+    font-family="Outfit, system-ui, sans-serif"
+    font-size="33" font-weight="700"
+    fill="white" letter-spacing="-0.3">Credvanta</text>
+
+  <!-- Sub-label -->
+  <text x="85" y="61"
+    font-family="Outfit, system-ui, sans-serif"
+    font-size="9.5" font-weight="600"
+    fill="#93C5FD" letter-spacing="2.8">RECOVERY GROUP</text>
+</svg>

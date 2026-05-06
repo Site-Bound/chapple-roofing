@@ -128,7 +128,7 @@ function doPost(e) {
     // email alert for every new claim submission.
     //
     // MailApp.sendEmail({
-    //   to:      'info@credvantarecoverygroup.com',
+    //   to:      'recover@credvanta.co.uk',
     //   subject: 'New Claim: ' + (p.business || 'Unknown') + ' — £' + (p.amount || '?'),
     //   body:    'New claim submitted.\n\n'
     //            + 'Name: '     + p.name     + '\n'
