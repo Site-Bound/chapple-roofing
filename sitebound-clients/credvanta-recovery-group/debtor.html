@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pay an Invoice | Credvanta Recovery Group</title>
+  <meta name="description" content="Received a letter or email from Credvanta Recovery Group? Settle your invoice quickly and securely online.">
+  <meta name="robots" content="noindex, follow">
+  <link rel="canonical" href="https://www.credvantarecoverygroup.com/debtor.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/debtor.css">
+  <script src="https://js.stripe.com/v3/" defer></script>
+</head>
+<body class="debtor-page">
+
+  <!-- ── HEADER ── -->
+  <header class="site-header scrolled" id="site-header">
+    <div class="header-top">
+      <div class="container header-top-inner">
+        <span class="header-tagline">Debtor Payment Portal</span>
+        <a href="tel:08000488285" class="header-phone">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24 11.36 11.36 0 003.56.57 1 1 0 011 1v3.5a1 1 0 01-1 1C10.43 21.61 2.39 13.57 2 4a1 1 0 011-1H6.5a1 1 0 011 1 11.36 11.36 0 00.57 3.56 1 1 0 01-.24 1.01l-2.21 2.22z"/></svg>
+          0800 048 8285
+          <span class="phone-hours">Mon–Fri 8am–6pm</span>
+        </a>
+      </div>
+    </div>
+    <nav class="main-nav" role="navigation" aria-label="Main navigation">
+      <div class="container nav-inner">
+        <a href="index.html" class="nav-logo" aria-label="Credvanta Recovery Group home">
+          <div class="logo-icon">
+            <svg viewBox="0 0 44 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22 2L42 10V26C42 37.5 33.5 47.5 22 50C10.5 47.5 2 37.5 2 26V10L22 2Z" fill="#1851C4"/>
+              <text x="22" y="33" font-family="Outfit,sans-serif" font-size="18" font-weight="700" fill="white" text-anchor="middle">C</text>
+            </svg>
+          </div>
+          <div class="logo-text">
+            <span class="logo-name">CREDVANTA</span>
+            <span class="logo-sub">RECOVERY GROUP</span>
+          </div>
+        </a>
+        <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false" id="nav-toggle">
+          <span></span><span></span><span></span>
+        </button>
+        <ul class="nav-links" id="nav-links" role="list">
+          <li><a href="index.html#how-it-works" class="nav-link">How It Works</a></li>
+          <li><a href="index.html#services" class="nav-link">Services</a></li>
+          <li><a href="index.html#faqs" class="nav-link">FAQs</a></li>
+          <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+        </ul>
+        <div class="nav-actions">
+          <a href="index.html#claim-form" class="btn btn-primary nav-cta">Submit a Claim</a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="debtor-main">
+
+    <!-- ── HERO BAND ── -->
+    <section class="debtor-hero">
+      <div class="debtor-hero-bg" aria-hidden="true"></div>
+      <div class="container debtor-hero-inner">
+        <div class="debtor-hero-text" data-reveal>
+          <p class="section-label" style="color:var(--blue-light)">Debtor Payment Portal</p>
+          <h1>Been Contacted About<br>an Invoice?</h1>
+          <p>If you've received communication from Credvanta Recovery Group on behalf of one of our clients, you can securely settle your balance online in minutes — 24 hours a day, 7 days a week.</p>
+          <ul class="debtor-assurances">
+            <li>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Secure &amp; encrypted payments
+            </li>
+            <li>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Instant payment confirmation
+            </li>
+            <li>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Email receipt sent automatically
+            </li>
+          </ul>
+        </div>
+        <div class="debtor-hero-form" data-reveal data-delay="120">
+          <div class="debtor-pay-card" id="debtor-pay-card">
+            <div class="debtor-pay-header">
+              <h2>Pay Your Invoice</h2>
+            </div>
+            <div id="debtor-stripe-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="d-invoice">Invoice / Reference Number</label>
+                  <input type="text" id="d-invoice" placeholder="e.g. INV-1234">
+                </div>
+                <div class="form-group">
+                  <label for="d-amount">Amount Due (£) <span aria-hidden="true">*</span></label>
+                  <input type="number" id="d-amount" placeholder="0.00" min="0.01" step="0.01" required>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="d-email">Your Email (for receipt) <span aria-hidden="true">*</span></label>
+                <input type="email" id="d-email" placeholder="you@example.com" required>
+              </div>
+
+              <!-- Payment Request Button (Apple/Google Pay) -->
+              <div id="d-pr-button"></div>
+              <div class="pay-divider" id="d-pay-divider" hidden><span>or pay by card</span></div>
+
+              <!-- Stripe Card Element -->
+              <div class="form-group">
+                <label>Card Details <span aria-hidden="true">*</span></label>
+                <div id="d-card-element" class="stripe-card-element">
+                  <div class="stripe-placeholder">
+                    <span class="stripe-placeholder-text">Secure card entry — powered by Stripe</span>
+                    <div class="stripe-placeholder-icons">
+                      <svg viewBox="0 0 38 24" width="38" height="24" role="img" aria-label="Visa"><rect width="38" height="24" rx="4" fill="#1A1F71"/><text x="19" y="16" font-size="9" font-weight="700" fill="white" text-anchor="middle" font-family="sans-serif">VISA</text></svg>
+                      <svg viewBox="0 0 38 24" width="38" height="24" role="img" aria-label="Mastercard"><rect width="38" height="24" rx="4" fill="#252525"/><circle cx="15" cy="12" r="7" fill="#EB001B"/><circle cx="23" cy="12" r="7" fill="#F79E1B"/><path d="M19 7.4a7 7 0 010 9.2A7 7 0 0119 7.4z" fill="#FF5F00"/></svg>
+                      <svg viewBox="0 0 38 24" width="38" height="24" role="img" aria-label="Amex"><rect width="38" height="24" rx="4" fill="#2557D6"/><text x="19" y="16" font-size="7" font-weight="700" fill="white" text-anchor="middle" font-family="sans-serif">AMEX</text></svg>
+                    </div>
+                  </div>
+                </div>
+                <div id="d-card-errors" class="card-error" role="alert" aria-live="polite"></div>
+              </div>
+
+              <button type="button" id="d-pay-btn" class="btn btn-submit" disabled>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Pay Securely
+              </button>
+
+              <div class="debtor-pay-footer">
+                <span>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  Secure payments powered by
+                </span>
+                <svg viewBox="0 0 60 25" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Stripe" class="stripe-wordmark">
+                  <path d="M5.45 9.745c0-.636.523-.88 1.387-.88 1.24 0 2.807.376 4.047 1.046V6.366A10.754 10.754 0 006.837 5.8C3.613 5.8 1.5 7.475 1.5 9.962c0 3.913 5.388 3.289 5.388 4.977 0 .752-.653 1-.752 1-1.092 0-2.886-.445-4.159-1.115V18.4c1.423.614 2.862.88 4.16.88 3.287 0 5.546-1.627 5.546-4.145C11.683 11.173 5.45 11.877 5.45 9.745z" fill="#635BFF"/><path d="M18.722 3.438l-3.714.788-.015 12.111c0 2.237 1.678 3.88 3.916 3.88 1.24 0 2.146-.227 2.648-.499v-2.989c-.486.196-2.886.897-2.886-1.34V9.307h2.886V6.163h-2.886l.051-2.725z" fill="#635BFF"/><path d="M27.58 7.16l-.236 1.27c-.77-1.628-2.02-1.517-2.02-1.517v3.194s1.896-.518 2.648 1.94v7.222h3.714V6.163H27.58V7.16z" fill="#635BFF"/><path d="M36.49 5.8c-1.176 0-1.913.502-1.913.502l.015-2.864-3.698.788v15.043h3.698v-8.4c0 0 .67-.534 1.422-.534 1.042 0 1.393.762 1.393 1.73v7.204h3.714v-7.73C41.121 7.63 39.41 5.8 36.49 5.8z" fill="#635BFF"/><path d="M48.49 5.8c-3.713 0-5.924 2.724-5.924 6.32 0 4.18 2.396 6.097 6.11 6.097 1.677 0 3.303-.398 4.426-1.082v-2.94c-1.012.566-2.177.928-3.502.928-1.388 0-2.616-.486-2.774-2.177h7.064c0-.19.03-.959.03-1.31C53.92 8.12 51.868 5.8 48.49 5.8zm-1.697 4.978c.157-1.597 1.09-2.24 1.697-2.24.606 0 1.49.643 1.49 2.24h-3.187z" fill="#635BFF"/>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Success state -->
+            <div id="debtor-payment-success" class="form-success" hidden>
+              <svg width="52" height="52" viewBox="0 0 24 24" fill="none"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 4L12 14.01l-3-3" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <h3>Payment Received</h3>
+              <p>Your payment has been processed successfully. A receipt has been sent to your email address.</p>
+              <p style="font-size:.82rem;color:var(--gray-400);margin-top:4px">This matter is now considered settled. If you have any queries please contact us.</p>
+            </div>
+          </div>
+
+          <!-- Stripe Connect notice (space reserved — activation pending) -->
+          <div class="sc-routing-notice" aria-label="Payment routing information">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <p>Payments are processed securely via Stripe and routed directly to the creditor. Credvanta Recovery Group retains a service fee in line with our agreed terms.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── REASSURANCE STRIP ── -->
+    <section class="debtor-reassure" aria-label="Reassurance">
+      <div class="container">
+        <div class="reassure-grid" data-reveal>
+          <div class="reassure-item">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <h3>256-bit Encryption</h3>
+            <p>Your payment details are fully encrypted and never stored on our servers.</p>
+          </div>
+          <div class="reassure-item">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <h3>PCI DSS Compliant</h3>
+            <p>All payments are handled by Stripe, a PCI Level 1 certified payment processor.</p>
+          </div>
+          <div class="reassure-item">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <h3>Instant Receipt</h3>
+            <p>A payment confirmation and receipt is emailed to you immediately on completion.</p>
+          </div>
+          <div class="reassure-item">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <h3>Need Help?</h3>
+            <p>Call us on <a href="tel:08000488285">0800 048 8285</a> or email <a href="mailto:info@credvantarecoverygroup.com">info@credvantarecoverygroup.com</a></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── DISPUTE / QUERY SECTION ── -->
+    <section class="debtor-dispute section-light" aria-labelledby="dispute-heading">
+      <div class="container debtor-dispute-inner">
+        <div data-reveal>
+          <p class="section-label">Not Sure About This Invoice?</p>
+          <h2 id="dispute-heading">Have a Query or Want to Dispute?</h2>
+          <p>If you believe you've received this communication in error, or you'd like to discuss the debt before making payment, please contact us directly. We'll liaise with all parties professionally to resolve the matter.</p>
+          <div class="dispute-contacts">
+            <a href="tel:08000488285" class="dispute-contact-item">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24 11.36 11.36 0 003.56.57 1 1 0 011 1v3.5a1 1 0 01-1 1C10.43 21.61 2.39 13.57 2 4a1 1 0 011-1H6.5a1 1 0 011 1 11.36 11.36 0 00.57 3.56 1 1 0 01-.24 1.01l-2.21 2.22z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              0800 048 8285
+            </a>
+            <a href="mailto:info@credvantarecoverygroup.com" class="dispute-contact-item">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              info@credvantarecoverygroup.com
+            </a>
+          </div>
+        </div>
+        <div class="dispute-info-card" data-reveal data-delay="100">
+          <h3>Your Rights</h3>
+          <ul>
+            <li>You have the right to request a copy of the original invoice</li>
+            <li>You can dispute the debt in writing within a reasonable timeframe</li>
+            <li>We are obligated to cease collection activity during a genuine dispute</li>
+            <li>We follow the FCA's guidance on ethical debt collection practices</li>
+          </ul>
+          <a href="index.html#faqs" class="btn btn-outline-dark" style="margin-top:8px;display:inline-flex">View FAQs</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── FOOTER ── -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="footer-logo">
+          <div class="logo-icon logo-icon--sm">
+            <svg viewBox="0 0 44 52" fill="none"><path d="M22 2L42 10V26C42 37.5 33.5 47.5 22 50C10.5 47.5 2 37.5 2 26V10L22 2Z" fill="#1851C4"/><text x="22" y="33" font-family="Outfit,sans-serif" font-size="18" font-weight="700" fill="white" text-anchor="middle">C</text></svg>
+          </div>
+          <div class="logo-text"><span class="logo-name">CREDVANTA</span><span class="logo-sub">RECOVERY GROUP</span></div>
+        </a>
+        <p class="footer-tagline">Helping UK businesses recover what they're owed. No win, no fee.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="index.html#how-it-works">How It Works</a></li>
+          <li><a href="index.html#services">Services</a></li>
+          <li><a href="index.html#faqs">FAQs</a></li>
+          <li><a href="index.html#contact">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#">Terms &amp; Conditions</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Cookie Policy</a></li>
+          <li><a href="#">Complaints Procedure</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <address>
+          <p>Credvanta Recovery Group Limited</p>
+          <p>Registered in England &amp; Wales</p>
+          <p>Company No: 15434250</p>
+          <a href="tel:08000488285">0800 048 8285</a>
+          <a href="mailto:info@credvantarecoverygroup.com">info@credvantarecoverygroup.com</a>
+        </address>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="container footer-bottom-inner">
+        <p>&copy; <span id="footer-year">2025</span> Credvanta Recovery Group Limited. All rights reserved.</p>
+        <p>Authorised and regulated in England &amp; Wales. Compliant with UK debt recovery practices.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script src="js/debtor.js"></script>
+</body>
+</html>

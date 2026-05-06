@@ -1,0 +1,218 @@
+/* ═══════════════════════════════════════════════════════════════
+   CREDVANTA — Debtor Page Styles
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Debtor hero ── */
+.debtor-main { padding-top: 100px; }
+
+.debtor-hero {
+  position: relative;
+  background: var(--navy);
+  padding: 64px 0 80px;
+  overflow: hidden;
+}
+.debtor-hero-bg {
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 60%, #0a1e40 100%);
+}
+.debtor-hero-bg::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(59,130,246,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59,130,246,.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+.debtor-hero-inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr 480px;
+  gap: 56px;
+  align-items: start;
+}
+.debtor-hero-text h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+  font-weight: 900;
+  color: var(--white);
+  line-height: 1.2;
+  margin-bottom: 16px;
+}
+.debtor-hero-text > p {
+  font-size: 1rem;
+  color: rgba(255,255,255,.72);
+  line-height: 1.7;
+  margin-bottom: 24px;
+  max-width: 480px;
+}
+
+.debtor-assurances {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.debtor-assurances li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(255,255,255,.85);
+}
+.debtor-assurances li svg { color: var(--blue-light); flex-shrink: 0; }
+
+/* ── Debtor pay card ── */
+.debtor-hero-form { display: flex; flex-direction: column; gap: 12px; }
+
+.debtor-pay-card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 24px 64px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.2);
+  overflow: hidden;
+}
+.debtor-pay-header {
+  background: var(--navy-mid);
+  padding: 18px 24px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.debtor-pay-header h2 {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--white);
+}
+#debtor-stripe-form {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.debtor-pay-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: var(--gray-400);
+  padding-top: 4px;
+}
+.debtor-pay-footer .stripe-wordmark { height: 18px; width: auto; }
+
+/* Stripe Connect routing notice */
+.sc-routing-notice {
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.sc-routing-notice svg { color: var(--blue-light); flex-shrink: 0; margin-top: 1px; }
+.sc-routing-notice p { font-size: 0.78rem; color: rgba(255,255,255,.55); line-height: 1.5; }
+
+/* ── Reassurance strip ── */
+.debtor-reassure {
+  background: var(--off-white);
+  border-bottom: 1px solid var(--gray-200);
+  padding: 48px 0;
+}
+.reassure-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+.reassure-item {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.reassure-item svg { color: var(--blue); }
+.reassure-item h3 { font-size: 0.95rem; font-weight: 700; color: var(--navy); }
+.reassure-item p { font-size: 0.82rem; color: var(--gray-600); line-height: 1.6; }
+.reassure-item a { color: var(--blue); text-decoration: underline; }
+
+/* ── Dispute section ── */
+.debtor-dispute { padding: 80px 0; }
+.debtor-dispute-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 56px;
+  align-items: start;
+}
+.debtor-dispute-inner h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  font-weight: 800;
+  color: var(--navy);
+  margin-bottom: 14px;
+  line-height: 1.2;
+}
+.debtor-dispute-inner > div > p {
+  font-size: 0.95rem;
+  color: var(--gray-600);
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+
+.dispute-contacts {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.dispute-contact-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--navy);
+  transition: color var(--transition);
+}
+.dispute-contact-item:hover { color: var(--blue); }
+
+.dispute-info-card {
+  background: var(--navy);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  color: var(--white);
+}
+.dispute-info-card h3 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin-bottom: 16px;
+  color: var(--white);
+}
+.dispute-info-card ul {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.dispute-info-card ul li {
+  font-size: 0.875rem;
+  color: rgba(255,255,255,.75);
+  padding-left: 18px;
+  position: relative;
+  line-height: 1.5;
+}
+.dispute-info-card ul li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: var(--blue-light);
+  font-size: 0.8rem;
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .debtor-hero-inner { grid-template-columns: 1fr; }
+  .reassure-grid { grid-template-columns: 1fr 1fr; }
+  .debtor-dispute-inner { grid-template-columns: 1fr; }
+}
+@media (max-width: 580px) {
+  .reassure-grid { grid-template-columns: 1fr; }
+  .debtor-main { padding-top: 90px; }
+}

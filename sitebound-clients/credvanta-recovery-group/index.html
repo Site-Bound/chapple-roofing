@@ -52,6 +52,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="css/styles.css">
+  <!-- Stripe.js — loaded here so it's always available (required by Stripe for fraud detection) -->
+  <script src="https://js.stripe.com/v3/" defer></script>
 </head>
 <body>
 
@@ -102,7 +104,10 @@
           <li><a href="#contact" class="nav-link">Contact</a></li>
         </ul>
 
-        <a href="#claim-form" class="btn btn-primary nav-cta">Submit a Claim</a>
+        <div class="nav-actions">
+          <a href="debtor.html" class="btn btn-outline-nav">Pay an Invoice</a>
+          <a href="#claim-form" class="btn btn-primary nav-cta">Submit a Claim</a>
+        </div>
       </div>
     </nav>
   </header>
@@ -150,64 +155,196 @@
 
         <div class="hero-form-wrap" data-reveal data-delay="150" id="claim-form">
           <div class="claim-form-card">
-            <div class="form-card-header">
-              <h2>Start Your Claim Today</h2>
-              <p>It only takes 60 seconds</p>
+
+            <!-- ── Progress indicator ── -->
+            <div class="ms-header">
+              <div class="ms-title-row">
+                <h2>Start Your Claim</h2>
+                <span class="ms-step-counter" id="msStepCounter">Step 1 of 4</span>
+              </div>
+              <div class="ms-progress-bar" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100" aria-label="Form progress">
+                <div class="ms-progress-fill" id="msProgressFill" style="width:25%"></div>
+              </div>
+              <div class="ms-steps" aria-hidden="true">
+                <div class="ms-step is-active" data-step="1"><span class="ms-dot">1</span><span class="ms-label">About You</span></div>
+                <div class="ms-step" data-step="2"><span class="ms-dot">2</span><span class="ms-label">The Debt</span></div>
+                <div class="ms-step" data-step="3"><span class="ms-dot">3</span><span class="ms-label">Evidence</span></div>
+                <div class="ms-step" data-step="4"><span class="ms-dot">4</span><span class="ms-label">Confirm</span></div>
+              </div>
             </div>
-            <form class="claim-form" id="claimForm" novalidate>
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="name">Your Name <span aria-hidden="true">*</span></label>
-                  <input type="text" id="name" name="name" placeholder="John Smith" required autocomplete="name">
+
+            <!-- ── Slide viewport ── -->
+            <div class="ms-viewport" aria-live="polite">
+              <div class="ms-track" id="msTrack">
+
+                <!-- SLIDE 1 · About You -->
+                <div class="ms-slide" data-slide="1">
+                  <div class="ms-slide-intro">
+                    <p>Tell us about your business so we know who we're helping.</p>
+                  </div>
+                  <div class="ms-fields">
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label for="ms-name">Your Name <span aria-hidden="true">*</span></label>
+                        <input type="text" id="ms-name" name="name" placeholder="John Smith" required autocomplete="name">
+                      </div>
+                      <div class="form-group">
+                        <label for="ms-business">Business Name <span aria-hidden="true">*</span></label>
+                        <input type="text" id="ms-business" name="business" placeholder="Your Company Ltd" required autocomplete="organization">
+                      </div>
+                    </div>
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label for="ms-email">Email Address <span aria-hidden="true">*</span></label>
+                        <input type="email" id="ms-email" name="email" placeholder="john@yourcompany.com" required autocomplete="email">
+                      </div>
+                      <div class="form-group">
+                        <label for="ms-phone">Phone Number <span aria-hidden="true">*</span></label>
+                        <input type="tel" id="ms-phone" name="phone" placeholder="07700 900000" required autocomplete="tel">
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div class="form-group">
-                  <label for="business">Business Name <span aria-hidden="true">*</span></label>
-                  <input type="text" id="business" name="business" placeholder="Your Company Ltd" required autocomplete="organization">
+
+                <!-- SLIDE 2 · The Debt -->
+                <div class="ms-slide" data-slide="2">
+                  <div class="ms-slide-intro">
+                    <p>Give us the details of what's owed and who owes it.</p>
+                  </div>
+                  <div class="ms-fields">
+                    <div class="form-group">
+                      <label for="ms-debtor">Debtor Company Name <span aria-hidden="true">*</span></label>
+                      <input type="text" id="ms-debtor" name="debtor" placeholder="Company that owes you money" required>
+                    </div>
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label for="ms-amount">Invoice Amount (£) <span aria-hidden="true">*</span></label>
+                        <input type="number" id="ms-amount" name="amount" placeholder="1,250.00" min="1" step="0.01" required>
+                      </div>
+                      <div class="form-group">
+                        <label for="ms-date">Invoice Date</label>
+                        <input type="date" id="ms-date" name="invoiceDate">
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label for="ms-description">Brief Description of the Debt <span aria-hidden="true">*</span></label>
+                      <textarea id="ms-description" name="description" rows="4" placeholder="e.g. Payment for goods delivered in January 2025, invoice ref INV-001. Debtor has not responded to three payment requests." required></textarea>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="email">Email Address <span aria-hidden="true">*</span></label>
-                  <input type="email" id="email" name="email" placeholder="john@yourcompany.com" required autocomplete="email">
+
+                <!-- SLIDE 3 · Invoices & Supporting Evidence -->
+                <div class="ms-slide" data-slide="3">
+                  <div class="ms-slide-intro">
+                    <p>Upload your invoice(s) and any supporting documents to strengthen your case.</p>
+                  </div>
+                  <div class="ms-fields">
+                    <div class="upload-zone" id="uploadZone" role="button" tabindex="0" aria-label="Upload area — click or drag files here">
+                      <input type="file" id="ms-files" name="files" multiple accept=".pdf,.doc,.docx" class="upload-input" aria-describedby="upload-hint">
+                      <div class="upload-icon" aria-hidden="true">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                      </div>
+                      <p class="upload-main">Drag files here or <button type="button" class="upload-browse-btn">browse</button></p>
+                      <p class="upload-hint" id="upload-hint">PDF and Word documents only &middot; Max 10MB per file</p>
+                    </div>
+                    <ul class="upload-list" id="uploadList" aria-label="Uploaded files" aria-live="polite"></ul>
+                    <p class="upload-note">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 8v4m0 4h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                      Supporting evidence is optional at this stage. You can also email documents to us after submitting your claim.
+                    </p>
+                  </div>
                 </div>
-                <div class="form-group">
-                  <label for="phone">Phone Number <span aria-hidden="true">*</span></label>
-                  <input type="tel" id="phone" name="phone" placeholder="07700 900000" required autocomplete="tel">
+
+                <!-- SLIDE 4 · Terms & Confirm -->
+                <div class="ms-slide" data-slide="4">
+                  <div class="ms-slide-intro">
+                    <p>Please read and accept our terms, then connect your account to receive recovered funds.</p>
+                  </div>
+                  <div class="ms-fields">
+
+                    <!-- Terms & Conditions -->
+                    <div class="tc-box">
+                      <div class="tc-scroll" tabindex="0" role="region" aria-label="Terms and Conditions">
+                        <div class="tc-pending-notice">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                          <div>
+                            <strong>Terms &amp; Conditions — Coming Soon</strong>
+                            <p>Credvanta Recovery Group's full Terms &amp; Conditions will appear here once finalised. This section is ready to accept the document when provided.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <label class="tc-accept-label" for="ms-tc">
+                      <input type="checkbox" id="ms-tc" name="terms" required>
+                      <span>I have read and agree to the <a href="#" class="tc-link" target="_blank" rel="noopener">Terms &amp; Conditions</a> of Credvanta Recovery Group</span>
+                    </label>
+
+                    <!-- Stripe Connect block -->
+                    <div class="sc-block">
+                      <div class="sc-block-header">
+                        <div class="sc-block-icon" aria-hidden="true">
+                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </div>
+                        <div>
+                          <h4>Receive Your Recovered Funds</h4>
+                          <p>Securely connect your bank account so recovered funds are paid directly to you via Stripe.</p>
+                        </div>
+                      </div>
+                      <div class="sc-status-row">
+                        <span class="sc-badge sc-badge--pending" id="scBadge">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 8v4l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                          Not yet connected
+                        </span>
+                      </div>
+                      <button type="button" id="stripeConnectBtn" class="btn btn-stripe-connect">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Connect Bank Account via Stripe
+                      </button>
+                      <p class="sc-note">You'll be taken to Stripe's secure onboarding — takes around 2 minutes. This step can also be completed after your claim is submitted.</p>
+                    </div>
+
+                    <div class="form-secure" style="justify-content:center;margin-top:4px;">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                      Your information is 100% secure and encrypted
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div class="form-group">
-                <label for="debtor">Debtor Company Name <span aria-hidden="true">*</span></label>
-                <input type="text" id="debtor" name="debtor" placeholder="Company that owes you money" required>
-              </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="amount">Invoice Amount (£) <span aria-hidden="true">*</span></label>
-                  <input type="number" id="amount" name="amount" placeholder="1,250.00" min="0" step="0.01" required>
-                </div>
-                <div class="form-group">
-                  <label for="date">Invoice Date</label>
-                  <input type="date" id="date" name="date">
-                </div>
-              </div>
-              <div class="form-group">
-                <label for="description">Brief Description of the Debt</label>
-                <textarea id="description" name="description" rows="3" placeholder="e.g. Payment for goods delivered / services rendered in January 2025…"></textarea>
-              </div>
-              <div class="form-secure">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                Your information is 100% secure
-              </div>
-              <button type="submit" class="btn btn-submit">
-                Submit Your Claim
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+
+              </div><!-- /ms-track -->
+            </div><!-- /ms-viewport -->
+
+            <!-- ── Navigation ── -->
+            <div class="ms-nav" id="msNav">
+              <button type="button" class="btn btn-ms-back" id="msBack" aria-label="Go to previous step" hidden>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Back
               </button>
-            </form>
-            <div class="form-success" id="formSuccess" aria-live="polite" hidden>
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 4L12 14.01l-3-3" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              <h3>Claim Submitted!</h3>
-              <p>Thank you. A member of our team will contact you within 2 hours.</p>
+              <div class="ms-nav-right">
+                <button type="button" class="btn btn-primary btn-ms-next" id="msNext">
+                  Continue
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <button type="button" class="btn btn-submit btn-ms-submit" id="msSubmit" hidden>
+                  Submit Claim
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+              </div>
             </div>
-          </div>
+
+            <!-- ── Success state ── -->
+            <div class="ms-success" id="msSuccess" hidden aria-live="polite">
+              <div class="ms-success-icon" aria-hidden="true">
+                <svg width="52" height="52" viewBox="0 0 24 24" fill="none"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 4L12 14.01l-3-3" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <h3>Claim Submitted!</h3>
+              <p>Thank you. A member of our team will review your case and be in touch within 2 business hours.</p>
+              <div class="ms-success-next">
+                <p>If you haven't connected your bank account yet, you'll receive an email with a link to complete that step.</p>
+              </div>
+            </div>
+
+          </div><!-- /claim-form-card -->
         </div>
       </div>
     </section>
@@ -351,6 +488,104 @@
             <a href="#claim-form" class="service-link">Start a claim →</a>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════ DEBTOR PAYMENT PORTAL ═══════════════════════════════════ -->
+    <section id="pay-invoice" class="payment-portal section-alt" aria-labelledby="portal-heading">
+      <div class="container payment-portal-inner">
+
+        <div class="portal-info" data-reveal>
+          <p class="section-label">Debtor Payment Portal</p>
+          <h2 id="portal-heading">Been Contacted About an Invoice?</h2>
+          <p>If you've received communication from Credvanta Recovery Group, you can securely settle your balance online in minutes.</p>
+          <ul class="portal-assurances">
+            <li>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Secure Stripe Payments
+            </li>
+            <li>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Instant Confirmation
+            </li>
+            <li>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              All major cards accepted
+            </li>
+          </ul>
+          <div class="portal-stripe-badge" aria-label="Powered by Stripe">
+            <span>Secure payments powered by</span>
+            <svg viewBox="0 0 60 25" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="stripe-wordmark">
+              <path d="M5.45 9.745c0-.636.523-.88 1.387-.88 1.24 0 2.807.376 4.047 1.046V6.366A10.754 10.754 0 006.837 5.8C3.613 5.8 1.5 7.475 1.5 9.962c0 3.913 5.388 3.289 5.388 4.977 0 .752-.653 1-.752 1-1.092 0-2.886-.445-4.159-1.115V18.4c1.423.614 2.862.88 4.16.88 3.287 0 5.546-1.627 5.546-4.145C11.683 11.173 5.45 11.877 5.45 9.745z" fill="#635BFF"/>
+              <path d="M18.722 3.438l-3.714.788-.015 12.111c0 2.237 1.678 3.88 3.916 3.88 1.24 0 2.146-.227 2.648-.499v-2.989c-.486.196-2.886.897-2.886-1.34V9.307h2.886V6.163h-2.886l.051-2.725z" fill="#635BFF"/>
+              <path d="M27.58 7.16l-.236 1.27c-.77-1.628-2.02-1.517-2.02-1.517v3.194s1.896-.518 2.648 1.94v7.222h3.714V6.163H27.58V7.16z" fill="#635BFF"/>
+              <path d="M36.49 5.8c-1.176 0-1.913.502-1.913.502l.015-2.864-3.698.788v15.043h3.698v-8.4c0 0 .67-.534 1.422-.534 1.042 0 1.393.762 1.393 1.73v7.204h3.714v-7.73C41.121 7.63 39.41 5.8 36.49 5.8z" fill="#635BFF"/>
+              <path d="M48.49 5.8c-3.713 0-5.924 2.724-5.924 6.32 0 4.18 2.396 6.097 6.11 6.097 1.677 0 3.303-.398 4.426-1.082v-2.94c-1.012.566-2.177.928-3.502.928-1.388 0-2.616-.486-2.774-2.177h7.064c0-.19.03-.959.03-1.31C53.92 8.12 51.868 5.8 48.49 5.8zm-1.697 4.978c.157-1.597 1.09-2.24 1.697-2.24.606 0 1.49.643 1.49 2.24h-3.187z" fill="#635BFF"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="portal-form-wrap" data-reveal data-delay="100">
+          <div class="portal-form-card">
+            <h3>Pay Your Invoice</h3>
+
+            <div id="stripe-payment-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="pay-invoice-num">Invoice Number</label>
+                  <input type="text" id="pay-invoice-num" name="invoiceNumber" placeholder="e.g. INV-1234">
+                </div>
+                <div class="form-group">
+                  <label for="pay-amount">Amount Due (£)</label>
+                  <input type="number" id="pay-amount" name="amount" placeholder="1,250.00" min="0" step="0.01">
+                </div>
+              </div>
+
+              <!-- Stripe Payment Request Button (Apple Pay / Google Pay) -->
+              <div id="payment-request-button" class="payment-request-btn-wrap">
+                <!-- Stripe injects Apple Pay / Google Pay button here when supported -->
+              </div>
+              <div class="pay-divider" id="pay-divider" hidden>
+                <span>or pay by card</span>
+              </div>
+
+              <!-- Stripe Card Element -->
+              <div class="form-group">
+                <label>Card Details</label>
+                <div id="card-element" class="stripe-card-element">
+                  <!-- Stripe Elements mounts here -->
+                  <div class="stripe-placeholder" aria-hidden="true">
+                    <span class="stripe-placeholder-text">Card details will appear here once Stripe is configured</span>
+                    <div class="stripe-placeholder-icons">
+                      <svg viewBox="0 0 38 24" width="38" height="24" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Visa"><rect width="38" height="24" rx="4" fill="#1A1F71"/><text x="19" y="16" font-size="9" font-weight="700" fill="white" text-anchor="middle" font-family="sans-serif">VISA</text></svg>
+                      <svg viewBox="0 0 38 24" width="38" height="24" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Mastercard"><rect width="38" height="24" rx="4" fill="#252525"/><circle cx="15" cy="12" r="7" fill="#EB001B"/><circle cx="23" cy="12" r="7" fill="#F79E1B"/><path d="M19 7.4a7 7 0 010 9.2A7 7 0 0119 7.4z" fill="#FF5F00"/></svg>
+                      <svg viewBox="0 0 38 24" width="38" height="24" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Amex"><rect width="38" height="24" rx="4" fill="#2557D6"/><text x="19" y="16" font-size="7" font-weight="700" fill="white" text-anchor="middle" font-family="sans-serif">AMEX</text></svg>
+                    </div>
+                  </div>
+                </div>
+                <div id="card-errors" class="card-error" role="alert" aria-live="polite"></div>
+              </div>
+
+              <button type="button" id="pay-btn" class="btn btn-submit" disabled>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Pay Securely
+              </button>
+            </div>
+
+            <!-- Success state -->
+            <div id="payment-success" class="form-success" hidden>
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 4L12 14.01l-3-3" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <h3>Payment Received</h3>
+              <p>Thank you. Your payment has been processed and a receipt has been sent to your email address.</p>
+            </div>
+
+            <p class="portal-coming-soon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 8v4l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              Online payments coming soon — contact us to arrange payment by phone.
+            </p>
+          </div>
+        </div>
+
       </div>
     </section>
 
