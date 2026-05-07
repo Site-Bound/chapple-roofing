@@ -5,7 +5,7 @@
    Web App URL (see google-apps-script/DebtorForms.gs).
    ═══════════════════════════════════════════════════════════════ */
 
-const DEBTOR_FORMS_URL = 'REPLACE_WITH_YOUR_DEBTOR_FORMS_SCRIPT_URL';
+const DEBTOR_FORMS_URL = 'https://script.google.com/macros/s/AKfycbxuBNeel2LuT6khaVTnqjCq7dHZlzY1wjG0xqLv4y8a8gr5xe3gFKK3hm2CRxWcodpzxg/exec';
 
 /* ─── Scroll reveal ──────────────────────────────── */
 const revealObs = new IntersectionObserver(
