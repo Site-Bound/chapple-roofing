@@ -167,7 +167,6 @@ function doPost(e) {
     // ── Send email ────────────────────────────────────────────
     MailApp.sendEmail({
       to:      COLLECTIONS_EMAIL,
-      cc:      'recover@credvanta.co.uk',
       subject: subject,
       body:    body,
     });
