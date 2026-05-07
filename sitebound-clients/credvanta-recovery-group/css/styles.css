@@ -994,7 +994,25 @@ textarea { resize: vertical; min-height: 80px; }
   opacity: 0.4;
 }
 
-.hiw-cta { text-align: center; }
+.hiw-extra {
+  margin: 32px auto 0;
+  max-width: 600px;
+}
+.hiw-extra-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.hiw-extra-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--navy);
+}
+.hiw-extra-list li svg { color: #16a34a; flex-shrink: 0; }
+.hiw-cta { text-align: center; margin-top: 36px; }
 
 /* ═══════════════════════════════════════════════════════════════
    GUARANTEE BANNER
@@ -1056,12 +1074,12 @@ textarea { resize: vertical; min-height: 80px; }
 .g-stat-value {
   display: block;
   font-family: var(--font-display);
-  font-size: 1.75rem;
+  font-size: 1.4rem;
   font-weight: 900;
   line-height: 1;
   margin-bottom: 4px;
 }
-.g-stat-label { font-size: 0.75rem; opacity: 0.75; max-width: 100px; line-height: 1.3; }
+.g-stat-label { font-size: 0.75rem; opacity: 0.75; max-width: 130px; line-height: 1.3; }
 .g-stat-divider {
   width: 1px; height: 48px;
   background: rgba(255,255,255,.2);
@@ -1283,10 +1301,16 @@ blockquote cite span { font-size: 0.82rem; color: var(--gray-400); }
 .pricing-fee { display: flex; flex-direction: column; gap: 2px; }
 .fee-number {
   font-family: var(--font-display);
-  font-size: 3rem;
+  font-size: 2.2rem;
   font-weight: 900;
   color: var(--blue);
   line-height: 1;
+}
+.fee-plus {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin: 0 2px;
 }
 .fee-note {
   font-family: var(--font-display);
