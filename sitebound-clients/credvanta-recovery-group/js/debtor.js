@@ -8,17 +8,17 @@
 const DEBTOR_FORMS_URL = 'https://script.google.com/macros/s/AKfycbxuBNeel2LuT6khaVTnqjCq7dHZlzY1wjG0xqLv4y8a8gr5xe3gFKK3hm2CRxWcodpzxg/exec';
 
 /* ─── Scroll reveal ──────────────────────────────── */
-const revealObs = new IntersectionObserver(
+const debtorRevealObs = new IntersectionObserver(
   entries => entries.forEach(e => {
-    if (e.isIntersecting) { e.target.classList.add('is-visible'); revealObs.unobserve(e.target); }
+    if (e.isIntersecting) { e.target.classList.add('is-visible'); debtorRevealObs.unobserve(e.target); }
   }),
   { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
 );
-document.querySelectorAll('[data-reveal]').forEach(el => revealObs.observe(el));
+document.querySelectorAll('[data-reveal]').forEach(el => debtorRevealObs.observe(el));
 
 /* ─── Footer year ────────────────────────────────── */
-const yearEl = document.getElementById('footer-year');
-if (yearEl) yearEl.textContent = new Date().getFullYear();
+const debtorYearEl = document.getElementById('footer-year');
+if (debtorYearEl) debtorYearEl.textContent = new Date().getFullYear();
 
 /* ═══════════════════════════════════════════════════
    MODAL HELPERS
