@@ -116,7 +116,7 @@ new IntersectionObserver(
       Apps Script (see setup instructions inside that file).
    2. Replace the URL below with your deployed Web App URL.
    ─────────────────────────────────────────────────────────────*/
-const APPS_SCRIPT_URL = 'REPLACE_WITH_YOUR_APPS_SCRIPT_WEB_APP_URL';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWDyBaEdV1quwpw-CKHuKDsRioIKozg0RBn-KqEtZUfOs6rHZXm99oCqxQ53VTApLwfA/exec';
 
 (function initMultiStepForm() {
   const track      = document.getElementById('msTrack');

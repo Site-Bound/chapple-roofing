@@ -123,22 +123,19 @@ function doPost(e) {
       submissionId,                        // Unique submission ID
     ]);
 
-    // ── Optional: send notification email to Credvanta ────────
-    // Uncomment and set the email address below to receive an
-    // email alert for every new claim submission.
-    //
-    // MailApp.sendEmail({
-    //   to:      'recover@credvanta.co.uk',
-    //   subject: 'New Claim: ' + (p.business || 'Unknown') + ' — £' + (p.amount || '?'),
-    //   body:    'New claim submitted.\n\n'
-    //            + 'Name: '     + p.name     + '\n'
-    //            + 'Business: ' + p.business + '\n'
-    //            + 'Email: '    + p.email    + '\n'
-    //            + 'Phone: '    + p.phone    + '\n'
-    //            + 'Debtor: '   + p.debtor   + '\n'
-    //            + 'Amount: £'  + p.amount   + '\n\n'
-    //            + 'View sheet: https://docs.google.com/spreadsheets/d/' + SPREADSHEET_ID,
-    // });
+    // ── Send notification email to Credvanta ─────────────────
+    MailApp.sendEmail({
+      to:      'recover@credvanta.co.uk',
+      subject: 'New Claim: ' + (p.business || 'Unknown') + ' — £' + (p.amount || '?'),
+      body:    'New claim submitted.\n\n'
+               + 'Name: '     + p.name     + '\n'
+               + 'Business: ' + p.business + '\n'
+               + 'Email: '    + p.email    + '\n'
+               + 'Phone: '    + p.phone    + '\n'
+               + 'Debtor: '   + p.debtor   + '\n'
+               + 'Amount: £'  + p.amount   + '\n\n'
+               + 'View sheet: https://docs.google.com/spreadsheets/d/' + SPREADSHEET_ID,
+    });
 
     return ContentService
       .createTextOutput(JSON.stringify({ success: true, id: submissionId }))
