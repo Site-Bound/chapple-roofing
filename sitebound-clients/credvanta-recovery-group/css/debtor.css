@@ -790,6 +790,7 @@
   font-size: 0.85rem;
   color: #DC2626;
 }
+.modal-success[hidden] { display: none; }
 .modal-success {
   padding: 48px 40px;
   text-align: center;
