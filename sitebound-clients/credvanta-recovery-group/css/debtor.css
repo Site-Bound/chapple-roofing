@@ -604,6 +604,8 @@
   transition: color var(--transition);
 }
 .support-org-card:hover .support-ext { color: var(--blue); }
+.modal-legal-note { font-size: 0.8rem; color: var(--gray-400); margin-top: 8px; }
+.modal-legal-note a { color: var(--blue); }
 .support-disclaimer {
   text-align: center;
   font-size: 0.82rem;
