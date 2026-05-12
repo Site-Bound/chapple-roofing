@@ -4,7 +4,7 @@
 
 .legal-hero {
   background: var(--navy);
-  padding: 80px 0 60px;
+  padding: 175px 0 60px;
   border-bottom: 3px solid var(--blue);
 }
 .legal-hero h1 {
@@ -109,10 +109,29 @@
   font-weight: 500;
 }
 @media (max-width: 768px) {
-  .legal-hero { padding: 60px 0 40px; }
+  /* Mobile header: ~120px — add enough top padding to clear it */
+  .legal-hero { padding: 140px 0 40px; }
   .legal-body { padding: 48px 0 64px; }
+  .legal-doc-block { margin-bottom: 48px; padding-bottom: 48px; }
+  .legal-section h2 { font-size: 0.9rem; }
+  .legal-notice, .legal-warning { padding: 14px 16px; }
+}
+@media (max-width: 480px) {
+  .legal-hero { padding: 126px 0 32px; }
+  .legal-hero h1 { font-size: 1.6rem; }
+  .legal-body { padding: 36px 0 48px; }
 }
 .legal-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9rem; }
 .legal-table th { background: #0B1D35; color: #fff; text-align: left; padding: 10px 14px; font-weight: 600; }
 .legal-table td { padding: 9px 14px; border-bottom: 1px solid #E2E8F0; color: #475569; }
 .legal-table tr:nth-child(even) td { background: #F8FAFC; }
+/* Prevent table overflow on mobile — wrap in scrollable block */
+@media (max-width: 600px) {
+  .legal-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    font-size: 0.82rem;
+  }
+  .legal-table th, .legal-table td { padding: 8px 10px; white-space: nowrap; }
+}
