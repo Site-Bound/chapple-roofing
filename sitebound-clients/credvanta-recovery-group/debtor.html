@@ -13,7 +13,6 @@
   <link rel="icon" type="image/png" href="images/favicon.png">
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/debtor.css">
-  <script src="https://js.stripe.com/v3/" defer></script>
 </head>
 <body class="debtor-page">
 
@@ -111,12 +110,11 @@
               <div id="d-pr-button"></div>
               <div class="pay-divider" id="d-pay-divider" hidden><span>or pay by card</span></div>
 
-              <!-- Stripe Card Element -->
               <div class="form-group">
                 <label>Card Details <span aria-hidden="true">*</span></label>
                 <div id="d-card-element" class="stripe-card-element">
                   <div class="stripe-placeholder">
-                    <span class="stripe-placeholder-text">Secure card entry — powered by Stripe</span>
+                    <span class="stripe-placeholder-text">Secure card entry</span>
                     <div class="stripe-placeholder-icons">
                       <svg viewBox="0 0 38 24" width="38" height="24" role="img" aria-label="Visa"><rect width="38" height="24" rx="4" fill="#1A1F71"/><text x="19" y="16" font-size="9" font-weight="700" fill="white" text-anchor="middle" font-family="sans-serif">VISA</text></svg>
                       <svg viewBox="0 0 38 24" width="38" height="24" role="img" aria-label="Mastercard"><rect width="38" height="24" rx="4" fill="#252525"/><circle cx="15" cy="12" r="7" fill="#EB001B"/><circle cx="23" cy="12" r="7" fill="#F79E1B"/><path d="M19 7.4a7 7 0 010 9.2A7 7 0 0119 7.4z" fill="#FF5F00"/></svg>
@@ -135,11 +133,8 @@
               <div class="debtor-pay-footer">
                 <span>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                  Secure payments powered by
+                  Secure &amp; encrypted payment
                 </span>
-                <svg viewBox="0 0 60 25" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Stripe" class="stripe-wordmark">
-                  <path d="M5.45 9.745c0-.636.523-.88 1.387-.88 1.24 0 2.807.376 4.047 1.046V6.366A10.754 10.754 0 006.837 5.8C3.613 5.8 1.5 7.475 1.5 9.962c0 3.913 5.388 3.289 5.388 4.977 0 .752-.653 1-.752 1-1.092 0-2.886-.445-4.159-1.115V18.4c1.423.614 2.862.88 4.16.88 3.287 0 5.546-1.627 5.546-4.145C11.683 11.173 5.45 11.877 5.45 9.745z" fill="#635BFF"/><path d="M18.722 3.438l-3.714.788-.015 12.111c0 2.237 1.678 3.88 3.916 3.88 1.24 0 2.146-.227 2.648-.499v-2.989c-.486.196-2.886.897-2.886-1.34V9.307h2.886V6.163h-2.886l.051-2.725z" fill="#635BFF"/><path d="M27.58 7.16l-.236 1.27c-.77-1.628-2.02-1.517-2.02-1.517v3.194s1.896-.518 2.648 1.94v7.222h3.714V6.163H27.58V7.16z" fill="#635BFF"/><path d="M36.49 5.8c-1.176 0-1.913.502-1.913.502l.015-2.864-3.698.788v15.043h3.698v-8.4c0 0 .67-.534 1.422-.534 1.042 0 1.393.762 1.393 1.73v7.204h3.714v-7.73C41.121 7.63 39.41 5.8 36.49 5.8z" fill="#635BFF"/><path d="M48.49 5.8c-3.713 0-5.924 2.724-5.924 6.32 0 4.18 2.396 6.097 6.11 6.097 1.677 0 3.303-.398 4.426-1.082v-2.94c-1.012.566-2.177.928-3.502.928-1.388 0-2.616-.486-2.774-2.177h7.064c0-.19.03-.959.03-1.31C53.92 8.12 51.868 5.8 48.49 5.8zm-1.697 4.978c.157-1.597 1.09-2.24 1.697-2.24.606 0 1.49.643 1.49 2.24h-3.187z" fill="#635BFF"/>
-                </svg>
               </div>
             </div>
 
@@ -152,10 +147,9 @@
             </div>
           </div>
 
-          <!-- Stripe Connect routing notice -->
           <div class="sc-routing-notice" aria-label="Payment routing information">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <p>Payments are processed securely via Stripe and routed directly to the creditor. Credvanta Recovery Group retains a service fee in line with our agreed terms.</p>
+            <p>Payments are processed securely and routed directly to the creditor. Credvanta Recovery Group retains a service fee in line with our agreed terms.</p>
           </div>
         </div>
       </div>
@@ -173,7 +167,7 @@
           <div class="reassure-item">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <h3>PCI DSS Compliant</h3>
-            <p>All payments are handled by Stripe, a PCI Level 1 certified payment processor.</p>
+            <p>All payments are handled by a PCI Level 1 certified payment processor.</p>
           </div>
           <div class="reassure-item">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
