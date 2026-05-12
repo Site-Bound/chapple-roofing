@@ -644,33 +644,19 @@ address { font-style: normal; }
 .nav-logo, .footer-logo {
   display: flex;
   align-items: center;
-  gap: 10px;
   flex-shrink: 0;
 }
-.logo-icon {
-  width: 40px;
-  height: 48px;
-  flex-shrink: 0;
+.nav-logo-img {
+  height: 44px;
+  width: auto;
+  display: block;
+  mix-blend-mode: screen;
 }
-.logo-icon--sm { width: 32px; height: 38px; }
-.logo-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.1;
-}
-.logo-name {
-  font-family: var(--font-body);
-  font-size: 1rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  color: var(--white);
-}
-.logo-sub {
-  font-size: 0.5rem;
-  font-weight: 600;
-  letter-spacing: 0.15em;
-  color: var(--blue-light);
-  text-transform: uppercase;
+.footer-logo-img {
+  height: 36px;
+  width: auto;
+  display: block;
+  mix-blend-mode: screen;
 }
 
 /* Nav links */
