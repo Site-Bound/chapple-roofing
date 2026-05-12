@@ -650,13 +650,11 @@ address { font-style: normal; }
   height: 44px;
   width: auto;
   display: block;
-  mix-blend-mode: screen;
 }
 .footer-logo-img {
   height: 36px;
   width: auto;
   display: block;
-  mix-blend-mode: screen;
 }
 
 /* Nav links */

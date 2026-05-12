@@ -2,6 +2,11 @@
    CREDVANTA — Debtor Page Styles
    ═══════════════════════════════════════════════════════════════ */
 
+/* ── Debtor header — always navy regardless of scroll state ── */
+.debtor-page .site-header {
+  background: var(--navy);
+}
+
 /* ── Debtor hero ── */
 .debtor-main { padding-top: 100px; }
 
