@@ -647,12 +647,12 @@ address { font-style: normal; }
   flex-shrink: 0;
 }
 .nav-logo-img {
-  height: 44px;
+  height: 88px;
   width: auto;
   display: block;
 }
 .footer-logo-img {
-  height: 36px;
+  height: 72px;
   width: auto;
   display: block;
 }
