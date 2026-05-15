@@ -415,8 +415,19 @@ address { font-style: normal; }
   border-top: 1px solid var(--gray-200);
   background: var(--white);
   min-height: 64px;
+  /* Prevent nav from overflowing its card */
+  min-width: 0;
+  overflow: hidden;
 }
-.ms-nav-right { display: flex; gap: 8px; align-items: center; margin-left: auto; }
+/* ms-nav-right fills remaining space so the button is properly contained */
+.ms-nav-right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex: 1;
+  justify-content: flex-end;
+  min-width: 0;
+}
 .btn-ms-back {
   display: flex;
   align-items: center;
@@ -430,11 +441,14 @@ address { font-style: normal; }
   cursor: pointer;
   transition: color var(--transition);
   font-family: var(--font-body);
+  flex-shrink: 0;
 }
 .btn-ms-back:hover { color: var(--navy); }
+/* Override width:100% from .btn-submit — inside the nav the button is auto-sized */
 .btn-ms-next, .btn-ms-submit {
   padding: 11px 22px;
   font-size: 0.9rem;
+  width: auto;
 }
 
 /* ── Success screen ── */
@@ -1795,7 +1809,9 @@ blockquote cite span { font-size: 0.82rem; color: var(--gray-400); }
   /* ── Forms ── */
   .form-row { grid-template-columns: 1fr; }
   .ms-slide  { padding: 18px 16px 8px; }
-  .ms-nav    { padding: 12px 16px 16px; }
+  .ms-nav    { padding: 12px 16px 16px; flex-wrap: wrap; gap: 8px; }
+  .ms-nav-right { width: 100%; flex: none; }
+  .btn-ms-next, .btn-ms-submit { width: 100%; justify-content: center; }
   .ms-header { padding: 16px 16px 14px; }
 
   /* ── Touch targets ── */
