@@ -743,7 +743,10 @@ address { font-style: normal; }
   grid-template-columns: 1fr 480px;
   gap: 56px;
   align-items: start;
+  /* Prevent grid children from overflowing their tracks */
+  min-width: 0;
 }
+.hero-inner > * { min-width: 0; }
 
 /* Hero content */
 .hero-label {
@@ -818,7 +821,14 @@ address { font-style: normal; }
 .tp-label strong { color: var(--white); }
 
 /* Hero form */
-.hero-form-wrap { position: sticky; top: 160px; }
+.hero-form-wrap {
+  position: sticky;
+  top: 160px;
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+}
+.claim-form-card { width: 100%; max-width: 100%; }
 
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .form-group { display: flex; flex-direction: column; gap: 5px; }
@@ -1689,14 +1699,18 @@ blockquote cite span { font-size: 0.82rem; color: var(--gray-400); }
    RESPONSIVE
    ═══════════════════════════════════════════════════════════════ */
 @media (max-width: 1100px) {
-  .hero-inner { grid-template-columns: 1fr 440px; gap: 40px; }
   .services-grid { grid-template-columns: repeat(2, 1fr); }
   .why-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
+/* Hero collapses to single-column at 1024px — covers all tablets + phones */
+@media (max-width: 1024px) {
+  .hero-inner { grid-template-columns: 1fr; gap: 32px; }
+  .hero-form-wrap { position: static; margin-top: 0; }
+  .hero { padding: 168px 0 64px; min-height: auto; }
+}
+
 @media (max-width: 900px) {
-  .hero-inner { grid-template-columns: 1fr; }
-  .hero-form-wrap { position: static; margin-top: 8px; }
   .hero { padding: 168px 0 64px; min-height: auto; }
   .steps-grid { grid-template-columns: 1fr; gap: 32px; }
   .step-connector { padding: 0; transform: rotate(90deg); display: none; }
