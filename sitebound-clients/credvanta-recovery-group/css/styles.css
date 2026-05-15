@@ -1696,7 +1696,7 @@ blockquote cite span { font-size: 0.82rem; color: var(--gray-400); }
 
 @media (max-width: 900px) {
   .hero-inner { grid-template-columns: 1fr; }
-  .hero-form-wrap { position: static; }
+  .hero-form-wrap { position: static; margin-top: 8px; }
   .hero { padding: 168px 0 64px; min-height: auto; }
   .steps-grid { grid-template-columns: 1fr; gap: 32px; }
   .step-connector { padding: 0; transform: rotate(90deg); display: none; }
@@ -1716,34 +1716,8 @@ blockquote cite span { font-size: 0.82rem; color: var(--gray-400); }
 
 @media (max-width: 900px) {
   .ms-label { display: none; }
-}
 
-@media (max-width: 680px) {
-  /* ── Container ── */
-  .container { padding: 0 16px; }
-
-  /* ── Logo ── */
-  .nav-logo-img  { height: 52px; }
-  .footer-logo-img { height: 44px; }
-
-  /* ── Header ── */
-  .header-top { padding: 5px 0; }
-  .header-tagline { display: none; }
-
-  /* ── Hero ── */
-  .hero { padding: 128px 0 56px; }
-  .hero-headline { font-size: 1.7rem; }
-  .hero-body { font-size: 0.95rem; }
-  .hero-badges { gap: 8px; }
-  .badge { font-size: 0.75rem; padding: 8px 10px; }
-
-  /* ── Hero form compact ── */
-  label { font-size: 0.75rem; }
-  input, select { padding: 9px 10px; }
-  .form-group { gap: 4px; }
-  textarea { min-height: 64px; padding: 9px 10px; }
-
-  /* ── Nav ── */
+  /* ── Nav: hamburger on all mobile/landscape widths ── */
   .nav-links, .nav-actions { display: none; }
   .nav-links.is-open {
     display: flex;
@@ -1761,6 +1735,38 @@ blockquote cite span { font-size: 0.82rem; color: var(--gray-400); }
     padding: 12px 24px;
   }
   .nav-toggle { display: flex; z-index: 100; }
+}
+
+@media (max-width: 680px) {
+  /* ── Container ── */
+  .container { padding: 0 16px; }
+
+  /* ── Logo ── */
+  .nav-logo-img  { height: 52px; }
+  .footer-logo-img { height: 44px; }
+
+  /* ── Header ── */
+  .header-top { padding: 5px 0; }
+  .header-tagline { display: none; }
+
+  /* ── Hero ── */
+  .hero { padding: 128px 0 56px; }
+  .hero-headline { font-size: 1.7rem; }
+  .hero-body { font-size: 0.95rem; margin-bottom: 20px; }
+  .hero-badges { gap: 6px; }
+  .badge { font-size: 0.75rem; padding: 8px 10px; }
+  .hero-trustpilot { display: none; }
+
+  /* ── Hero form compact ── */
+  label { font-size: 0.75rem; }
+  input, select { padding: 9px 10px; }
+  .form-group { gap: 4px; }
+  textarea { min-height: 64px; padding: 9px 10px; }
+  .ms-slide-intro { display: none; }
+  .ms-fields { gap: 8px; }
+  .ms-dot { width: 18px; height: 18px; font-size: 0.65rem; }
+  .ms-title-row { margin-bottom: 8px; }
+  .ms-progress-bar { margin-bottom: 10px; }
 
   /* ── Section spacing ── */
   .how-it-works,
