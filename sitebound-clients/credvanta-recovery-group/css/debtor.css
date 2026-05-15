@@ -864,4 +864,17 @@
   .support-orgs-grid { grid-template-columns: 1fr; }
   .fraud-warning-header { flex-direction: column; }
   .important-notice-banner { padding: 12px 0; }
+  /* ── Touch targets ── */
+  .modal-close { width: 44px; height: 44px; }
+  /* ── Upload zone ── */
+  .modal-upload-zone { padding: 20px 12px; }
+}
+
+@media (max-width: 420px) {
+  /* ── Debtor hero ── */
+  .debtor-hero { padding: 40px 0 56px; }
+  /* ── Modal ── */
+  .modal-header { padding: 16px 16px 8px; }
+  .modal-form { padding: 12px 16px 24px; }
+  .modal-upload-zone { padding: 16px 10px; }
 }
