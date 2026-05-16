@@ -675,11 +675,13 @@ address { font-style: normal; }
   height: 140px;
   width: auto;
   display: block;
+  filter: drop-shadow(0 0 6px rgba(255,255,255,.75)) drop-shadow(0 0 14px rgba(255,255,255,.45));
 }
 .footer-logo-img {
   height: 115px;
   width: auto;
   display: block;
+  filter: drop-shadow(0 0 6px rgba(255,255,255,.65)) drop-shadow(0 0 12px rgba(255,255,255,.35));
 }
 
 /* Nav links */
