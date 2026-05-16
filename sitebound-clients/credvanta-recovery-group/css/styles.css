@@ -608,6 +608,8 @@ address { font-style: normal; }
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 100;
+  background: var(--navy);
+  box-shadow: 0 2px 20px rgba(0,0,0,.3);
   transition: background var(--transition), box-shadow var(--transition);
 }
 .site-header.scrolled {
@@ -661,12 +663,12 @@ address { font-style: normal; }
   flex-shrink: 0;
 }
 .nav-logo-img {
-  height: 88px;
+  height: 140px;
   width: auto;
   display: block;
 }
 .footer-logo-img {
-  height: 72px;
+  height: 115px;
   width: auto;
   display: block;
 }
@@ -709,7 +711,7 @@ address { font-style: normal; }
   min-height: 100vh;
   display: flex;
   align-items: center;
-  padding: 176px 0 80px;
+  padding: 220px 0 80px;
   overflow: hidden;
 }
 
@@ -837,7 +839,7 @@ address { font-style: normal; }
 /* Hero form */
 .hero-form-wrap {
   position: sticky;
-  top: 160px;
+  top: 205px;
   min-width: 0;
   max-width: 100%;
   width: 100%;
@@ -1721,11 +1723,11 @@ blockquote cite span { font-size: 0.82rem; color: var(--gray-400); }
 @media (max-width: 1024px) {
   .hero-inner { grid-template-columns: 1fr; gap: 32px; }
   .hero-form-wrap { position: static; margin-top: 0; }
-  .hero { padding: 168px 0 64px; min-height: auto; }
+  .hero { padding: 210px 0 64px; min-height: auto; }
 }
 
 @media (max-width: 900px) {
-  .hero { padding: 168px 0 64px; min-height: auto; }
+  .hero { padding: 210px 0 64px; min-height: auto; }
   .steps-grid { grid-template-columns: 1fr; gap: 32px; }
   .step-connector { padding: 0; transform: rotate(90deg); display: none; }
   .results-inner { grid-template-columns: 1fr; gap: 40px; }
@@ -1770,15 +1772,15 @@ blockquote cite span { font-size: 0.82rem; color: var(--gray-400); }
   .container { padding: 0 16px; }
 
   /* ── Logo ── */
-  .nav-logo-img  { height: 52px; }
-  .footer-logo-img { height: 44px; }
+  .nav-logo-img  { height: 83px; }
+  .footer-logo-img { height: 70px; }
 
   /* ── Header ── */
   .header-top { padding: 5px 0; }
   .header-tagline { display: none; }
 
   /* ── Hero ── */
-  .hero { padding: 128px 0 56px; }
+  .hero { padding: 160px 0 56px; }
   .hero-headline { font-size: 1.7rem; }
   .hero-body { font-size: 0.95rem; margin-bottom: 20px; }
   .hero-badges { gap: 6px; }
@@ -1844,9 +1846,9 @@ blockquote cite span { font-size: 0.82rem; color: var(--gray-400); }
 
 @media (max-width: 420px) {
   .container { padding: 0 14px; }
-  .nav-logo-img  { height: 44px; }
-  .footer-logo-img { height: 36px; }
-  .hero { padding: 116px 0 48px; }
+  .nav-logo-img  { height: 70px; }
+  .footer-logo-img { height: 58px; }
+  .hero { padding: 148px 0 48px; }
   .why-grid { grid-template-columns: 1fr; }
   .hero-headline { font-size: 1.5rem; }
   .hero-body { font-size: 0.9rem; }
