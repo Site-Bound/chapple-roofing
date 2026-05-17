@@ -663,6 +663,13 @@ address { font-style: normal; }
   flex-shrink: 0;
   height: 88px;      /* original header depth — crops transparent edges only */
   overflow: hidden;
+  /* Frosted chip so the blue logo lifts off the blue background */
+  background: rgba(255,255,255,0.14);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 10px;
+  padding: 0 14px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 .footer-logo {
   display: flex;
@@ -670,18 +677,22 @@ address { font-style: normal; }
   flex-shrink: 0;
   height: 72px;      /* original footer depth */
   overflow: hidden;
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 10px;
+  padding: 0 14px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 .nav-logo-img {
   height: 140px;
   width: auto;
   display: block;
-  filter: drop-shadow(0 0 6px rgba(255,255,255,.75)) drop-shadow(0 0 14px rgba(255,255,255,.45));
 }
 .footer-logo-img {
   height: 115px;
   width: auto;
   display: block;
-  filter: drop-shadow(0 0 6px rgba(255,255,255,.65)) drop-shadow(0 0 12px rgba(255,255,255,.35));
 }
 
 /* Nav links */
