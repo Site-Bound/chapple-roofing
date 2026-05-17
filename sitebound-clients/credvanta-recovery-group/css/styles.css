@@ -686,8 +686,9 @@ address { font-style: normal; }
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   margin-left: auto;
+  flex-wrap: nowrap;
 }
 .nav-link {
   padding: 6px 12px;
@@ -695,6 +696,7 @@ address { font-style: normal; }
   font-size: 0.875rem;
   font-weight: 500;
   border-radius: 6px;
+  white-space: nowrap;
   transition: color var(--transition), background var(--transition);
 }
 .nav-link:hover { color: var(--blue); background: rgba(26,58,107,.06); }
