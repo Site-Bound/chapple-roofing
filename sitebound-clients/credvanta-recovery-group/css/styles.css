@@ -608,13 +608,13 @@ address { font-style: normal; }
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 100;
-  background: var(--navy);
-  box-shadow: 0 2px 20px rgba(0,0,0,.3);
+  background: var(--white);
+  box-shadow: 0 2px 12px rgba(0,0,0,.10);
   transition: background var(--transition), box-shadow var(--transition);
 }
 .site-header.scrolled {
-  background: var(--navy);
-  box-shadow: 0 2px 20px rgba(0,0,0,.3);
+  background: var(--white);
+  box-shadow: 0 2px 16px rgba(0,0,0,.14);
 }
 
 .header-top {
@@ -691,20 +691,20 @@ address { font-style: normal; }
 }
 .nav-link {
   padding: 6px 12px;
-  color: rgba(255,255,255,.8);
+  color: var(--navy);
   font-size: 0.875rem;
   font-weight: 500;
   border-radius: 6px;
   transition: color var(--transition), background var(--transition);
 }
-.nav-link:hover { color: var(--white); background: rgba(255,255,255,.08); }
+.nav-link:hover { color: var(--blue); background: rgba(26,58,107,.06); }
 
 .nav-cta { padding: 9px 20px; font-size: 0.875rem; margin-left: 8px; }
 .nav-toggle { display: none; flex-direction: column; gap: 5px; padding: 4px; margin-left: auto; }
 .nav-toggle span {
   display: block;
   width: 24px; height: 2px;
-  background: var(--white);
+  background: var(--navy);
   border-radius: 2px;
   transition: transform var(--transition), opacity var(--transition);
 }
@@ -1772,7 +1772,9 @@ blockquote cite span { font-size: 0.82rem; color: var(--gray-400); }
   .nav-links.is-open .nav-link {
     font-size: 1.2rem;
     padding: 12px 24px;
+    color: var(--white);
   }
+  .nav-links.is-open .nav-link:hover { color: var(--blue-light); background: rgba(255,255,255,.08); }
   .nav-toggle { display: flex; z-index: 100; }
 }
 
