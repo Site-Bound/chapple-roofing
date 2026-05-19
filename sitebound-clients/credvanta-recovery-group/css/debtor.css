@@ -3,7 +3,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── Debtor hero ── */
-.debtor-main { padding-top: 165px; }
+.debtor-main { padding-top: 128px; }
 
 .debtor-hero {
   position: relative;
@@ -215,11 +215,11 @@
 @media (max-width: 580px) {
   .reassure-grid { grid-template-columns: 1fr; }
   /* Mobile header: reduced logo (52px) + header-top ≈ 120px */
-  .debtor-main { padding-top: 128px; }
+  .debtor-main { padding-top: 106px; }
 }
 @media (max-width: 420px) {
   /* Very small screens: logo 44px + header-top ≈ 112px */
-  .debtor-main { padding-top: 118px; }
+  .debtor-main { padding-top: 96px; }
 }
 
 /* ═══════════════════════════════════════════════════

@@ -4,7 +4,7 @@
 
 .legal-hero {
   background: var(--navy);
-  padding: 175px 0 60px;
+  padding: 136px 0 60px;
   border-bottom: 3px solid var(--blue);
 }
 .legal-hero h1 {
@@ -109,15 +109,15 @@
   font-weight: 500;
 }
 @media (max-width: 768px) {
-  /* Mobile header: ~120px — add enough top padding to clear it */
-  .legal-hero { padding: 140px 0 40px; }
+  /* Mobile header: ~96px — add enough top padding to clear it */
+  .legal-hero { padding: 110px 0 40px; }
   .legal-body { padding: 48px 0 64px; }
   .legal-doc-block { margin-bottom: 48px; padding-bottom: 48px; }
   .legal-section h2 { font-size: 0.9rem; }
   .legal-notice, .legal-warning { padding: 14px 16px; }
 }
 @media (max-width: 480px) {
-  .legal-hero { padding: 126px 0 32px; }
+  .legal-hero { padding: 100px 0 32px; }
   .legal-hero h1 { font-size: 1.6rem; }
   .legal-body { padding: 36px 0 48px; }
 }
