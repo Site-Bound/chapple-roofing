@@ -596,10 +596,11 @@
   font-weight: 700;
   padding: 8px 16px;
   border-radius: var(--radius);
-  display: inline-block;
-  margin-bottom: 14px;
+  display: block;
+  margin-bottom: 8px;
   letter-spacing: 0.5px;
 }
+.fraud-domain-badge:last-of-type { margin-bottom: 14px; }
 .fraud-contact-btn {
   display: inline-flex;
   align-items: center;
