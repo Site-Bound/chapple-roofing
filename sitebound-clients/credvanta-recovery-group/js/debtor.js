@@ -165,55 +165,8 @@ function validateModal(fields) {
 
 /* ═══════════════════════════════════════════════════════════════
    INVOICE LOOKUP — Supabase
+   (Constants + helpers defined in main.js which loads first)
    ═══════════════════════════════════════════════════════════════ */
-const SUPABASE_URL     = 'https://idvxdnswxqxhqcnzqmvf.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkdnhkbnN3eHF4aHFjbnpxbXZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzNjA3NDgsImV4cCI6MjA5MzkzNjc0OH0.4E5b7OQeTBNKMI4p0k23Deaftd4scSYqVudACSiKg68';
-
-async function lookupInvoice(query) {
-  const q = encodeURIComponent(query.trim().toUpperCase());
-  const fields = [
-    'case_reference_number', 'client_invoice_number', 'client_name',
-    'debtor_contact_name',   'debtor_business_name',
-    'original_balance',      'current_balance',
-    'status',                'payment_token_id',
-  ].join(',');
-  /* Try both reference and invoice number fields, case-insensitive */
-  const url = `${SUPABASE_URL}/rest/v1/live_cases`
-    + `?or=(case_reference_number.ilike.${q},client_invoice_number.ilike.${q})`
-    + `&select=${fields}&limit=1`;
-
-  const res = await fetch(url, {
-    headers: {
-      'apikey':        SUPABASE_ANON_KEY,
-      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-    },
-  });
-  if (!res.ok) throw new Error(`Lookup failed (${res.status})`);
-  const rows = await res.json();
-  return rows.length ? rows[0] : null;
-}
-
-function formatGBP(val) {
-  const n = parseFloat(val);
-  if (isNaN(n)) return '—';
-  return new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(n);
-}
-
-function getStatusClass(status) {
-  if (!status) return 'pending';
-  const s = status.toLowerCase();
-  if (s.includes('closed') || s.includes('settled') || s.includes('paid')) return 'closed';
-  if (s.includes('legal') || s.includes('escalat'))                         return 'legal';
-  if (s.includes('active') || s.includes('open'))                           return 'active';
-  return 'pending';
-}
-
-function isClosed(status) {
-  if (!status) return false;
-  const s = status.toLowerCase();
-  return s.includes('closed') || s.includes('settled') || s.includes('paid');
-}
-
 (function initLookup() {
   const lookupState  = document.getElementById('invoice-lookup-state');
   const resultState  = document.getElementById('invoice-result-state');
@@ -278,7 +231,7 @@ function isClosed(status) {
       const balanceEl = document.getElementById('lk-balance');
       balanceEl.textContent = formatGBP(record.current_balance);
 
-      const closed = isClosed(record.status);
+      const closed = isCaseClosed(record.status);
       document.getElementById('lk-pay-action').hidden = closed;
       document.getElementById('lk-closed-msg').hidden  = !closed;
 

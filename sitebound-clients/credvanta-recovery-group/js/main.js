@@ -494,3 +494,134 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWDyBaEdV1quwp
 /* ─── Footer year ────────────────────────────────────────────── */
 const yearEl = document.getElementById('footer-year');
 if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+
+/* ═══════════════════════════════════════════════════════════════
+   SUPABASE INVOICE LOOKUP — shared helpers
+   (used by both the homepage portal card and debtor.html)
+   ═══════════════════════════════════════════════════════════════ */
+const SUPABASE_URL      = 'https://idvxdnswxqxhqcnzqmvf.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkdnhkbnN3eHF4aHFjbnpxbXZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzNjA3NDgsImV4cCI6MjA5MzkzNjc0OH0.4E5b7OQeTBNKMI4p0k23Deaftd4scSYqVudACSiKg68';
+
+async function lookupInvoice(query) {
+  const q      = encodeURIComponent(query.trim().toUpperCase());
+  const fields = [
+    'case_reference_number','client_invoice_number','client_name',
+    'debtor_contact_name','debtor_business_name',
+    'original_balance','current_balance','status','payment_token_id',
+  ].join(',');
+  const url = `${SUPABASE_URL}/rest/v1/live_cases`
+    + `?or=(case_reference_number.ilike.${q},client_invoice_number.ilike.${q})`
+    + `&select=${fields}&limit=1`;
+  const res = await fetch(url, {
+    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
+  });
+  if (!res.ok) throw new Error(`Lookup failed (${res.status})`);
+  const rows = await res.json();
+  return rows.length ? rows[0] : null;
+}
+
+function formatGBP(val) {
+  const n = parseFloat(val);
+  if (isNaN(n)) return '—';
+  return new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(n);
+}
+
+function getStatusClass(status) {
+  if (!status) return 'pending';
+  const s = status.toLowerCase();
+  if (s.includes('closed') || s.includes('settled') || s.includes('paid')) return 'closed';
+  if (s.includes('legal')  || s.includes('escalat'))                        return 'legal';
+  if (s.includes('active') || s.includes('open'))                           return 'active';
+  return 'pending';
+}
+
+function isCaseClosed(status) {
+  if (!status) return false;
+  const s = status.toLowerCase();
+  return s.includes('closed') || s.includes('settled') || s.includes('paid');
+}
+
+/* ── Homepage portal card lookup ── */
+(function initPortalLookup() {
+  const lookupState  = document.getElementById('idx-lookup-state');
+  const resultState  = document.getElementById('idx-result-state');
+  const paymentState = document.getElementById('stripe-payment-form');
+  const successState = document.getElementById('payment-success');
+  const lookupInput  = document.getElementById('idx-lookup-ref');
+  const lookupBtn    = document.getElementById('idx-lookup-btn');
+  const lookupError  = document.getElementById('idx-lookup-error');
+  const resetBtn     = document.getElementById('idx-lookup-reset');
+  const proceedBtn   = document.getElementById('idx-lk-proceed-btn');
+  const backBtn      = document.getElementById('idx-payment-back-btn');
+
+  if (!lookupState || !lookupInput || !lookupBtn) return; // not on this page
+
+  function showState(name) {
+    lookupState.hidden  = name !== 'lookup';
+    resultState.hidden  = name !== 'result';
+    paymentState.hidden = name !== 'payment';
+    successState.hidden = name !== 'success';
+  }
+
+  function showError(msg) { lookupError.textContent = msg; lookupError.hidden = false; }
+  function clearError()   { lookupError.hidden = true; }
+
+  async function doLookup() {
+    const query = lookupInput.value.trim();
+    if (!query) { showError('Please enter your case reference or invoice number.'); return; }
+    clearError();
+
+    const origHTML = lookupBtn.innerHTML;
+    lookupBtn.disabled = true;
+    lookupBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" opacity=".3"/><path d="M12 2a10 10 0 0110 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="animation:spin .8s linear infinite;transform-origin:center"/></svg> Searching…`;
+
+    try {
+      const record = await lookupInvoice(query);
+
+      if (!record) {
+        showError('We could not find a case matching that reference. Please check and try again, or call us on 0800 975 7066.');
+        lookupBtn.disabled = false;
+        lookupBtn.innerHTML = origHTML;
+        return;
+      }
+
+      const ref = record.case_reference_number || record.client_invoice_number || query;
+      document.getElementById('idx-lk-ref').textContent      = ref;
+      document.getElementById('idx-lk-creditor').textContent = record.client_name || '—';
+      document.getElementById('idx-lk-debtor').textContent   =
+        record.debtor_business_name || record.debtor_contact_name || '—';
+
+      const statusEl = document.getElementById('idx-lk-status-badge');
+      statusEl.textContent = record.status || 'Active';
+      statusEl.className   = `lookup-status-badge lookup-status-badge--${getStatusClass(record.status)}`;
+
+      document.getElementById('idx-lk-balance').textContent = formatGBP(record.current_balance);
+
+      const closed = isCaseClosed(record.status);
+      document.getElementById('idx-lk-pay-action').hidden  = closed;
+      document.getElementById('idx-lk-closed-msg').hidden  = !closed;
+
+      /* Pre-fill payment form */
+      const invEl = document.getElementById('pay-invoice-num');
+      const amtEl = document.getElementById('pay-amount');
+      if (invEl) invEl.value = ref;
+      if (amtEl && record.current_balance) amtEl.value = parseFloat(record.current_balance).toFixed(2);
+
+      lookupBtn.disabled = false;
+      lookupBtn.innerHTML = origHTML;
+      showState('result');
+
+    } catch {
+      showError('Something went wrong. Please try again or call 0800 975 7066.');
+      lookupBtn.disabled = false;
+      lookupBtn.innerHTML = origHTML;
+    }
+  }
+
+  lookupBtn.addEventListener('click', doLookup);
+  lookupInput.addEventListener('keydown', e => { if (e.key === 'Enter') doLookup(); });
+  if (resetBtn)   resetBtn.addEventListener('click',   () => showState('lookup'));
+  if (proceedBtn) proceedBtn.addEventListener('click', () => showState('payment'));
+  if (backBtn)    backBtn.addEventListener('click',    () => showState('result'));
+})();
