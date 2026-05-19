@@ -89,20 +89,18 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
   });
 });
 
-/* ─── Active nav on scroll ───────────────────────────────────── */
+/* ─── Active nav on scroll — highlight current section ──────── */
 const sections   = document.querySelectorAll('section[id]');
 const navLinkEls = document.querySelectorAll('.nav-link');
-new IntersectionObserver(
-  entries => entries.forEach(e => {
-    if (e.isIntersecting) navLinkEls.forEach(l => {
-      l.style.color = l.getAttribute('href') === `#${e.target.id}` ? 'white' : '';
-    });
-  }),
-  { rootMargin: '-40% 0px -55% 0px' }
-).forEach ? null : sections.forEach(s => new IntersectionObserver(
-  ([e]) => e.isIntersecting && navLinkEls.forEach(l => {
-    l.style.color = l.getAttribute('href') === `#${e.target.id}` ? 'white' : '';
-  }),
+sections.forEach(s => new IntersectionObserver(
+  ([e]) => {
+    if (e.isIntersecting) {
+      navLinkEls.forEach(l => l.classList.remove('is-active'));
+      navLinkEls.forEach(l => {
+        if (l.getAttribute('href') === `#${e.target.id}`) l.classList.add('is-active');
+      });
+    }
+  },
   { rootMargin: '-40% 0px -55% 0px' }
 ).observe(s));
 
