@@ -87,18 +87,87 @@
         </div>
         <div class="debtor-hero-form" data-reveal data-delay="120">
           <div class="debtor-pay-card" id="debtor-pay-card">
-            <div class="debtor-pay-header">
-              <h2>Pay Your Invoice</h2>
+
+            <!-- ── STATE 1: Invoice Lookup ── -->
+            <div id="invoice-lookup-state">
+              <div class="debtor-pay-header">
+                <h2>Find Your Invoice</h2>
+              </div>
+              <p class="lookup-intro">Enter your case reference or invoice number to view your balance and settle your account securely online.</p>
+              <div class="form-group">
+                <label for="lookup-ref">Case Reference or Invoice Number <span aria-hidden="true">*</span></label>
+                <input type="text" id="lookup-ref" placeholder="e.g. CRG-001234 or INV-5678" autocomplete="off" spellcheck="false">
+              </div>
+              <div id="lookup-error" class="lookup-msg lookup-msg--error" role="alert" aria-live="polite" hidden></div>
+              <button type="button" id="lookup-btn" class="btn btn-submit">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 21l-4.35-4.35M17 11A6 6 0 111 11a6 6 0 0116 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Look Up My Invoice
+              </button>
+              <p class="lookup-fallback">Don't have your reference? Call us on <a href="tel:08009757066">0800 975 7066</a></p>
             </div>
-            <div id="debtor-stripe-form">
+
+            <!-- ── STATE 2: Case Result ── -->
+            <div id="invoice-result-state" hidden>
+              <div class="debtor-pay-header lookup-result-header">
+                <h2>Your Account</h2>
+                <button type="button" id="lookup-reset" class="lookup-back-btn" aria-label="Search again">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  Search again
+                </button>
+              </div>
+              <dl class="lookup-details">
+                <div class="lookup-detail-row">
+                  <dt>Reference</dt>
+                  <dd id="lk-ref">—</dd>
+                </div>
+                <div class="lookup-detail-row">
+                  <dt>Creditor</dt>
+                  <dd id="lk-creditor">—</dd>
+                </div>
+                <div class="lookup-detail-row">
+                  <dt>Your Business</dt>
+                  <dd id="lk-debtor">—</dd>
+                </div>
+                <div class="lookup-detail-row">
+                  <dt>Status</dt>
+                  <dd><span class="lookup-status-badge" id="lk-status-badge">Active</span></dd>
+                </div>
+              </dl>
+              <div class="lookup-balance-block">
+                <span class="lookup-balance-label">Amount Outstanding</span>
+                <span class="lookup-balance-amount" id="lk-balance">—</span>
+              </div>
+              <!-- Active: proceed to payment -->
+              <div id="lk-pay-action">
+                <button type="button" id="lk-proceed-btn" class="btn btn-submit">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  Proceed to Payment
+                </button>
+              </div>
+              <!-- Closed/Settled -->
+              <div id="lk-closed-msg" class="lookup-closed-msg" hidden>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <p>This account is showing as <strong>settled or closed</strong>. If you believe this is incorrect, please <a href="tel:08009757066">contact us</a>.</p>
+              </div>
+            </div>
+
+            <!-- ── STATE 3: Payment Form ── -->
+            <div id="debtor-stripe-form" hidden>
+              <div class="debtor-pay-header lookup-result-header">
+                <h2>Pay Securely</h2>
+                <button type="button" id="payment-back-btn" class="lookup-back-btn" aria-label="Back to invoice details">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  Back
+                </button>
+              </div>
               <div class="form-row">
                 <div class="form-group">
-                  <label for="d-invoice">Invoice / Reference Number</label>
-                  <input type="text" id="d-invoice" placeholder="e.g. INV-1234">
+                  <label for="d-invoice">Reference</label>
+                  <input type="text" id="d-invoice" placeholder="e.g. INV-1234" readonly class="input-readonly">
                 </div>
                 <div class="form-group">
-                  <label for="d-amount">Amount Due (£) <span aria-hidden="true">*</span></label>
-                  <input type="number" id="d-amount" placeholder="0.00" min="0.01" step="0.01" required>
+                  <label for="d-amount">Amount (£) <span aria-hidden="true">*</span></label>
+                  <input type="number" id="d-amount" placeholder="0.00" min="0.01" step="0.01" required readonly class="input-readonly">
                 </div>
               </div>
               <div class="form-group">
@@ -106,7 +175,6 @@
                 <input type="email" id="d-email" placeholder="you@example.com" required>
               </div>
 
-              <!-- Payment Request Button (Apple/Google Pay) -->
               <div id="d-pr-button"></div>
               <div class="pay-divider" id="d-pay-divider" hidden><span>or pay by card</span></div>
 
@@ -129,7 +197,6 @@
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 Pay Securely
               </button>
-
               <div class="debtor-pay-footer">
                 <span>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -138,13 +205,14 @@
               </div>
             </div>
 
-            <!-- Success state -->
+            <!-- ── STATE 4: Payment Success ── -->
             <div id="debtor-payment-success" class="form-success" hidden>
               <svg width="52" height="52" viewBox="0 0 24 24" fill="none"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 4L12 14.01l-3-3" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
               <h3>Payment Received</h3>
               <p>Your payment has been processed successfully. A receipt has been sent to your email address.</p>
               <p style="font-size:.82rem;color:var(--gray-400);margin-top:4px">This matter is now considered settled. If you have any queries please contact us.</p>
             </div>
+
           </div>
 
           <div class="sc-routing-notice" aria-label="Payment routing information">
