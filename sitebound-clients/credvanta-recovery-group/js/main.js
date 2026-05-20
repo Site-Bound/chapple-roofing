@@ -149,7 +149,7 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWDyBaEdV1quwp
       const n = parseInt(dot.dataset.step);
       dot.classList.toggle('is-active', n === step);
       dot.classList.toggle('is-done', n < step);
-      dot.classList.remove(n > step ? 'is-active' : '');
+      if (n > step) dot.classList.remove('is-active');
     });
     // Nav buttons
     backBtn.hidden = step === 1;
