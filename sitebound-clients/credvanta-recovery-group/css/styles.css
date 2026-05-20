@@ -1902,6 +1902,22 @@ blockquote cite span { font-size: 0.82rem; color: var(--gray-400); }
 
 .input-readonly { background: var(--gray-100); color: var(--gray-600); cursor: default; }
 
+/* Ensure hidden state divs are never overridden by a competing display rule */
+#stripe-payment-form[hidden],
+#debtor-stripe-form[hidden],
+#idx-result-state[hidden],
+#invoice-result-state[hidden],
+#payment-success[hidden],
+#debtor-payment-success[hidden] { display: none !important; }
+
+/* Partial payment hint */
+.amount-hint {
+  font-size: 0.78rem;
+  color: var(--gray-400);
+  margin-top: 4px;
+}
+.amount-hint strong { color: var(--navy); }
+
 /* ═══════════════════════════════════════════════════════════════
    RESPONSIVE
    ═══════════════════════════════════════════════════════════════ */

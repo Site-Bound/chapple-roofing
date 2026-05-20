@@ -236,11 +236,17 @@ function validateModal(fields) {
       document.getElementById('lk-closed-msg').hidden  = !closed;
 
       /* Pre-fill payment form */
-      const invoiceField = document.getElementById('d-invoice');
-      const amountField  = document.getElementById('d-amount');
+      const invoiceField  = document.getElementById('d-invoice');
+      const amountField   = document.getElementById('d-amount');
+      const amountHint    = document.getElementById('d-amount-hint');
+      const amountFull    = document.getElementById('d-amount-full');
       if (invoiceField) invoiceField.value = ref;
       if (amountField && record.current_balance) {
-        amountField.value = parseFloat(record.current_balance).toFixed(2);
+        const balance = parseFloat(record.current_balance);
+        amountField.value = balance.toFixed(2);
+        amountField.max   = balance.toFixed(2);
+        if (amountFull)  amountFull.textContent  = formatGBP(balance);
+        if (amountHint)  amountHint.hidden = false;
       }
 
       lookupBtn.disabled = false;
@@ -257,7 +263,12 @@ function validateModal(fields) {
   lookupBtn.addEventListener('click', doLookup);
   lookupInput.addEventListener('keydown', e => { if (e.key === 'Enter') doLookup(); });
 
-  if (resetBtn)  resetBtn.addEventListener('click',  () => showState('lookup'));
+  if (resetBtn)  resetBtn.addEventListener('click', () => {
+    lookupInput.value = '';
+    const amtHint = document.getElementById('d-amount-hint');
+    if (amtHint) amtHint.hidden = true;
+    showState('lookup');
+  });
   if (proceedBtn) proceedBtn.addEventListener('click', () => showState('payment'));
   if (backBtn)   backBtn.addEventListener('click',   () => showState('result'));
 })();
