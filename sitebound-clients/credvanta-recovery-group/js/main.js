@@ -596,11 +596,13 @@ function isCaseClosed(status) {
       statusEl.textContent = record.status || 'Active';
       statusEl.className   = `lookup-status-badge lookup-status-badge--${getStatusClass(record.status)}`;
 
-      document.getElementById('idx-lk-balance').textContent = formatGBP(record.current_balance);
+      const balance = parseFloat(record.current_balance) || 0;
+      document.getElementById('idx-lk-balance').textContent = formatGBP(balance);
 
-      const closed = isCaseClosed(record.status);
-      document.getElementById('idx-lk-pay-action').hidden  = closed;
-      document.getElementById('idx-lk-closed-msg').hidden  = !closed;
+      /* Show payment option only when money is still owed */
+      const settled = balance <= 0;
+      document.getElementById('idx-lk-pay-action').hidden  = settled;
+      document.getElementById('idx-lk-closed-msg').hidden  = !settled;
 
       /* Pre-fill payment form */
       const invEl      = document.getElementById('pay-invoice-num');
@@ -608,8 +610,7 @@ function isCaseClosed(status) {
       const amtHintEl  = document.getElementById('pay-amount-hint');
       const amtFullEl  = document.getElementById('pay-amount-full');
       if (invEl) invEl.value = ref;
-      if (amtEl && record.current_balance) {
-        const balance = parseFloat(record.current_balance);
+      if (!settled && amtEl) {
         amtEl.value = balance.toFixed(2);
         amtEl.max   = balance.toFixed(2);
         if (amtFullEl) amtFullEl.textContent = formatGBP(balance);

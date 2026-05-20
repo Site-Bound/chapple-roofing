@@ -228,12 +228,14 @@ function validateModal(fields) {
       statusEl.textContent = statusText;
       statusEl.className = `lookup-status-badge lookup-status-badge--${getStatusClass(record.status)}`;
 
+      const balance = parseFloat(record.current_balance) || 0;
       const balanceEl = document.getElementById('lk-balance');
-      balanceEl.textContent = formatGBP(record.current_balance);
+      balanceEl.textContent = formatGBP(balance);
 
-      const closed = isCaseClosed(record.status);
-      document.getElementById('lk-pay-action').hidden = closed;
-      document.getElementById('lk-closed-msg').hidden  = !closed;
+      /* Show payment option only when money is still owed */
+      const settled = balance <= 0;
+      document.getElementById('lk-pay-action').hidden = settled;
+      document.getElementById('lk-closed-msg').hidden  = !settled;
 
       /* Pre-fill payment form */
       const invoiceField  = document.getElementById('d-invoice');
@@ -241,12 +243,11 @@ function validateModal(fields) {
       const amountHint    = document.getElementById('d-amount-hint');
       const amountFull    = document.getElementById('d-amount-full');
       if (invoiceField) invoiceField.value = ref;
-      if (amountField && record.current_balance) {
-        const balance = parseFloat(record.current_balance);
+      if (!settled && amountField) {
         amountField.value = balance.toFixed(2);
         amountField.max   = balance.toFixed(2);
-        if (amountFull)  amountFull.textContent  = formatGBP(balance);
-        if (amountHint)  amountHint.hidden = false;
+        if (amountFull) amountFull.textContent = formatGBP(balance);
+        if (amountHint) amountHint.hidden = false;
       }
 
       lookupBtn.disabled = false;
