@@ -555,31 +555,31 @@ function getStatusMessage(status, balance) {
   if (s.includes('legal') || s.includes('court') || s.includes('litigation') || s.includes('escalat')) {
     return {
       type: 'warning',
-      html: 'This account has been <strong>referred for legal action</strong>. Please <a href="tel:08009757066">contact us</a> to discuss your options before making payment.'
+      html: 'This account has been <strong>referred for legal action</strong>. You are still able to make payment below to stop any further action being taken.'
     };
   }
   if (s.includes('plan') || s.includes('arrangement') || s.includes('instalment') || s.includes('installment')) {
     return {
       type: 'info',
-      html: 'A <strong>payment arrangement</strong> is in place on this account. Please continue to meet your agreed schedule, or <a href="tel:08009757066">contact us</a> if you need to amend it.'
+      html: 'A <strong>payment arrangement</strong> is in place on this account. Please continue to meet your agreed schedule. You are also welcome to make additional payments towards the outstanding balance at any time.'
     };
   }
   if (s.includes('partial') || s.includes('part pay')) {
     return {
       type: 'info',
-      html: 'A <strong>partial payment</strong> has been received on this account. The remaining balance is shown above.'
+      html: 'A <strong>partial payment</strong> has been received on this account. The remaining balance is shown above. You are welcome to make additional payments towards this balance at any time.'
     };
   }
   if (s.includes('dispute')) {
     return {
       type: 'warning',
-      html: 'This account is currently <strong>in dispute</strong>. Please <a href="tel:08009757066">contact us</a> to discuss this before making payment.'
+      html: 'This account is currently <strong>in dispute</strong>. Please give us a call on <a href="tel:08009757066">0800 975 7066</a> and we will be happy to assist.'
     };
   }
   if (s.includes('hold')) {
     return {
       type: 'info',
-      html: 'This account is currently <strong>on hold</strong>. Please <a href="tel:08009757066">contact us</a> for further information.'
+      html: 'This account is currently <strong>on hold</strong>. Please give us a call on <a href="tel:08009757066">0800 975 7066</a> and we will be happy to assist.'
     };
   }
   /* Active with outstanding balance — no supplementary message needed */
