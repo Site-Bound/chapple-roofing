@@ -108,8 +108,8 @@
 
             <!-- ── STATE 2: Case Result ── -->
             <div id="invoice-result-state" hidden>
-              <div class="debtor-pay-header lookup-result-header">
-                <h2>Your Account</h2>
+              <div class="lookup-result-header">
+                <h3>Your Account</h3>
                 <button type="button" id="lookup-reset" class="lookup-back-btn" aria-label="Search again">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                   Search again
@@ -144,10 +144,9 @@
                   Proceed to Payment
                 </button>
               </div>
-              <!-- Closed/Settled -->
-              <div id="lk-closed-msg" class="lookup-closed-msg" hidden>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                <p>This account is showing as <strong>settled or closed</strong>. If you believe this is incorrect, please <a href="tel:08009757066">contact us</a>.</p>
+              <!-- Dynamic status message -->
+              <div id="lk-status-msg" class="lookup-status-msg" hidden>
+                <p id="lk-status-msg-text"></p>
               </div>
             </div>
 

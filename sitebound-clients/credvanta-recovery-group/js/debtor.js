@@ -235,7 +235,20 @@ function validateModal(fields) {
       /* Show payment option only when money is still owed */
       const settled = balance <= 0;
       document.getElementById('lk-pay-action').hidden = settled;
-      document.getElementById('lk-closed-msg').hidden  = !settled;
+
+      /* Dynamic status message */
+      const msgEl     = document.getElementById('lk-status-msg');
+      const msgTextEl = document.getElementById('lk-status-msg-text');
+      const statusMsg = getStatusMessage(record.status, balance);
+      if (msgEl && msgTextEl) {
+        if (statusMsg) {
+          msgEl.className       = `lookup-status-msg lookup-status-msg--${statusMsg.type}`;
+          msgTextEl.innerHTML   = statusMsg.html;
+          msgEl.hidden          = false;
+        } else {
+          msgEl.hidden = true;
+        }
+      }
 
       /* Pre-fill payment form */
       const invoiceField  = document.getElementById('d-invoice');

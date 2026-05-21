@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git remote *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(dir \\\\tmp\\\\create-guide.js)",
+      "Bash(npm root *)",
+      "Bash(node -e \"require\\('docx'\\); console.log\\('ok'\\)\")",
+      "Bash(cp \"C:/tmp/Credvanta-Client-Setup-Guide.docx\" \"C:/Users/eliza/sitebound-clients/.claude/worktrees/upbeat-chebyshev-49a303/sitebound-clients/credvanta-recovery-group/Credvanta-Client-Setup-Guide.docx\")",
+      "PowerShell($env:NODE_PATH = \"C:\\\\Users\\\\nickw\\\\AppData\\\\Roaming\\\\npm\\\\node_modules\"; node C:\\\\tmp\\\\create-script-guide.js)",
+      "Bash(ls C:/Users/*/Desktop/Favicon.png C:/Users/*/Desktop/Credvanta.png 2>/dev/null)",
+      "Bash(cp \"C:/Users/nickw/Desktop/Credvanta.png\" \"C:/Users/eliza/sitebound-clients/.claude/worktrees/upbeat-chebyshev-49a303/sitebound-clients/credvanta-recovery-group/images/credvanta-logo.png\")",
+      "Bash(cp \"C:/Users/nickw/Desktop/Favicon.png\" \"C:/Users/eliza/sitebound-clients/.claude/worktrees/upbeat-chebyshev-49a303/sitebound-clients/credvanta-recovery-group/images/favicon.png\")",
+      "Bash(git push *)",
+      "Bash(echo \"Exit: $?\")"
+    ]
+  }
+}

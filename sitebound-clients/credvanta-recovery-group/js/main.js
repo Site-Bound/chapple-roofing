@@ -542,6 +542,50 @@ function isCaseClosed(status) {
   return s.includes('closed') || s.includes('settled') || s.includes('paid');
 }
 
+/* Returns { type: 'success'|'info'|'warning', html: '...' } or null (no message needed) */
+function getStatusMessage(status, balance) {
+  const s = (status || '').toLowerCase();
+
+  if (balance <= 0) {
+    return {
+      type: 'success',
+      html: 'This account has been <strong>settled in full</strong>. No further payment is required. If you have any questions please <a href="tel:08009757066">contact us</a>.'
+    };
+  }
+  if (s.includes('legal') || s.includes('court') || s.includes('litigation') || s.includes('escalat')) {
+    return {
+      type: 'warning',
+      html: 'This account has been <strong>referred for legal action</strong>. Please <a href="tel:08009757066">contact us</a> to discuss your options before making payment.'
+    };
+  }
+  if (s.includes('plan') || s.includes('arrangement') || s.includes('instalment') || s.includes('installment')) {
+    return {
+      type: 'info',
+      html: 'A <strong>payment arrangement</strong> is in place on this account. Please continue to meet your agreed schedule, or <a href="tel:08009757066">contact us</a> if you need to amend it.'
+    };
+  }
+  if (s.includes('partial') || s.includes('part pay')) {
+    return {
+      type: 'info',
+      html: 'A <strong>partial payment</strong> has been received on this account. The remaining balance is shown above.'
+    };
+  }
+  if (s.includes('dispute')) {
+    return {
+      type: 'warning',
+      html: 'This account is currently <strong>in dispute</strong>. Please <a href="tel:08009757066">contact us</a> to discuss this before making payment.'
+    };
+  }
+  if (s.includes('hold')) {
+    return {
+      type: 'info',
+      html: 'This account is currently <strong>on hold</strong>. Please <a href="tel:08009757066">contact us</a> for further information.'
+    };
+  }
+  /* Active with outstanding balance — no supplementary message needed */
+  return null;
+}
+
 /* ── Homepage portal card lookup ── */
 (function initPortalLookup() {
   const lookupState  = document.getElementById('idx-lookup-state');
@@ -601,8 +645,21 @@ function isCaseClosed(status) {
 
       /* Show payment option only when money is still owed */
       const settled = balance <= 0;
-      document.getElementById('idx-lk-pay-action').hidden  = settled;
-      document.getElementById('idx-lk-closed-msg').hidden  = !settled;
+      document.getElementById('idx-lk-pay-action').hidden = settled;
+
+      /* Dynamic status message */
+      const msgEl     = document.getElementById('idx-lk-status-msg');
+      const msgTextEl = document.getElementById('idx-lk-status-msg-text');
+      const statusMsg = getStatusMessage(record.status, balance);
+      if (msgEl && msgTextEl) {
+        if (statusMsg) {
+          msgEl.className       = `lookup-status-msg lookup-status-msg--${statusMsg.type}`;
+          msgTextEl.innerHTML   = statusMsg.html;
+          msgEl.hidden          = false;
+        } else {
+          msgEl.hidden = true;
+        }
+      }
 
       /* Pre-fill payment form */
       const invEl      = document.getElementById('pay-invoice-num');

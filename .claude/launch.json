@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "credvanta",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-p", "4321", "sitebound-clients/credvanta-recovery-group"],
+      "port": 4321
+    }
+  ]
+}
