@@ -90,9 +90,7 @@
 
             <!-- ── STATE 1: Invoice Lookup ── -->
             <div id="invoice-lookup-state">
-              <div class="debtor-pay-header">
-                <h2>Find Your Invoice</h2>
-              </div>
+              <h3>Find Your Invoice</h3>
               <p class="lookup-intro">Enter your case reference or invoice number to view your balance and settle your account securely online.</p>
               <div class="form-group">
                 <label for="lookup-ref">Case Reference or Invoice Number <span aria-hidden="true">*</span></label>
@@ -159,49 +157,51 @@
                   Back
                 </button>
               </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="d-invoice">Reference</label>
-                  <input type="text" id="d-invoice" placeholder="e.g. INV-1234" readonly class="input-readonly">
-                </div>
-                <div class="form-group">
-                  <label for="d-amount">Amount to Pay (£) <span aria-hidden="true">*</span></label>
-                  <input type="number" id="d-amount" placeholder="0.00" min="0.01" step="0.01" required>
-                  <p class="amount-hint" id="d-amount-hint" hidden>Full outstanding: <strong id="d-amount-full">—</strong> — enter a lower amount to make a partial payment.</p>
-                </div>
-              </div>
-              <div class="form-group">
-                <label for="d-email">Your Email (for receipt) <span aria-hidden="true">*</span></label>
-                <input type="email" id="d-email" placeholder="you@example.com" required>
-              </div>
-
-              <div id="d-pr-button"></div>
-              <div class="pay-divider" id="d-pay-divider" hidden><span>or pay by card</span></div>
-
-              <div class="form-group">
-                <label>Card Details <span aria-hidden="true">*</span></label>
-                <div id="d-card-element" class="stripe-card-element">
-                  <div class="stripe-placeholder">
-                    <span class="stripe-placeholder-text">Secure card entry</span>
-                    <div class="stripe-placeholder-icons">
-                      <svg viewBox="0 0 38 24" width="38" height="24" role="img" aria-label="Visa"><rect width="38" height="24" rx="4" fill="#1A1F71"/><text x="19" y="16" font-size="9" font-weight="700" fill="white" text-anchor="middle" font-family="sans-serif">VISA</text></svg>
-                      <svg viewBox="0 0 38 24" width="38" height="24" role="img" aria-label="Mastercard"><rect width="38" height="24" rx="4" fill="#252525"/><circle cx="15" cy="12" r="7" fill="#EB001B"/><circle cx="23" cy="12" r="7" fill="#F79E1B"/><path d="M19 7.4a7 7 0 010 9.2A7 7 0 0119 7.4z" fill="#FF5F00"/></svg>
-                      <svg viewBox="0 0 38 24" width="38" height="24" role="img" aria-label="Amex"><rect width="38" height="24" rx="4" fill="#2557D6"/><text x="19" y="16" font-size="7" font-weight="700" fill="white" text-anchor="middle" font-family="sans-serif">AMEX</text></svg>
-                    </div>
+              <div class="debtor-payment-fields">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="d-invoice">Reference</label>
+                    <input type="text" id="d-invoice" placeholder="e.g. INV-1234" readonly class="input-readonly">
+                  </div>
+                  <div class="form-group">
+                    <label for="d-amount">Amount to Pay (£) <span aria-hidden="true">*</span></label>
+                    <input type="number" id="d-amount" placeholder="0.00" min="0.01" step="0.01" required>
+                    <p class="amount-hint" id="d-amount-hint" hidden>Full outstanding: <strong id="d-amount-full">—</strong> — enter a lower amount to make a partial payment.</p>
                   </div>
                 </div>
-                <div id="d-card-errors" class="card-error" role="alert" aria-live="polite"></div>
-              </div>
+                <div class="form-group">
+                  <label for="d-email">Your Email (for receipt) <span aria-hidden="true">*</span></label>
+                  <input type="email" id="d-email" placeholder="you@example.com" required>
+                </div>
 
-              <button type="button" id="d-pay-btn" class="btn btn-submit" disabled>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                Pay Securely
-              </button>
-              <div class="debtor-pay-footer">
-                <span>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                  Secure &amp; encrypted payment
-                </span>
+                <div id="d-pr-button"></div>
+                <div class="pay-divider" id="d-pay-divider" hidden><span>or pay by card</span></div>
+
+                <div class="form-group">
+                  <label>Card Details <span aria-hidden="true">*</span></label>
+                  <div id="d-card-element" class="stripe-card-element">
+                    <div class="stripe-placeholder">
+                      <span class="stripe-placeholder-text">Secure card entry</span>
+                      <div class="stripe-placeholder-icons">
+                        <svg viewBox="0 0 38 24" width="38" height="24" role="img" aria-label="Visa"><rect width="38" height="24" rx="4" fill="#1A1F71"/><text x="19" y="16" font-size="9" font-weight="700" fill="white" text-anchor="middle" font-family="sans-serif">VISA</text></svg>
+                        <svg viewBox="0 0 38 24" width="38" height="24" role="img" aria-label="Mastercard"><rect width="38" height="24" rx="4" fill="#252525"/><circle cx="15" cy="12" r="7" fill="#EB001B"/><circle cx="23" cy="12" r="7" fill="#F79E1B"/><path d="M19 7.4a7 7 0 010 9.2A7 7 0 0119 7.4z" fill="#FF5F00"/></svg>
+                        <svg viewBox="0 0 38 24" width="38" height="24" role="img" aria-label="Amex"><rect width="38" height="24" rx="4" fill="#2557D6"/><text x="19" y="16" font-size="7" font-weight="700" fill="white" text-anchor="middle" font-family="sans-serif">AMEX</text></svg>
+                      </div>
+                    </div>
+                  </div>
+                  <div id="d-card-errors" class="card-error" role="alert" aria-live="polite"></div>
+                </div>
+
+                <button type="button" id="d-pay-btn" class="btn btn-submit" disabled>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  Pay Securely
+                </button>
+                <div class="debtor-pay-footer">
+                  <span>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Secure &amp; encrypted payment
+                  </span>
+                </div>
               </div>
             </div>
 
