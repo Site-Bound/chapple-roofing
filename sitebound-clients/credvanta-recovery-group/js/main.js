@@ -454,6 +454,8 @@ async function taylrPayment({ ref, amount, email, btn, errorEl }) {
       inp.type = 'hidden'; inp.name = k; inp.value = v;
       form.appendChild(inp);
     }
+    /* Debug: log params to console so they're visible in DevTools if needed */
+    console.log('[Taylr] Submitting to', endpoint, params);
     document.body.appendChild(form);
     form.submit();
   } catch {

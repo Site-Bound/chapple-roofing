@@ -23,15 +23,20 @@ export async function onRequestPost(context) {
       return errorResponse('Invalid amount', 400, context.request);
     }
 
+    /* transactionUnique: timestamp + random suffix — required by gateway to
+       prevent duplicate submissions and tie the request to a session */
+    const transactionUnique = Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
     const params = {
-      action:       'SALE',
-      amount:       String(amountPence),
-      countryCode:  '826',
-      currencyCode: '826',
-      merchantID:   MERCHANT_ID,
-      orderRef:     String(ref).trim().toUpperCase(),
-      redirectURL:  REDIRECT_URL,
-      type:         '1',
+      action:            'SALE',
+      amount:            String(amountPence),
+      countryCode:       '826',
+      currencyCode:      '826',
+      merchantID:        MERCHANT_ID,
+      orderRef:          String(ref).trim().toUpperCase(),
+      redirectURL:       REDIRECT_URL,
+      transactionUnique,
+      type:              '1',
     };
 
     if (email && String(email).trim()) {
