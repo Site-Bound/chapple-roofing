@@ -7,7 +7,7 @@
 const MERCHANT_ID    = '290682';
 const SIGNING_KEY    = '1448986500a239cd19452089208848afed775d30f3d24ae167314c13f1cd412d';
 const TAYLR_ENDPOINT = 'https://app.taylr.io/api/process-transaction';
-const REDIRECT_URL   = 'https://www.credvantarecoverygroup.com/payment-complete.html';
+const REDIRECT_URL   = 'https://www.credvantarecovery.co.uk/payment-complete.html';
 
 export async function onRequestPost(context) {
   try {
