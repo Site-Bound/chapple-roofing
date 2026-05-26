@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Complete | Credvanta Recovery Group</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <!-- Google Ads tag -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18177737839"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'AW-18177737839');
+  </script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+
+  <style>
+    .pc-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      background: var(--off-white);
+    }
+    .pc-card {
+      background: var(--white);
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      padding: 48px 40px;
+      max-width: 520px;
+      width: 100%;
+      text-align: center;
+    }
+    .pc-icon {
+      width: 64px;
+      height: 64px;
+      background: #F0FDF4;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+    }
+    .pc-card h1 {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: 12px;
+    }
+    .pc-card p {
+      font-size: 0.95rem;
+      color: var(--gray-600);
+      line-height: 1.7;
+      margin-bottom: 8px;
+    }
+    .pc-ref {
+      background: var(--off-white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 10px 16px;
+      font-size: 0.85rem;
+      color: var(--gray-600);
+      margin: 16px 0 28px;
+      display: none;
+    }
+    .pc-ref strong { color: var(--navy); }
+    .pc-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .pc-actions .btn { min-width: 160px; }
+    @media (max-width: 480px) {
+      .pc-card { padding: 32px 20px; }
+      .pc-card h1 { font-size: 1.35rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="pc-wrap">
+    <div class="pc-card">
+      <div class="pc-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M22 4L12 14.01l-3-3" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h1>Payment Received</h1>
+      <p>Thank you — your payment has been processed successfully.</p>
+      <p>A receipt will be sent to your email address shortly. Please keep this for your records.</p>
+      <div class="pc-ref" id="pc-ref-block">
+        <strong>Reference:</strong> <span id="pc-ref-val">—</span>
+      </div>
+      <p style="font-size:0.82rem;color:var(--gray-400);margin-bottom:28px">
+        If you have any questions please call us on <a href="tel:08009757066" style="color:var(--blue)">0800 975 7066</a>.
+      </p>
+      <div class="pc-actions">
+        <a href="/debtor.html" class="btn btn-outline">Return to Portal</a>
+        <a href="/" class="btn btn-primary">Credvanta Home</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* Read POST response data submitted by Taylr and display order reference */
+    (function() {
+      try {
+        const ref = document.referrer; // fallback
+        const params = new URLSearchParams(window.location.search);
+        const orderRef = params.get('orderRef');
+        if (orderRef) {
+          document.getElementById('pc-ref-val').textContent = orderRef;
+          document.getElementById('pc-ref-block').style.display = 'block';
+        }
+      } catch {}
+    })();
+  </script>
+
+</body>
+</html>

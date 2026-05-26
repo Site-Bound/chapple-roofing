@@ -412,81 +412,75 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWDyBaEdV1quwp
 
 
 /* ═══════════════════════════════════════════════════════════════
-   STRIPE PAYMENT PORTAL (DEBTOR — existing section on index)
+   TAYLR PAYMENT — shared helper + homepage portal handler
+   Signs params via /sign-payment (Cloudflare Pages Function),
+   then submits a hidden form to the Taylr hosted payment page.
    ═══════════════════════════════════════════════════════════════ */
-(function initStripePayment() {
-  /* ─────────────────────────────────────────────────────────────
-     TO ACTIVATE:
-     1. Replace pk_live_REPLACE_WITH_YOUR_KEY with the live key
-        from Stripe Dashboard → Developers → API Keys
-     2. Set up /api/create-payment-intent to:
-          a. Look up the connected account ID for the invoice
-          b. Create a PaymentIntent with transfer_data:
-             stripe.paymentIntents.create({
-               amount, currency: 'gbp',
-               transfer_data: { destination: connectedAccountId },
-               application_fee_amount: Math.round(amount * 0.15)
-             })
-          c. Return { clientSecret }
-     ───────────────────────────────────────────────────────────── */
-  const STRIPE_PK = 'pk_live_REPLACE_WITH_YOUR_KEY';
-  if (typeof Stripe === 'undefined' || STRIPE_PK.includes('REPLACE')) return;
 
-  const stripe   = Stripe(STRIPE_PK);
-  const elements = stripe.elements();
-  const cardMount = document.getElementById('card-element');
-  if (!cardMount) return;
+async function taylrPayment({ ref, amount, email, btn, errorEl }) {
+  /* Validate */
+  const amtVal = parseFloat(amount);
+  if (!amount || isNaN(amtVal) || amtVal <= 0) {
+    if (errorEl) { errorEl.textContent = 'Please enter a valid amount.'; errorEl.hidden = false; }
+    return;
+  }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    if (errorEl) { errorEl.textContent = 'Please enter a valid email address for your receipt.'; errorEl.hidden = false; }
+    return;
+  }
 
-  // Remove placeholder, mount real Stripe element
-  cardMount.innerHTML = '';
-  const card = elements.create('card', {
-    style: {
-      base: { fontFamily: "'Outfit',system-ui,sans-serif", fontSize: '15px', color: '#1E293B', '::placeholder': { color: '#94A3B8' } },
-      invalid: { color: '#ef4444' },
-    },
-  });
-  card.mount('#card-element');
-  card.on('change', e => {
-    document.getElementById('card-errors').textContent = e.error?.message || '';
-  });
-  card.on('ready', () => {
-    const btn = document.getElementById('pay-btn');
-    if (btn) btn.disabled = false;
-  });
+  const origHTML = btn.innerHTML;
+  btn.disabled   = true;
+  btn.innerHTML  = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" opacity=".3"/><path d="M12 2a10 10 0 0110 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="animation:spin .8s linear infinite;transform-origin:center"/></svg> Redirecting…';
+  if (errorEl) errorEl.hidden = true;
 
-  // Apple Pay / Google Pay
-  const amount = () => Math.round(parseFloat(document.getElementById('pay-amount')?.value || '0') * 100);
-  const pr = stripe.paymentRequest({ country: 'GB', currency: 'gbp', total: { label: 'Invoice Payment', amount: 0 }, requestPayerEmail: true });
-  const prBtn = elements.create('paymentRequestButton', { paymentRequest: pr, style: { paymentRequestButton: { theme: 'dark', height: '44px' } } });
-  pr.canMakePayment().then(r => {
-    if (r) { document.getElementById('pay-divider').hidden = false; prBtn.mount('#payment-request-button'); }
-  });
+  try {
+    const res = await fetch('/sign-payment', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ amount: String(amtVal), ref: String(ref), email: email.trim() }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const { endpoint, params, error } = await res.json();
+    if (error) throw new Error(error);
 
-  document.getElementById('pay-btn')?.addEventListener('click', async () => {
-    const btn = document.getElementById('pay-btn');
-    const amt = amount();
-    if (!amt) { document.getElementById('card-errors').textContent = 'Please enter the invoice amount.'; return; }
-    btn.disabled = true;
-    btn.textContent = 'Processing…';
-    try {
-      const { clientSecret } = await fetch('/api/create-payment-intent', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: amt, invoiceNumber: document.getElementById('pay-invoice-num')?.value }),
-      }).then(r => r.json());
-      const { error } = await stripe.confirmCardPayment(clientSecret, { payment_method: { card } });
-      if (error) {
-        document.getElementById('card-errors').textContent = error.message;
-        btn.disabled = false;
-        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Pay Securely';
-      } else {
-        document.getElementById('stripe-payment-form').hidden = true;
-        document.getElementById('payment-success').hidden = false;
-        document.querySelector('.portal-coming-soon')?.remove();
-      }
-    } catch {
-      document.getElementById('card-errors').textContent = 'Something went wrong. Please try again or call us.';
-      btn.disabled = false;
+    /* Build and submit hidden form — browser navigates to Taylr HPP */
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = endpoint;
+    form.style.display = 'none';
+    for (const [k, v] of Object.entries(params)) {
+      const inp = document.createElement('input');
+      inp.type = 'hidden'; inp.name = k; inp.value = v;
+      form.appendChild(inp);
     }
+    document.body.appendChild(form);
+    form.submit();
+  } catch {
+    btn.disabled  = false;
+    btn.innerHTML = origHTML;
+    if (errorEl) {
+      errorEl.textContent = 'Payment could not be started. Please try again or call us on 0800 975 7066.';
+      errorEl.hidden = false;
+    }
+  }
+}
+
+/* Homepage portal payment handler */
+(function initTaylrPayment() {
+  const payBtn = document.getElementById('pay-btn');
+  if (!payBtn) return;
+
+  payBtn.disabled = false;
+
+  payBtn.addEventListener('click', () => {
+    taylrPayment({
+      ref:     document.getElementById('pay-invoice-num')?.value?.trim() || '',
+      amount:  document.getElementById('pay-amount')?.value              || '',
+      email:   document.getElementById('pay-email')?.value               || '',
+      btn:     payBtn,
+      errorEl: document.getElementById('card-errors'),
+    });
   });
 })();
 

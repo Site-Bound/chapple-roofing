@@ -602,25 +602,14 @@
                 </div>
               </div>
 
-              <div id="payment-request-button" class="payment-request-btn-wrap"></div>
-              <div class="pay-divider" id="pay-divider" hidden><span>or pay by card</span></div>
-
               <div class="form-group">
-                <label>Card Details</label>
-                <div id="card-element" class="stripe-card-element">
-                  <div class="stripe-placeholder" aria-hidden="true">
-                    <span class="stripe-placeholder-text">Secure card entry</span>
-                    <div class="stripe-placeholder-icons">
-                      <svg viewBox="0 0 38 24" width="38" height="24" role="img" aria-label="Visa"><rect width="38" height="24" rx="4" fill="#1A1F71"/><text x="19" y="16" font-size="9" font-weight="700" fill="white" text-anchor="middle" font-family="sans-serif">VISA</text></svg>
-                      <svg viewBox="0 0 38 24" width="38" height="24" role="img" aria-label="Mastercard"><rect width="38" height="24" rx="4" fill="#252525"/><circle cx="15" cy="12" r="7" fill="#EB001B"/><circle cx="23" cy="12" r="7" fill="#F79E1B"/><path d="M19 7.4a7 7 0 010 9.2A7 7 0 0119 7.4z" fill="#FF5F00"/></svg>
-                      <svg viewBox="0 0 38 24" width="38" height="24" role="img" aria-label="Amex"><rect width="38" height="24" rx="4" fill="#2557D6"/><text x="19" y="16" font-size="7" font-weight="700" fill="white" text-anchor="middle" font-family="sans-serif">AMEX</text></svg>
-                    </div>
-                  </div>
-                </div>
-                <div id="card-errors" class="card-error" role="alert" aria-live="polite"></div>
+                <label for="pay-email">Your Email (for receipt) <span aria-hidden="true">*</span></label>
+                <input type="email" id="pay-email" placeholder="you@example.com" required>
               </div>
 
-              <button type="button" id="pay-btn" class="btn btn-submit" disabled>
+              <div id="card-errors" class="lookup-msg lookup-msg--error" role="alert" aria-live="polite" hidden></div>
+
+              <button type="button" id="pay-btn" class="btn btn-submit">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 Pay Securely
               </button>
