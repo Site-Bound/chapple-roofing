@@ -32,20 +32,26 @@ export async function onRequestGet(context) {
     /* Build a URL-encoded body exactly as a browser form POST would */
     const body = new URLSearchParams(params).toString();
 
+    /* Use redirect:'manual' so we capture the redirect response rather than
+       following it — this lets us see the Location header Taylr sends back */
     const taylrRes = await fetch(TAYLR_ENDPOINT, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      method:   'POST',
+      headers:  { 'Content-Type': 'application/x-www-form-urlencoded' },
       body,
+      redirect: 'manual',
     });
 
-    const responseText = await taylrRes.text();
+    const responseText = await taylrRes.text().catch(() => '(no body)');
 
     const debug = {
-      taylr_status:   taylrRes.status,
-      taylr_headers:  Object.fromEntries(taylrRes.headers.entries()),
-      taylr_body:     responseText,
-      params_sent:    params,
-      body_sent:      body,
+      endpoint_called: TAYLR_ENDPOINT,
+      taylr_status:    taylrRes.status,
+      taylr_type:      taylrRes.type,      // 'opaqueredirect' means a redirect was returned
+      redirect_location: taylrRes.headers.get('location') || null,
+      taylr_headers:   Object.fromEntries(taylrRes.headers.entries()),
+      taylr_body:      responseText.slice(0, 2000), // trim huge HTML
+      params_sent:     params,
+      body_sent:       body,
     };
 
     return new Response(JSON.stringify(debug, null, 2), {
