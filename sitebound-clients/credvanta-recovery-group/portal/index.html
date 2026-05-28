@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Client Login | Credvanta Recovery Group</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="../images/favicon.png">
+  <link rel="stylesheet" href="css/portal.css">
+</head>
+<body class="auth-page" data-page="login">
+
+  <div class="auth-card">
+    <div class="auth-card-header">
+      <img src="../images/credvanta-logo.png" alt="Credvanta Recovery Group" class="auth-logo">
+      <p>Client Portal</p>
+    </div>
+
+    <div class="auth-card-body">
+      <h2>Sign in to your account</h2>
+      <p class="auth-subtitle">Enter your client reference and password to continue.</p>
+
+      <div class="alert alert-error" id="login-error" hidden>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 8v4m0 4h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span id="login-error-text">Invalid credentials.</span>
+      </div>
+
+      <form id="login-form" novalidate>
+        <div class="form-group">
+          <label for="client-ref">Client Reference</label>
+          <input type="text" id="client-ref" name="clientRef" placeholder="e.g. CRG-001"
+            autocomplete="username" autocapitalize="characters" required>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password"
+            autocomplete="current-password" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="login-btn">
+          Sign In
+        </button>
+      </form>
+    </div>
+
+    <div class="auth-footer">
+      <a href="reset.html">Forgot your password?</a>
+    </div>
+  </div>
+
+  <script src="js/portal.js"></script>
+</body>
+</html>

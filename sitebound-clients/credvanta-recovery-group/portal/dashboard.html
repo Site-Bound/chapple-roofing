@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Client Portal | Credvanta Recovery Group</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="../images/favicon.png">
+  <link rel="stylesheet" href="css/portal.css">
+</head>
+<body class="portal-page" data-page="dashboard">
+
+  <!-- Top bar -->
+  <header class="portal-topbar">
+    <div class="topbar-logo">
+      <img src="../images/credvanta-logo.png" alt="Credvanta Recovery Group">
+      <div class="topbar-client">
+        <strong id="topbar-name">Loading…</strong>
+        Client Portal
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn-logout" id="logout-btn">Sign Out</button>
+    </div>
+  </header>
+
+  <!-- Tabs -->
+  <nav class="portal-tabs" role="tablist">
+    <button class="tab-btn active" data-tab="submit" role="tab" aria-selected="true">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="margin-right:6px;vertical-align:-2px"><path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Submit New Debt
+    </button>
+    <button class="tab-btn" data-tab="cases" role="tab" aria-selected="false">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="margin-right:6px;vertical-align:-2px"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="2"/><path d="M7 9h10M7 13h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      My Cases
+      <span id="cases-count" class="badge badge-active" style="margin-left:6px;display:none"></span>
+    </button>
+  </nav>
+
+  <!-- Content -->
+  <main class="portal-content">
+
+    <!-- ── Submit Panel ── -->
+    <div class="tab-panel active" id="panel-submit" role="tabpanel">
+      <h1 class="panel-title">Submit a New Debt</h1>
+      <p class="panel-subtitle">Fill in the debtor's details and attach any supporting documents. We'll pick this up and be in touch.</p>
+
+      <div id="submit-success" class="success-panel">
+        <div class="success-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h2>Case Submitted</h2>
+        <p>Your case has been received and will be picked up by our team shortly. You can track its progress in the My Cases tab.</p>
+        <button class="btn btn-outline" id="submit-another-btn">Submit Another</button>
+      </div>
+
+      <form id="submit-form" novalidate>
+        <div class="alert alert-error" id="submit-error" hidden>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 8v4m0 4h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span id="submit-error-text">Something went wrong.</span>
+        </div>
+
+        <div class="submit-card">
+
+          <!-- Debtor Details -->
+          <div class="submit-section">
+            <p class="submit-section-title">Debtor Details</p>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="debtor-name">Debtor Name <span style="color:#DC2626">*</span></label>
+                <input type="text" id="debtor-name" name="debtorName" placeholder="Full name" required>
+              </div>
+              <div class="form-group">
+                <label for="debtor-company">Company Name</label>
+                <input type="text" id="debtor-company" name="debtorCompany" placeholder="If applicable">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="debtor-email">Email Address</label>
+                <input type="email" id="debtor-email" name="debtorEmail" placeholder="debtor@example.com">
+              </div>
+              <div class="form-group">
+                <label for="debtor-phone">Phone Number</label>
+                <input type="tel" id="debtor-phone" name="debtorPhone" placeholder="+44 7700 000000">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="debtor-address">Address</label>
+              <textarea id="debtor-address" name="debtorAddress" rows="2" placeholder="Full postal address"></textarea>
+            </div>
+          </div>
+
+          <!-- Debt Details -->
+          <div class="submit-section">
+            <p class="submit-section-title">Debt Details</p>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="amount-owed">Amount Owed (£) <span style="color:#DC2626">*</span></label>
+                <input type="number" id="amount-owed" name="amountOwed" min="1" step="0.01" placeholder="0.00" required>
+              </div>
+              <div class="form-group">
+                <label for="invoice-number">Invoice Number</label>
+                <input type="text" id="invoice-number" name="invoiceNumber" placeholder="INV-001">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="invoice-date">Invoice Date</label>
+                <input type="date" id="invoice-date" name="invoiceDate">
+              </div>
+              <div class="form-group" style="grid-column:1/-1">
+                <label for="description">Additional Notes</label>
+                <textarea id="description" name="description" rows="3" placeholder="Any background on the debt, payment history, or other context…"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Documents -->
+          <div class="submit-section">
+            <p class="submit-section-title">Supporting Documents</p>
+            <div class="file-drop" id="file-drop">
+              <input type="file" id="file-input" name="files" multiple
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.webp,.txt">
+              <div class="file-drop-icon">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none"><path d="M14 3v4a1 1 0 001 1h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M17 21H7a2 2 0 01-2-2V5a2 2 0 012-2h7l5 5v11a2 2 0 01-2 2z" stroke="currentColor" stroke-width="1.5"/><path d="M9 12h6M9 16h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+              <p><strong>Drop files here</strong> or click to browse</p>
+              <p class="file-hint">PDF, Word, Excel, images · Max 10MB per file</p>
+            </div>
+            <ul class="file-list" id="file-list"></ul>
+          </div>
+
+          <!-- Actions -->
+          <div class="submit-actions">
+            <button type="button" class="btn btn-secondary" id="clear-form-btn">Clear</button>
+            <button type="submit" class="btn btn-primary" id="submit-btn">
+              Submit Case
+            </button>
+          </div>
+
+        </div>
+      </form>
+    </div>
+
+    <!-- ── Cases Panel ── -->
+    <div class="tab-panel" id="panel-cases" role="tabpanel">
+      <h1 class="panel-title">My Cases</h1>
+      <p class="panel-subtitle">All debts you've submitted. Status updates are made by the Credvanta team.</p>
+
+      <div id="cases-loading" class="loading-state">
+        <div class="spinner" style="border-color:rgba(0,0,0,.15);border-top-color:var(--navy);width:28px;height:28px;border-width:3px"></div>
+      </div>
+
+      <div id="cases-empty" class="cases-empty" style="display:none">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 9h10M7 13h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <p>No cases submitted yet. Use the Submit tab to add your first debt.</p>
+      </div>
+
+      <div id="cases-grid" class="cases-grid" style="display:none"></div>
+    </div>
+
+  </main>
+
+  <script src="js/portal.js"></script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reset Password | Credvanta Recovery Group</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="../images/favicon.png">
+  <link rel="stylesheet" href="css/portal.css">
+</head>
+<body class="auth-page" data-page="reset">
+
+  <div class="auth-card">
+    <div class="auth-card-header">
+      <img src="../images/credvanta-logo.png" alt="Credvanta Recovery Group" class="auth-logo">
+      <p>Client Portal</p>
+    </div>
+
+    <div class="auth-card-body" id="reset-form-wrap">
+      <h2>Reset your password</h2>
+      <p class="auth-subtitle">Enter your registered email address and we'll send you a reset link.</p>
+
+      <div class="alert alert-error" id="reset-error" hidden>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 8v4m0 4h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span id="reset-error-text">Something went wrong.</span>
+      </div>
+
+      <form id="reset-form" novalidate>
+        <div class="form-group">
+          <label for="reset-email">Email Address</label>
+          <input type="email" id="reset-email" name="email"
+            placeholder="your@email.com" autocomplete="email" required>
+        </div>
+        <button type="submit" class="btn btn-primary" id="reset-btn">Send Reset Link</button>
+      </form>
+    </div>
+
+    <div class="auth-card-body" id="reset-success-wrap" style="display:none">
+      <div style="text-align:center;padding:8px 0">
+        <div class="success-icon" style="margin:0 auto 16px">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h2 style="color:var(--navy);margin-bottom:8px">Check your email</h2>
+        <p style="color:var(--gray-600);font-size:.875rem;margin-bottom:20px">
+          If that email address is registered, you'll receive a reset link shortly. It expires in one hour.
+        </p>
+      </div>
+    </div>
+
+    <div class="auth-footer">
+      <a href="index.html">← Back to sign in</a>
+    </div>
+  </div>
+
+  <script src="js/portal.js"></script>
+</body>
+</html>
