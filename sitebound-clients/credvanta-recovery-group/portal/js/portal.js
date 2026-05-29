@@ -8,6 +8,70 @@ const TOKEN_KEY = 'crg_portal_token';
 const CLIENT_REF_KEY = 'crg_portal_ref';
 const CLIENT_NAME_KEY = 'crg_portal_name';
 
+/* ── Demo mode ───────────────────────────────────────────────
+   Credentials: Client Reference = DEMO  /  Password = demo1234
+   Bypasses all API calls and renders mock data so the portal
+   can be reviewed before Supabase is configured.
+   ──────────────────────────────────────────────────────────── */
+const DEMO_TOKEN = '__DEMO__';
+const DEMO_REF   = 'DEMO';
+const DEMO_PASS  = 'demo1234';
+
+function isDemo() {
+  return localStorage.getItem(TOKEN_KEY) === DEMO_TOKEN;
+}
+
+const DEMO_CASES = [
+  {
+    id: 'demo-1',
+    debtor_name:       'Smith Engineering Ltd',
+    debtor_company:    'Smith Engineering Ltd',
+    amount_owed:       4200.00,
+    invoice_number:    'INV-2024-0341',
+    status:            'active',
+    status_notes:      'Initial contact has been made with the debtor. They have acknowledged the debt and we are awaiting a payment proposal.',
+    status_updated_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    submitted_at:      new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
+    documents: [{ filename: 'Invoice-INV-2024-0341.pdf' }, { filename: 'Delivery-Note.pdf' }],
+  },
+  {
+    id: 'demo-2',
+    debtor_name:       'Riverside Contractors',
+    debtor_company:    null,
+    amount_owed:       8750.00,
+    invoice_number:    'INV-2024-0298',
+    status:            'letter_sent',
+    status_notes:      'A formal Letter Before Action has been sent by recorded delivery. The debtor has 7 days to respond before legal proceedings are considered.',
+    status_updated_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    submitted_at:      new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString(),
+    documents: [{ filename: 'Invoice-INV-2024-0298.pdf' }],
+  },
+  {
+    id: 'demo-3',
+    debtor_name:       'Apex Media Group',
+    debtor_company:    'Apex Media Group PLC',
+    amount_owed:       1850.00,
+    invoice_number:    null,
+    status:            'submitted',
+    status_notes:      null,
+    status_updated_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    submitted_at:      new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    documents: [],
+  },
+  {
+    id: 'demo-4',
+    debtor_name:       'Johnson & Partners',
+    debtor_company:    null,
+    amount_owed:       3100.00,
+    invoice_number:    'INV-2024-0187',
+    status:            'settled',
+    status_notes:      'Full payment of £3,100.00 received on 12 May 2025. This case is now closed.',
+    status_updated_at: new Date(Date.now() - 18 * 24 * 60 * 60 * 1000).toISOString(),
+    submitted_at:      new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
+    documents: [{ filename: 'Invoice-INV-2024-0187.pdf' }, { filename: 'Signed-Agreement.pdf' }],
+  },
+];
+
 /* ── Utility ─────────────────────────────────────────────── */
 
 function apiUrl(path) {
@@ -134,6 +198,13 @@ function initLogin() {
 
     if (!clientRef || !password) {
       showError(errBox, errText, 'Please enter your client reference and password.');
+      return;
+    }
+
+    // Demo mode — no API call needed
+    if (clientRef === DEMO_REF && password === DEMO_PASS) {
+      saveSession(DEMO_TOKEN, DEMO_REF, 'Demo Account');
+      window.location.replace('dashboard.html');
       return;
     }
 
@@ -531,6 +602,32 @@ async function loadCases(token) {
   const grid       = document.getElementById('cases-grid');
   const countBadge = document.getElementById('cases-count');
   const searchWrap = document.getElementById('cases-search-wrap');
+
+  // Demo mode — skip API, use mock data
+  if (isDemo()) {
+    loading.style.display = 'none';
+    _allCases = DEMO_CASES;
+    const activeCount = _allCases.filter(c => !['settled','closed'].includes(c.status)).length;
+    countBadge.textContent   = activeCount;
+    countBadge.style.display = activeCount > 0 ? '' : 'none';
+    if (searchWrap) searchWrap.style.display = '';
+    renderCasesGrid(_allCases);
+    const searchInput = document.getElementById('cases-search');
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        const q = searchInput.value.trim().toLowerCase();
+        if (!q) { if (noResults) noResults.style.display = 'none'; renderCasesGrid(_allCases); return; }
+        const filtered = _allCases.filter(c =>
+          (c.debtor_name || '').toLowerCase().includes(q) ||
+          (c.debtor_company || '').toLowerCase().includes(q) ||
+          (c.invoice_number || '').toLowerCase().includes(q)
+        );
+        if (filtered.length === 0) { grid.style.display = 'none'; if (noResults) noResults.style.display = ''; }
+        else { if (noResults) noResults.style.display = 'none'; renderCasesGrid(filtered); }
+      });
+    }
+    return;
+  }
 
   try {
     const res = await fetch(apiUrl('cases'), {
