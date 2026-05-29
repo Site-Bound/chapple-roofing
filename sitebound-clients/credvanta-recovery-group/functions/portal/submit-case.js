@@ -2,7 +2,10 @@
    Fields: debtorName, debtorCompany, debtorEmail, debtorPhone,
            debtorAddress, amountOwed, invoiceNumber, invoiceDate,
            description, files[] (optional)
-   Returns { caseId } on success */
+   Returns { caseId } on success.
+   Files are base64-encoded and sent to Google Sheets in the same format
+   as the main site's Start a Claim form, AND uploaded to Supabase Storage
+   so they are accessible in the portal case history view. */
 
 import { corsHeaders, json, err, onRequestOptions, verifySession, getBearer, sb }
   from './_shared.js';
@@ -17,6 +20,18 @@ const ALLOWED_TYPES   = ['application/pdf','application/msword',
   'image/jpeg','image/png','image/gif','image/webp','text/plain'];
 const MAX_FILE_SIZE   = 10 * 1024 * 1024; // 10MB per file
 
+/* Convert an ArrayBuffer to a base64 string (CF Workers have no FileReader).
+   Processes in chunks to avoid call-stack limits on large files. */
+function arrayBufferToBase64(buffer) {
+  const bytes     = new Uint8Array(buffer);
+  const chunkSize = 8192;
+  let binary      = '';
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
+}
+
 export async function onRequestPost(context) {
   const { request: req, env } = context;
 
@@ -25,6 +40,10 @@ export async function onRequestPost(context) {
     const token     = getBearer(req);
     const clientRef = token ? await verifySession(token, env.PORTAL_SESSION_SECRET) : null;
     if (!clientRef) return err('Unauthorised.', 401, req);
+
+    // Fetch the client's stored name and email — used as creditor fields in the Sheet
+    const clients = await sb(env).select('portal_clients', { client_ref: clientRef }, 'full_name,email');
+    const client  = clients[0] || {};
 
     // Parse multipart form
     const form = await req.formData();
@@ -49,23 +68,35 @@ export async function onRequestPost(context) {
       status:         'submitted',
     };
 
-    // Insert case
+    // Insert case record
     const [newCase] = await sb(env).insert('portal_cases', caseData);
     const caseId    = newCase.id;
 
-    // Handle file uploads
-    const files       = form.getAll('files');
-    const docInserts  = [];
+    // ── Process files ──────────────────────────────────────────
+    // Each valid file is:
+    //   a) base64-encoded for the Google Sheet (same format as main site)
+    //   b) uploaded to Supabase Storage for the portal case history view
+    const rawFiles   = form.getAll('files');
+    const encodedFiles = []; // [{name, type, data}] — matches main site format
+    const docInserts   = [];
 
-    for (const file of files) {
+    for (const file of rawFiles) {
       if (!file || !file.name || file.size === 0) continue;
       if (file.size > MAX_FILE_SIZE) continue;
       if (!ALLOWED_TYPES.includes(file.type)) continue;
 
-      const ext          = file.name.split('.').pop();
-      const storagePath  = `${clientRef}/${caseId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const buffer       = await file.arrayBuffer();
+      const buffer = await file.arrayBuffer();
 
+      // a) Base64 for Google Sheets
+      encodedFiles.push({
+        name: file.name,
+        type: file.type || 'application/octet-stream',
+        data: arrayBufferToBase64(buffer),
+      });
+
+      // b) Supabase Storage
+      const ext         = file.name.split('.').pop();
+      const storagePath = `${clientRef}/${caseId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
       try {
         await sb(env).uploadFile('portal-documents', storagePath, buffer, file.type);
         docInserts.push({
@@ -76,8 +107,8 @@ export async function onRequestPost(context) {
           file_type:    file.type,
         });
       } catch (uploadErr) {
-        console.error('[portal/submit-case] upload error', uploadErr);
-        // Non-fatal — case still saved, just without this file
+        console.error('[portal/submit-case] storage upload error', uploadErr);
+        // Non-fatal — case and Sheet entry still proceed without this file in Storage
       }
     }
 
@@ -85,24 +116,35 @@ export async function onRequestPost(context) {
       await sb(env).insert('portal_case_documents', docInserts);
     }
 
-    // Push to Google Sheet (same sheet as main case form — no-cors, fire and forget)
-    const sheetData = new FormData();
-    sheetData.append('source',         'client_portal');
-    sheetData.append('client_ref',     clientRef);
-    sheetData.append('debtor_name',    debtorName);
-    sheetData.append('debtor_company', caseData.debtor_company || '');
-    sheetData.append('debtor_email',   caseData.debtor_email   || '');
-    sheetData.append('debtor_phone',   caseData.debtor_phone   || '');
-    sheetData.append('debtor_address', caseData.debtor_address || '');
-    sheetData.append('amount_owed',    String(amountOwed));
-    sheetData.append('invoice_number', caseData.invoice_number || '');
-    sheetData.append('invoice_date',   caseData.invoice_date   || '');
-    sheetData.append('description',    caseData.description    || '');
-    sheetData.append('case_id',        caseId);
-    sheetData.append('submitted_at',   new Date().toISOString());
+    // ── Push to Google Sheet ───────────────────────────────────
+    // Field names match the main site's Start a Claim form so both sources
+    // land in the same Sheet columns. Client details come from their account.
+    const payload = new URLSearchParams({
+      source:      'client_portal',
+      name:        client.full_name  || clientRef,
+      business:    clientRef,
+      email:       client.email      || '',
+      phone:       '',
+      debtor:      debtorName,
+      amount:      String(amountOwed),
+      invoiceDate: caseData.invoice_date   || '',
+      description: caseData.description   || '',
+      files:       JSON.stringify(encodedFiles),
+      // Extra portal fields — ignored by Apps Script if columns not present,
+      // but available for future Sheet expansion
+      debtor_company: caseData.debtor_company || '',
+      debtor_email:   caseData.debtor_email   || '',
+      debtor_phone:   caseData.debtor_phone   || '',
+      debtor_address: caseData.debtor_address || '',
+      invoice_number: caseData.invoice_number || '',
+      case_id:        caseId,
+    });
 
-    fetch(APPS_SCRIPT_URL, { method: 'POST', body: sheetData })
-      .catch(e => console.error('[portal/submit-case] sheets error', e));
+    fetch(APPS_SCRIPT_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body:    payload.toString(),
+    }).catch(e => console.error('[portal/submit-case] sheets error', e));
 
     // Email notification to Credvanta team
     const teamEmail = env.TEAM_EMAIL || 'recover@credvanta.co.uk';
