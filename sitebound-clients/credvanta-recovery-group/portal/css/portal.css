@@ -513,6 +513,43 @@ a:hover { text-decoration: underline; }
 }
 .file-remove:hover { color: #ef4444; }
 
+/* ─── CASES SEARCH ───────────────────────────────────────────── */
+.cases-search-wrap {
+  margin-bottom: 16px;
+}
+
+.cases-search-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--white);
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.cases-search-inner:focus-within {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+}
+
+.cases-search-inner svg { color: var(--gray-400); flex-shrink: 0; }
+
+.cases-search-inner input[type="search"] {
+  border: none;
+  background: none;
+  outline: none;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--gray-800);
+  width: 100%;
+  padding: 0;
+  box-shadow: none;
+}
+
+.cases-search-inner input[type="search"]::placeholder { color: var(--gray-400); }
+
 /* ─── CASES LIST ─────────────────────────────────────────────── */
 .cases-empty {
   text-align: center;
@@ -664,6 +701,75 @@ a:hover { text-decoration: underline; }
 .badge-legal     { background: var(--purple-bg);  color: var(--purple); }
 .badge-settled   { background: var(--green-bg);   color: var(--green); }
 .badge-closed    { background: var(--gray-100);   color: var(--gray-600); }
+
+/* ─── CASE UPDATE BLOCK ──────────────────────────────────────── */
+.case-update {
+  padding: 12px 20px 14px;
+  border-top: 1px solid var(--gray-100);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Contextual status message — mirrors main site lookup-status-msg */
+.case-status-msg {
+  font-size: 0.82rem;
+  line-height: 1.55;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  margin: 0;
+}
+
+.case-status-msg--info {
+  background: var(--blue-pale);
+  border: 1px solid #BFDBFE;
+  color: #1E40AF;
+}
+
+.case-status-msg--warning {
+  background: var(--amber-bg);
+  border: 1px solid #FDE68A;
+  color: #92400E;
+}
+
+.case-status-msg--success {
+  background: var(--green-bg);
+  border: 1px solid #BBF7D0;
+  color: #166534;
+}
+
+/* Team note — the written update from Credvanta staff */
+.case-team-note {
+  background: var(--gray-100);
+  border-left: 3px solid var(--blue);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 10px 14px;
+}
+
+.case-team-note-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--blue);
+  margin-bottom: 6px;
+}
+
+.case-team-note p {
+  font-size: 0.875rem;
+  color: var(--gray-800);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.case-updated-at {
+  font-size: 0.75rem;
+  color: var(--gray-400);
+  margin: 0;
+}
 
 /* ─── SUCCESS STATE ──────────────────────────────────────────── */
 .success-panel {

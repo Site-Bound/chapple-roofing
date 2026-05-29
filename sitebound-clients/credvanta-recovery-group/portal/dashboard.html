@@ -151,13 +151,25 @@
       <h1 class="panel-title">My Cases</h1>
       <p class="panel-subtitle">All debts you've submitted. Status updates are made by the Credvanta team.</p>
 
+      <div class="cases-search-wrap" id="cases-search-wrap" style="display:none">
+        <div class="cases-search-inner">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <input type="search" id="cases-search" placeholder="Search by debtor name or invoice number…" autocomplete="off">
+        </div>
+      </div>
+
       <div id="cases-loading" class="loading-state">
-        <div class="spinner" style="border-color:rgba(0,0,0,.15);border-top-color:var(--navy);width:28px;height:28px;border-width:3px"></div>
+        <div class="spinner"></div>
       </div>
 
       <div id="cases-empty" class="cases-empty" style="display:none">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 9h10M7 13h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         <p>No cases submitted yet. Use the Submit tab to add your first debt.</p>
+      </div>
+
+      <div id="cases-no-results" class="cases-empty" style="display:none">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <p>No cases match your search.</p>
       </div>
 
       <div id="cases-grid" class="cases-grid" style="display:none"></div>

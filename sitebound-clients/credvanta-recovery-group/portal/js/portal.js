@@ -508,16 +508,32 @@ function initSubmitForm(token) {
   });
 }
 
+/* ── Status messages (mirrors main site debtor lookup) ───────── */
+
+const STATUS_MESSAGES = {
+  submitted:   { type: 'info',    text: 'Your case has been received and is being reviewed by our team. We will be in touch shortly.' },
+  active:      { type: 'info',    text: 'Your case is being actively worked on. Our team will keep you updated on progress.' },
+  letter_sent: { type: 'info',    text: 'A formal demand letter has been sent to the debtor. We are awaiting their response.' },
+  in_dispute:  { type: 'warning', text: 'The debtor has raised a dispute. Our team is reviewing the details and will contact you.' },
+  legal:       { type: 'warning', text: 'Your case has been referred for legal action. Our team will update you as proceedings progress.' },
+  settled:     { type: 'success', text: 'This debt has been successfully recovered. Thank you for using Credvanta Recovery Group.' },
+  closed:      { type: 'info',    text: 'This case has been closed. Please contact us if you have any questions.' },
+};
+
 /* ── Cases Panel ─────────────────────────────────────────── */
 
+let _allCases = []; // stored for client-side search filtering
+
 async function loadCases(token) {
-  const loading   = document.getElementById('cases-loading');
-  const empty     = document.getElementById('cases-empty');
-  const grid      = document.getElementById('cases-grid');
+  const loading    = document.getElementById('cases-loading');
+  const empty      = document.getElementById('cases-empty');
+  const noResults  = document.getElementById('cases-no-results');
+  const grid       = document.getElementById('cases-grid');
   const countBadge = document.getElementById('cases-count');
+  const searchWrap = document.getElementById('cases-search-wrap');
 
   try {
-    const res  = await fetch(apiUrl('cases'), {
+    const res = await fetch(apiUrl('cases'), {
       headers: { 'Authorization': `Bearer ${token}` },
     });
 
@@ -528,68 +544,108 @@ async function loadCases(token) {
     }
 
     const data = await res.json();
-
-    if (!res.ok || !Array.isArray(data.cases)) {
-      // Silently fail — user still sees the loading state replaced by empty
-      loading.style.display = 'none';
-      empty.style.display   = '';
-      return;
-    }
-
     loading.style.display = 'none';
 
-    const cases = data.cases;
-
-    // Badge count — show number of active cases
-    const activeCount = cases.filter(c =>
-      !['settled','closed'].includes(c.status)
-    ).length;
-
-    if (activeCount > 0) {
-      countBadge.textContent    = activeCount;
-      countBadge.style.display  = '';
-    } else {
-      countBadge.style.display  = 'none';
-    }
-
-    if (cases.length === 0) {
+    if (!res.ok || !Array.isArray(data.cases)) {
       empty.style.display = '';
-      grid.style.display  = 'none';
       return;
     }
 
-    grid.style.display = '';
-    grid.innerHTML     = cases.map(c => renderCaseCard(c)).join('');
+    _allCases = data.cases;
 
-    // Expand/collapse documents
-    grid.querySelectorAll('.case-docs-toggle').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const docList = btn.closest('.case-card').querySelector('.case-doc-list');
-        const open    = docList.style.display !== 'none';
-        docList.style.display  = open ? 'none' : '';
-        btn.textContent = open ? `Show ${btn.dataset.count} document${btn.dataset.count === '1' ? '' : 's'}` : 'Hide documents';
+    // Badge — open (non-settled/closed) case count
+    const activeCount = _allCases.filter(c => !['settled', 'closed'].includes(c.status)).length;
+    countBadge.textContent   = activeCount;
+    countBadge.style.display = activeCount > 0 ? '' : 'none';
+
+    if (_allCases.length === 0) {
+      empty.style.display = '';
+      return;
+    }
+
+    // Show search bar once more than one case exists
+    if (_allCases.length > 1 && searchWrap) searchWrap.style.display = '';
+
+    renderCasesGrid(_allCases);
+
+    // Wire up search
+    const searchInput = document.getElementById('cases-search');
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        const q = searchInput.value.trim().toLowerCase();
+        if (!q) {
+          if (noResults) noResults.style.display = 'none';
+          renderCasesGrid(_allCases);
+          return;
+        }
+        const filtered = _allCases.filter(c =>
+          (c.debtor_name    || '').toLowerCase().includes(q) ||
+          (c.debtor_company || '').toLowerCase().includes(q) ||
+          (c.invoice_number || '').toLowerCase().includes(q)
+        );
+        if (filtered.length === 0) {
+          grid.style.display                         = 'none';
+          if (noResults) noResults.style.display     = '';
+        } else {
+          if (noResults) noResults.style.display     = 'none';
+          renderCasesGrid(filtered);
+        }
       });
-    });
+    }
   } catch {
     loading.style.display = 'none';
     empty.style.display   = '';
   }
 }
 
-function renderCaseCard(c) {
-  const docsHtml = buildDocsHtml(c.documents || []);
+function renderCasesGrid(cases) {
+  const grid = document.getElementById('cases-grid');
+  grid.style.display = '';
+  grid.innerHTML = cases.map(c => renderCaseCard(c)).join('');
 
+  grid.querySelectorAll('.case-docs-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const docList = btn.closest('.case-card').querySelector('.case-doc-list');
+      const open    = docList.style.display !== 'none';
+      docList.style.display = open ? 'none' : '';
+      btn.textContent = open
+        ? `Show ${btn.dataset.count} document${btn.dataset.count === '1' ? '' : 's'}`
+        : 'Hide documents';
+    });
+  });
+}
+
+function renderCaseCard(c) {
   const invoiceRow = c.invoice_number
     ? `<div class="case-meta-row"><span class="case-meta-label">Invoice</span><span>${escHtml(c.invoice_number)}</span></div>`
     : '';
 
-  const dateRow = c.invoice_date
-    ? `<div class="case-meta-row"><span class="case-meta-label">Invoice Date</span><span>${formatDate(c.invoice_date)}</span></div>`
+  // Contextual status message — same pattern as main site debtor lookup
+  const msgDef = STATUS_MESSAGES[c.status];
+  const msgTypeClass = msgDef
+    ? { info: 'case-status-msg--info', warning: 'case-status-msg--warning', success: 'case-status-msg--success' }[msgDef.type] || ''
     : '';
 
-  const notesRow = c.description
-    ? `<div class="case-notes">${escHtml(c.description)}</div>`
-    : '';
+  const updatedAt = c.status_updated_at ? formatDate(c.status_updated_at) : null;
+
+  const updateBlock = `
+    <div class="case-update">
+      ${msgDef
+        ? `<p class="case-status-msg ${msgTypeClass}">${msgDef.text}</p>`
+        : ''}
+      ${c.status_notes
+        ? `<div class="case-team-note">
+            <span class="case-team-note-label">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 8v4m0 4h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              Latest update from Credvanta
+            </span>
+            <p>${escHtml(c.status_notes)}</p>
+          </div>`
+        : ''}
+      ${updatedAt
+        ? `<p class="case-updated-at">Last updated ${updatedAt}</p>`
+        : ''}
+    </div>`;
 
   return `
     <div class="case-card">
@@ -603,24 +659,21 @@ function renderCaseCard(c) {
       <div class="case-meta">
         <div class="case-meta-row"><span class="case-meta-label">Submitted</span><span>${formatDate(c.submitted_at)}</span></div>
         ${invoiceRow}
-        ${dateRow}
       </div>
-      ${notesRow}
-      ${docsHtml}
+      ${updateBlock}
+      ${buildDocsHtml(c.documents || [])}
     </div>`;
 }
 
 function buildDocsHtml(docs) {
-  if (!docs.length) return '';
-
+  if (!docs || !docs.length) return '';
   const count = docs.length;
   const items = docs.map(d =>
     `<li class="case-doc-item">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M14 3v4a1 1 0 001 1h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M17 21H7a2 2 0 01-2-2V5a2 2 0 012-2h7l5 5v11a2 2 0 01-2 2z" stroke="currentColor" stroke-width="1.5"/></svg>
-      ${escHtml(d.file_name)}
+      ${escHtml(d.filename || d.file_name || '')}
     </li>`
   ).join('');
-
   return `
     <div class="case-docs">
       <button type="button" class="case-docs-toggle" data-count="${count}">
