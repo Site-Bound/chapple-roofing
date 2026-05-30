@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function initLogin() {
   // Already logged in? Go straight to dashboard
   if (getToken()) {
-    window.location.replace('dashboard.html');
+    window.location.replace('/portal/dashboard');
     return;
   }
 
@@ -204,7 +204,7 @@ function initLogin() {
     // Demo mode — no API call needed
     if (clientRef === DEMO_REF && password === DEMO_PASS) {
       saveSession(DEMO_TOKEN, DEMO_REF, 'Demo Account');
-      window.location.replace('dashboard.html');
+      window.location.replace('/portal/dashboard');
       return;
     }
 
@@ -224,7 +224,7 @@ function initLogin() {
       }
 
       saveSession(data.token, data.clientRef, data.fullName);
-      window.location.replace('dashboard.html');
+      window.location.replace('/portal/dashboard');
     } catch {
       showError(errBox, errText, 'Could not connect. Please check your connection and try again.');
     } finally {
@@ -342,7 +342,7 @@ function initSetPassword() {
       // Success — redirect to login with a small delay so user sees the button change
       btn.textContent = 'Password updated!';
       setTimeout(() => {
-        window.location.replace('index.html');
+        window.location.replace('/portal/');
       }, 1200);
     } catch {
       showError(errBox, errText, 'Could not connect. Please check your connection and try again.');
@@ -356,7 +356,7 @@ function initSetPassword() {
 function initDashboard() {
   const token = getToken();
   if (!token) {
-    window.location.replace('index.html');
+    window.location.replace('/portal/');
     return;
   }
 
@@ -366,7 +366,7 @@ function initDashboard() {
   // Logout
   document.getElementById('logout-btn').addEventListener('click', () => {
     clearSession();
-    window.location.replace('index.html');
+    window.location.replace('/portal/');
   });
 
   // Tab switching
@@ -556,7 +556,7 @@ function initSubmitForm(token) {
       if (res.status === 401) {
         // Session expired
         clearSession();
-        window.location.replace('index.html');
+        window.location.replace('/portal/');
         return;
       }
 
@@ -636,7 +636,7 @@ async function loadCases(token) {
 
     if (res.status === 401) {
       clearSession();
-      window.location.replace('index.html');
+      window.location.replace('/portal/');
       return;
     }
 
