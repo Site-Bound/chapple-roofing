@@ -538,6 +538,13 @@ function isCaseClosed(status) {
   return s.includes('closed') || s.includes('settled') || s.includes('paid');
 }
 
+/* Returns true for statuses where payment must be blocked entirely */
+function isPaymentBlocked(status) {
+  if (!status) return false;
+  const s = status.toLowerCase();
+  return s.includes('dispute') || s.includes('consumer');
+}
+
 /* Returns { type: 'success'|'info'|'warning', html: '...' } or null (no message needed) */
 function getStatusMessage(status, balance) {
   const s = (status || '').toLowerCase();
@@ -564,6 +571,12 @@ function getStatusMessage(status, balance) {
     return {
       type: 'info',
       html: 'A <strong>partial payment</strong> has been received on this account. The remaining balance is shown above. You are welcome to make additional payments towards this balance at any time.'
+    };
+  }
+  if (s.includes('consumer')) {
+    return {
+      type: 'error',
+      html: '<strong>Unable to Process Payment</strong><br><br>This account has been marked as a consumer debt and returned to our client, as Credvanta Recovery Group only handles business-to-business (B2B) debts involving incorporated businesses.<br><br>Please contact our client directly to resolve this matter. If you believe this is incorrect, please contact our team on <a href="tel:08009757066">0800 975 7066</a>.'
     };
   }
   if (s.includes('dispute')) {
@@ -639,9 +652,9 @@ function getStatusMessage(status, balance) {
       const balance = parseFloat(record.current_balance) || 0;
       document.getElementById('idx-lk-balance').textContent = formatGBP(balance);
 
-      /* Show payment option only when money is still owed */
-      const settled = balance <= 0;
-      document.getElementById('idx-lk-pay-action').hidden = settled;
+      /* Show payment option only when money is still owed and status allows payment */
+      const blockPayment = balance <= 0 || isPaymentBlocked(record.status);
+      document.getElementById('idx-lk-pay-action').hidden = blockPayment;
 
       /* Dynamic status message */
       const msgEl     = document.getElementById('idx-lk-status-msg');

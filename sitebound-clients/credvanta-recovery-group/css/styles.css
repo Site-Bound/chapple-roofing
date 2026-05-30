@@ -1919,6 +1919,15 @@ blockquote cite span { font-size: 0.82rem; color: var(--gray-400); }
 }
 .lookup-status-msg--warning a { color: #92400E; }
 
+/* Hard block — consumer debt / cannot accept payment */
+.lookup-status-msg--error {
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  color: #991B1B;
+}
+.lookup-status-msg--error strong { color: #7F1D1D; }
+.lookup-status-msg--error a { color: #991B1B; }
+
 .input-readonly { background: var(--gray-100); color: var(--gray-600); cursor: default; }
 
 /* Ensure hidden state divs are never overridden by a competing display rule */

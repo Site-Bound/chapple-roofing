@@ -232,9 +232,9 @@ function validateModal(fields) {
       const balanceEl = document.getElementById('lk-balance');
       balanceEl.textContent = formatGBP(balance);
 
-      /* Show payment option only when money is still owed */
-      const settled = balance <= 0;
-      document.getElementById('lk-pay-action').hidden = settled;
+      /* Show payment option only when money is still owed and status allows payment */
+      const blockPayment = balance <= 0 || isPaymentBlocked(record.status);
+      document.getElementById('lk-pay-action').hidden = blockPayment;
 
       /* Dynamic status message */
       const msgEl     = document.getElementById('lk-status-msg');
