@@ -676,7 +676,7 @@ function getStatusMessage(status, balance) {
       const amtHintEl  = document.getElementById('pay-amount-hint');
       const amtFullEl  = document.getElementById('pay-amount-full');
       if (invEl) invEl.value = ref;
-      if (!settled && amtEl) {
+      if (!blockPayment && amtEl) {
         amtEl.value = balance.toFixed(2);
         amtEl.max   = balance.toFixed(2);
         if (amtFullEl) amtFullEl.textContent = formatGBP(balance);

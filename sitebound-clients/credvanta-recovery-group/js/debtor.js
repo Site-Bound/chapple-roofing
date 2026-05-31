@@ -256,7 +256,7 @@ function validateModal(fields) {
       const amountHint    = document.getElementById('d-amount-hint');
       const amountFull    = document.getElementById('d-amount-full');
       if (invoiceField) invoiceField.value = ref;
-      if (!settled && amountField) {
+      if (!blockPayment && amountField) {
         amountField.value = balance.toFixed(2);
         amountField.max   = balance.toFixed(2);
         if (amountFull) amountFull.textContent = formatGBP(balance);
