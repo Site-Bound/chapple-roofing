@@ -609,6 +609,12 @@ a:hover { text-decoration: underline; }
   color: var(--blue);
   line-height: 1;
 }
+.case-balance-remaining {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--gray-500);
+}
 
 .case-meta {
   display: flex;

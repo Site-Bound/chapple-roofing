@@ -21,54 +21,43 @@ function isDemo() {
   return localStorage.getItem(TOKEN_KEY) === DEMO_TOKEN;
 }
 
+// Demo cases use live_cases field names so the same renderCaseCard works for both
 const DEMO_CASES = [
   {
-    id: 'demo-1',
-    debtor_name:       'Smith Engineering Ltd',
-    debtor_company:    'Smith Engineering Ltd',
-    amount_owed:       4200.00,
-    invoice_number:    'INV-2024-0341',
-    status:            'active',
-    status_notes:      'Initial contact has been made with the debtor. They have acknowledged the debt and we are awaiting a payment proposal.',
-    status_updated_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    submitted_at:      new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
-    documents: [{ filename: 'Invoice-INV-2024-0341.pdf' }, { filename: 'Delivery-Note.pdf' }],
+    case_reference_number: 'CRG-2024-001',
+    client_invoice_number: 'INV-2024-0341',
+    debtor_business_name:  'Smith Engineering Ltd',
+    debtor_contact_name:   'John Smith',
+    original_balance:      4200.00,
+    current_balance:       4200.00,
+    status:                'Active',
   },
   {
-    id: 'demo-2',
-    debtor_name:       'Riverside Contractors',
-    debtor_company:    null,
-    amount_owed:       8750.00,
-    invoice_number:    'INV-2024-0298',
-    status:            'letter_sent',
-    status_notes:      'A formal Letter Before Action has been sent by recorded delivery. The debtor has 7 days to respond before legal proceedings are considered.',
-    status_updated_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    submitted_at:      new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString(),
-    documents: [{ filename: 'Invoice-INV-2024-0298.pdf' }],
+    case_reference_number: 'CRG-2024-002',
+    client_invoice_number: 'INV-2024-0298',
+    debtor_business_name:  'Riverside Contractors',
+    debtor_contact_name:   null,
+    original_balance:      8750.00,
+    current_balance:       8750.00,
+    status:                'Letter Sent',
   },
   {
-    id: 'demo-3',
-    debtor_name:       'Apex Media Group',
-    debtor_company:    'Apex Media Group PLC',
-    amount_owed:       1850.00,
-    invoice_number:    null,
-    status:            'submitted',
-    status_notes:      null,
-    status_updated_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    submitted_at:      new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    documents: [],
+    case_reference_number: 'CRG-2024-003',
+    client_invoice_number: null,
+    debtor_business_name:  'Apex Media Group PLC',
+    debtor_contact_name:   null,
+    original_balance:      1850.00,
+    current_balance:       1850.00,
+    status:                'Submitted',
   },
   {
-    id: 'demo-4',
-    debtor_name:       'Johnson & Partners',
-    debtor_company:    null,
-    amount_owed:       3100.00,
-    invoice_number:    'INV-2024-0187',
-    status:            'settled',
-    status_notes:      'Full payment of £3,100.00 received on 12 May 2025. This case is now closed.',
-    status_updated_at: new Date(Date.now() - 18 * 24 * 60 * 60 * 1000).toISOString(),
-    submitted_at:      new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
-    documents: [{ filename: 'Invoice-INV-2024-0187.pdf' }, { filename: 'Signed-Agreement.pdf' }],
+    case_reference_number: 'CRG-2024-004',
+    client_invoice_number: 'INV-2024-0187',
+    debtor_business_name:  null,
+    debtor_contact_name:   'Johnson & Partners',
+    original_balance:      3100.00,
+    current_balance:       0.00,
+    status:                'Settled',
   },
 ];
 
@@ -137,30 +126,28 @@ function formatDate(dateStr) {
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-const STATUS_LABELS = {
-  submitted:    'Submitted',
-  active:       'Active',
-  letter_sent:  'Letter Sent',
-  in_dispute:   'In Dispute',
-  legal:        'Legal Action',
-  settled:      'Settled',
-  closed:       'Closed',
-};
+/* Map free-text live_cases status to a badge CSS class.
+   Uses substring matching — same logic as getStatusClass() on the main site. */
+function liveStatusClass(status) {
+  if (!status) return 'badge-submitted';
+  const s = status.toLowerCase();
+  if (s.includes('settled') || s.includes('paid') || s.includes('closed')) return 'badge-settled';
+  if (s.includes('legal') || s.includes('court') || s.includes('litigation')) return 'badge-legal';
+  if (s.includes('dispute')) return 'badge-dispute';
+  if (s.includes('letter')) return 'badge-letter';
+  if (s.includes('active') || s.includes('open')) return 'badge-active';
+  return 'badge-submitted';
+}
 
-const STATUS_BADGE_CLASS = {
-  submitted:    'badge-submitted',
-  active:       'badge-active',
-  letter_sent:  'badge-letter',
-  in_dispute:   'badge-dispute',
-  legal:        'badge-legal',
-  settled:      'badge-settled',
-  closed:       'badge-closed',
-};
+/* Returns true for cases that are still open (not settled/paid/closed) */
+function isOpenCase(status) {
+  if (!status) return true;
+  const s = status.toLowerCase();
+  return !(s.includes('settled') || s.includes('paid') || s.includes('closed'));
+}
 
 function statusBadge(status) {
-  const label = STATUS_LABELS[status] || status;
-  const cls   = STATUS_BADGE_CLASS[status] || 'badge-submitted';
-  return `<span class="badge ${cls}">${label}</span>`;
+  return `<span class="badge ${liveStatusClass(status)}">${escHtml(status || 'Submitted')}</span>`;
 }
 
 /* ── Router ──────────────────────────────────────────────── */
@@ -607,7 +594,7 @@ async function loadCases(token) {
   if (isDemo()) {
     loading.style.display = 'none';
     _allCases = DEMO_CASES;
-    const activeCount = _allCases.filter(c => !['settled','closed'].includes(c.status)).length;
+    const activeCount = _allCases.filter(c => isOpenCase(c.status)).length;
     countBadge.textContent   = activeCount;
     countBadge.style.display = activeCount > 0 ? '' : 'none';
     if (searchWrap) searchWrap.style.display = '';
@@ -617,11 +604,7 @@ async function loadCases(token) {
       searchInput.addEventListener('input', () => {
         const q = searchInput.value.trim().toLowerCase();
         if (!q) { if (noResults) noResults.style.display = 'none'; renderCasesGrid(_allCases); return; }
-        const filtered = _allCases.filter(c =>
-          (c.debtor_name || '').toLowerCase().includes(q) ||
-          (c.debtor_company || '').toLowerCase().includes(q) ||
-          (c.invoice_number || '').toLowerCase().includes(q)
-        );
+        const filtered = _allCases.filter(c => caseMatchesSearch(c, q));
         if (filtered.length === 0) { grid.style.display = 'none'; if (noResults) noResults.style.display = ''; }
         else { if (noResults) noResults.style.display = 'none'; renderCasesGrid(filtered); }
       });
@@ -650,8 +633,8 @@ async function loadCases(token) {
 
     _allCases = data.cases;
 
-    // Badge — open (non-settled/closed) case count
-    const activeCount = _allCases.filter(c => !['settled', 'closed'].includes(c.status)).length;
+    // Badge — open (not settled/paid/closed) case count
+    const activeCount = _allCases.filter(c => isOpenCase(c.status)).length;
     countBadge.textContent   = activeCount;
     countBadge.style.display = activeCount > 0 ? '' : 'none';
 
@@ -675,11 +658,7 @@ async function loadCases(token) {
           renderCasesGrid(_allCases);
           return;
         }
-        const filtered = _allCases.filter(c =>
-          (c.debtor_name    || '').toLowerCase().includes(q) ||
-          (c.debtor_company || '').toLowerCase().includes(q) ||
-          (c.invoice_number || '').toLowerCase().includes(q)
-        );
+        const filtered = _allCases.filter(c => caseMatchesSearch(c, q));
         if (filtered.length === 0) {
           grid.style.display                         = 'none';
           if (noResults) noResults.style.display     = '';
@@ -712,52 +691,52 @@ function renderCasesGrid(cases) {
   });
 }
 
+/* Returns true if a live_cases record matches the search query */
+function caseMatchesSearch(c, q) {
+  return (
+    (c.debtor_business_name  || '').toLowerCase().includes(q) ||
+    (c.debtor_contact_name   || '').toLowerCase().includes(q) ||
+    (c.client_invoice_number || '').toLowerCase().includes(q) ||
+    (c.case_reference_number || '').toLowerCase().includes(q)
+  );
+}
+
 function renderCaseCard(c) {
-  const invoiceRow = c.invoice_number
-    ? `<div class="case-meta-row"><span class="case-meta-label">Invoice</span><span>${escHtml(c.invoice_number)}</span></div>`
-    : '';
+  // Primary debtor label — business name takes priority
+  const debtorLabel  = c.debtor_business_name || c.debtor_contact_name || '—';
+  // Show contact name as a secondary tag if both fields are present
+  const debtorSub    = c.debtor_business_name && c.debtor_contact_name
+    ? ` <span class="case-company">· ${escHtml(c.debtor_contact_name)}</span>` : '';
 
-  // Contextual status message — same pattern as main site debtor lookup
-  const msgDef = STATUS_MESSAGES[c.status];
-  const msgTypeClass = msgDef
-    ? { info: 'case-status-msg--info', warning: 'case-status-msg--warning', success: 'case-status-msg--success' }[msgDef.type] || ''
-    : '';
+  // Amount: show original balance; if partially recovered, show remaining too
+  const original = parseFloat(c.original_balance) || 0;
+  const current  = parseFloat(c.current_balance);
+  const recovered = !isNaN(current) && current < original && current >= 0;
+  const amountHtml = recovered
+    ? `${formatCurrency(original)} <span class="case-balance-remaining">(${formatCurrency(current)} outstanding)</span>`
+    : formatCurrency(original);
 
-  // updateBlock removed — client update section coming soon
-  // const updateBlock = `<div class="case-update">…</div>`;
+  // Reference rows
+  const refRow = c.case_reference_number
+    ? `<div class="case-meta-row"><span class="case-meta-label">Case Ref</span><span>${escHtml(c.case_reference_number)}</span></div>`
+    : '';
+  const invRow = c.client_invoice_number
+    ? `<div class="case-meta-row"><span class="case-meta-label">Invoice</span><span>${escHtml(c.client_invoice_number)}</span></div>`
+    : '';
 
   return `
     <div class="case-card">
       <div class="case-card-header">
         <div>
-          <div class="case-debtor">${escHtml(c.debtor_name)}${c.debtor_company ? ` <span class="case-company">· ${escHtml(c.debtor_company)}</span>` : ''}</div>
-          <div class="case-amount">${formatCurrency(c.amount_owed)}</div>
+          <div class="case-debtor">${escHtml(debtorLabel)}${debtorSub}</div>
+          <div class="case-amount">${amountHtml}</div>
         </div>
         <div>${statusBadge(c.status)}</div>
       </div>
       <div class="case-meta">
-        <div class="case-meta-row"><span class="case-meta-label">Submitted</span><span>${formatDate(c.submitted_at)}</span></div>
-        ${invoiceRow}
+        ${refRow}
+        ${invRow}
       </div>
-      ${buildDocsHtml(c.documents || [])}
-    </div>`;
-}
-
-function buildDocsHtml(docs) {
-  if (!docs || !docs.length) return '';
-  const count = docs.length;
-  const items = docs.map(d =>
-    `<li class="case-doc-item">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M14 3v4a1 1 0 001 1h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M17 21H7a2 2 0 01-2-2V5a2 2 0 012-2h7l5 5v11a2 2 0 01-2 2z" stroke="currentColor" stroke-width="1.5"/></svg>
-      ${escHtml(d.filename || d.file_name || '')}
-    </li>`
-  ).join('');
-  return `
-    <div class="case-docs">
-      <button type="button" class="case-docs-toggle" data-count="${count}">
-        Show ${count} document${count === 1 ? '' : 's'}
-      </button>
-      <ul class="case-doc-list" style="display:none">${items}</ul>
     </div>`;
 }
 

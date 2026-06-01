@@ -1,14 +1,19 @@
 -- ═══════════════════════════════════════════════════════════════
--- Credvanta Client Portal — Supabase Setup
+-- Credvanta Client Portal — Supabase Setup (simplified)
 -- Run this in your Supabase SQL Editor (Dashboard → SQL Editor)
+--
+-- Only TWO tables are required. The portal's "My Cases" view
+-- pulls directly from your existing live_cases table — the same
+-- one used by the debtor payment lookup on the main website.
+-- No portal_cases or document storage is needed.
 -- ═══════════════════════════════════════════════════════════════
 
--- Client credentials
+-- ── 1. Client login accounts ──────────────────────────────────
 CREATE TABLE IF NOT EXISTS portal_clients (
   id            UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
-  client_ref    TEXT        UNIQUE NOT NULL,
+  client_ref    TEXT        UNIQUE NOT NULL,  -- e.g. CRG-001
   email         TEXT        UNIQUE NOT NULL,
-  full_name     TEXT,
+  full_name     TEXT        NOT NULL,         -- MUST match client_name in live_cases
   password_hash TEXT        NOT NULL,
   password_salt TEXT        NOT NULL,
   active        BOOLEAN     DEFAULT TRUE,
@@ -16,38 +21,7 @@ CREATE TABLE IF NOT EXISTS portal_clients (
   created_at    TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Cases submitted by clients
-CREATE TABLE IF NOT EXISTS portal_cases (
-  id               UUID          DEFAULT gen_random_uuid() PRIMARY KEY,
-  client_ref       TEXT          NOT NULL REFERENCES portal_clients(client_ref),
-  debtor_name      TEXT          NOT NULL,
-  debtor_company   TEXT,
-  debtor_email     TEXT,
-  debtor_phone     TEXT,
-  debtor_address   TEXT,
-  amount_owed      NUMERIC(10,2) NOT NULL,
-  invoice_number   TEXT,
-  invoice_date     DATE,
-  description      TEXT,
-  status           TEXT          DEFAULT 'submitted',
-  status_notes     TEXT,
-  status_updated_at TIMESTAMPTZ  DEFAULT NOW(),
-  submitted_at     TIMESTAMPTZ   DEFAULT NOW(),
-  updated_at       TIMESTAMPTZ   DEFAULT NOW()
-);
-
--- Documents attached to cases
-CREATE TABLE IF NOT EXISTS portal_case_documents (
-  id           UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
-  case_id      UUID        NOT NULL REFERENCES portal_cases(id) ON DELETE CASCADE,
-  filename     TEXT        NOT NULL,
-  storage_path TEXT        NOT NULL,
-  file_size    INTEGER,
-  file_type    TEXT,
-  uploaded_at  TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Password reset tokens
+-- ── 2. Password reset tokens ──────────────────────────────────
 CREATE TABLE IF NOT EXISTS portal_reset_tokens (
   id          UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
   client_ref  TEXT        NOT NULL,
@@ -58,42 +32,25 @@ CREATE TABLE IF NOT EXISTS portal_reset_tokens (
 );
 
 -- Indexes
-CREATE INDEX IF NOT EXISTS idx_portal_cases_client_ref   ON portal_cases(client_ref);
-CREATE INDEX IF NOT EXISTS idx_portal_cases_status       ON portal_cases(status);
-CREATE INDEX IF NOT EXISTS idx_portal_reset_token_hash   ON portal_reset_tokens(token_hash);
+CREATE INDEX IF NOT EXISTS idx_portal_reset_token_hash ON portal_reset_tokens(token_hash);
 
 -- Disable RLS (server-side functions use service key — no RLS needed)
-ALTER TABLE portal_clients          DISABLE ROW LEVEL SECURITY;
-ALTER TABLE portal_cases            DISABLE ROW LEVEL SECURITY;
-ALTER TABLE portal_case_documents   DISABLE ROW LEVEL SECURITY;
-ALTER TABLE portal_reset_tokens     DISABLE ROW LEVEL SECURITY;
+ALTER TABLE portal_clients       DISABLE ROW LEVEL SECURITY;
+ALTER TABLE portal_reset_tokens  DISABLE ROW LEVEL SECURITY;
 
 -- Grant access to service role (required after Supabase May 2026 change)
-GRANT ALL ON portal_clients         TO service_role;
-GRANT ALL ON portal_cases           TO service_role;
-GRANT ALL ON portal_case_documents  TO service_role;
-GRANT ALL ON portal_reset_tokens    TO service_role;
+GRANT ALL ON portal_clients      TO service_role;
+GRANT ALL ON portal_reset_tokens TO service_role;
 
--- ── Storage bucket (run separately if needed) ─────────────────
--- In Supabase Dashboard → Storage → New bucket:
---   Name: portal-documents
---   Public: NO (private bucket)
-
--- ── Status values reference ───────────────────────────────────
--- submitted    → Just received (default)
--- active       → Being worked on
--- letter_sent  → Letter sent to debtor
--- in_dispute   → Disputed by debtor
--- legal        → Referred for legal action
--- settled      → Debt recovered
--- closed       → Case closed
-
--- ── Adding a new client (run per client) ─────────────────────
--- The portal /portal/login function handles password hashing.
--- To add a client manually, use the admin endpoint or insert directly:
+-- ─────────────────────────────────────────────────────────────
+-- IMPORTANT: full_name in portal_clients MUST exactly match
+-- the client_name value used in your live_cases table.
 --
--- INSERT INTO portal_clients (client_ref, email, full_name, password_hash, password_salt)
--- VALUES ('CRG-001', 'client@example.com', 'Client Name', '<hash>', '<salt>');
+-- Example: if cases for a client are stored in live_cases with
+--   client_name = 'Growthline Connections Ltd'
+-- then portal_clients must have:
+--   full_name = 'Growthline Connections Ltd'
 --
--- NOTE: Use the /portal/admin/create-client endpoint (if built) to
--- auto-generate the correct hash. Do NOT insert raw passwords.
+-- The portal filters live_cases WHERE client_name = full_name
+-- to show each client only their own cases.
+-- ─────────────────────────────────────────────────────────────
