@@ -461,6 +461,8 @@ address { font-style: normal; }
   text-align: center;
 }
 .ms-success[hidden] { display: none !important; }
+/* Ensure nav buttons respect [hidden] — .btn { display:inline-flex } overrides native hidden */
+#msSubmit[hidden], #msNext[hidden] { display: none !important; }
 .ms-success-icon { color: #22c55e; }
 .ms-success h3 {
   font-family: var(--font-display);

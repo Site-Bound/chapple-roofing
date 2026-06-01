@@ -192,9 +192,48 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWDyBaEdV1quwp
     parent.after(msg);
   }
 
+  /* ── Draft save / restore (localStorage) ──────────────────────
+     Saves field values after each validated "Continue" click so a
+     returning visitor doesn't have to start over. Data is cleared
+     on successful submit. Nothing is sent externally at this stage
+     (consent happens at Step 4). */
+  const DRAFT_KEY = 'crg_claim_draft';
+  const DRAFT_FIELDS = ['ms-name','ms-business','ms-email','ms-phone',
+                        'ms-debtor','ms-amount','ms-date','ms-description'];
+
+  function saveDraft() {
+    try {
+      const draft = {};
+      DRAFT_FIELDS.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) draft[id] = el.value;
+      });
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    } catch {}
+  }
+
+  function restoreDraft() {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const draft = JSON.parse(raw);
+      DRAFT_FIELDS.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && draft[id]) el.value = draft[id];
+      });
+    } catch {}
+  }
+
+  function clearDraft() {
+    try { localStorage.removeItem(DRAFT_KEY); } catch {}
+  }
+
+  restoreDraft(); // populate fields if a draft exists
+
   /* ── Navigation ── */
   nextBtn.addEventListener('click', () => {
     if (!validateSlide(currentStep)) return;
+    saveDraft(); // persist progress after each validated step
     if (currentStep < TOTAL_STEPS) setStep(currentStep + 1);
   });
 
@@ -262,6 +301,7 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWDyBaEdV1quwp
     }
 
     function showSuccess() {
+      clearDraft(); // remove saved progress now that submission is complete
       track.closest('.ms-viewport').hidden = true;
       msNav.hidden = true;
       successEl.hidden = false;
