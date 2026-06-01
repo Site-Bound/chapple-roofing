@@ -723,26 +723,8 @@ function renderCaseCard(c) {
     ? { info: 'case-status-msg--info', warning: 'case-status-msg--warning', success: 'case-status-msg--success' }[msgDef.type] || ''
     : '';
 
-  const updatedAt = c.status_updated_at ? formatDate(c.status_updated_at) : null;
-
-  const updateBlock = `
-    <div class="case-update">
-      ${msgDef
-        ? `<p class="case-status-msg ${msgTypeClass}">${msgDef.text}</p>`
-        : ''}
-      ${c.status_notes
-        ? `<div class="case-team-note">
-            <span class="case-team-note-label">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 8v4m0 4h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-              Latest update from Credvanta
-            </span>
-            <p>${escHtml(c.status_notes)}</p>
-          </div>`
-        : ''}
-      ${updatedAt
-        ? `<p class="case-updated-at">Last updated ${updatedAt}</p>`
-        : ''}
-    </div>`;
+  // updateBlock removed — client update section coming soon
+  // const updateBlock = `<div class="case-update">…</div>`;
 
   return `
     <div class="case-card">
@@ -757,7 +739,6 @@ function renderCaseCard(c) {
         <div class="case-meta-row"><span class="case-meta-label">Submitted</span><span>${formatDate(c.submitted_at)}</span></div>
         ${invoiceRow}
       </div>
-      ${updateBlock}
       ${buildDocsHtml(c.documents || [])}
     </div>`;
 }
