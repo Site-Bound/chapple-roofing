@@ -312,6 +312,44 @@ address { font-style: normal; }
 .tc-pending-notice strong { display: block; color: #92400E; font-size: 0.85rem; margin-bottom: 3px; }
 .tc-pending-notice p { font-size: 0.8rem; color: #78350F; margin: 0; }
 
+/* ── What happens next summary (Step 4) ── */
+.tc-summary {
+  background: var(--blue-pale);
+  border: 1.5px solid #BFDBFE;
+  border-radius: var(--radius);
+  padding: 16px 18px;
+}
+.tc-summary-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--navy);
+  margin-bottom: 10px;
+}
+.tc-summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.tc-summary-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.84rem;
+  color: var(--gray-800);
+  line-height: 1.45;
+}
+.tc-summary-list li svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--blue);
+}
+.tc-summary-list a { color: var(--blue); text-decoration: underline; }
+
 .tc-accept-label {
   display: flex;
   align-items: flex-start;
@@ -320,6 +358,11 @@ address { font-style: normal; }
   font-size: 0.85rem;
   color: var(--gray-600);
   line-height: 1.5;
+}
+/* Add a subtle divider when multiple consent checkboxes stack */
+.tc-accept-label + .tc-accept-label {
+  padding-top: 10px;
+  border-top: 1px solid var(--gray-200);
 }
 .tc-accept-label input[type="checkbox"] {
   flex-shrink: 0;

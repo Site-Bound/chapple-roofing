@@ -261,25 +261,44 @@
                 <!-- SLIDE 4 · Terms & Confirm -->
                 <div class="ms-slide" data-slide="4">
                   <div class="ms-slide-intro">
-                    <p>Please read and accept our terms, then connect your account to receive recovered funds.</p>
+                    <p>Almost there — please confirm the declarations below and we'll be in touch within one business day.</p>
                   </div>
                   <div class="ms-fields">
 
-                    <!-- Terms & Conditions -->
-                    <div class="tc-box">
-                      <div class="tc-scroll" tabindex="0" role="region" aria-label="Terms and Conditions">
-                        <div class="tc-pending-notice">
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                          <div>
-                            <strong>Terms &amp; Conditions — Coming Soon</strong>
-                            <p>Credvanta Recovery Group's full Terms &amp; Conditions will appear here once finalised. This section is ready to accept the document when provided.</p>
-                          </div>
-                        </div>
-                      </div>
+                    <!-- What happens next summary -->
+                    <div class="tc-summary">
+                      <p class="tc-summary-title">What happens after you submit</p>
+                      <ul class="tc-summary-list">
+                        <li>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                          Your claim is reviewed by our team within <strong>1 business day</strong>
+                        </li>
+                        <li>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                          We contact you to discuss your case and confirm next steps
+                        </li>
+                        <li>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                          All information is handled confidentially and in line with our <a href="privacy.html" class="tc-link" target="_blank" rel="noopener">Privacy Policy</a>
+                        </li>
+                        <li>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                          No upfront fees — our charges are agreed with you before any action is taken
+                        </li>
+                      </ul>
                     </div>
 
+                    <!-- Consent checkbox -->
+                    <label class="tc-accept-label" for="ms-consent">
+                      <input type="checkbox" id="ms-consent" name="consent" required
+                        data-error="Please tick this box to confirm you consent to being contacted">
+                      <span>I consent to Credvanta Recovery Group contacting me by telephone and email for business purposes in connection with this claim</span>
+                    </label>
+
+                    <!-- T&C checkbox -->
                     <label class="tc-accept-label" for="ms-tc">
-                      <input type="checkbox" id="ms-tc" name="terms" required>
+                      <input type="checkbox" id="ms-tc" name="terms" required
+                        data-error="Please tick this box to confirm you have read and agree to the Terms &amp; Conditions">
                       <span>I have read and agree to the <a href="terms.html" class="tc-link" target="_blank" rel="noopener">Terms &amp; Conditions</a> of Credvanta Recovery Group</span>
                     </label>
 

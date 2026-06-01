@@ -172,7 +172,10 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWDyBaEdV1quwp
 
     slide.querySelectorAll('[required]').forEach(field => {
       if (field.type === 'checkbox') {
-        if (!field.checked) { markError(field, 'You must accept the Terms & Conditions'); ok = false; }
+        if (!field.checked) {
+          markError(field, field.dataset.error || 'You must accept the Terms & Conditions');
+          ok = false;
+        }
         return;
       }
       if (!field.value.trim()) { markError(field, 'This field is required'); ok = false; return; }
@@ -277,6 +280,7 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWDyBaEdV1quwp
       amount:          document.getElementById('ms-amount')?.value      || '',
       invoiceDate:     document.getElementById('ms-date')?.value        || '',
       description:     document.getElementById('ms-description')?.value || '',
+      consent:         document.getElementById('ms-consent')?.checked ? 'yes' : 'no',
       stripeConnected: String(stripeConnected),
       files:           JSON.stringify(encodedFiles),
     });
