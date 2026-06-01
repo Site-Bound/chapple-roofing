@@ -195,14 +195,32 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWDyBaEdV1quwp
     parent.after(msg);
   }
 
+  /* ── Draft ID — generated once on first Step 1 Continue ───────
+     Sent with both the Step 1 enquiry POST and the Step 4 full
+     submit, allowing the Apps Script to update the same row. */
+  const DRAFT_ID_KEY = 'crg_claim_draft_id';
+
+  function getDraftId() {
+    try {
+      let id = localStorage.getItem(DRAFT_ID_KEY);
+      if (!id) {
+        id = 'CRG-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8).toUpperCase();
+        localStorage.setItem(DRAFT_ID_KEY, id);
+      }
+      return id;
+    } catch {
+      return 'CRG-' + Date.now();
+    }
+  }
+
   /* ── Draft save / restore (localStorage) ──────────────────────
-     Saves field values after each validated "Continue" click so a
-     returning visitor doesn't have to start over. Data is cleared
-     on successful submit. Nothing is sent externally at this stage
-     (consent happens at Step 4). */
-  const DRAFT_KEY = 'crg_claim_draft';
+     Saves field values and checkbox states after each validated
+     "Continue" click so a returning visitor doesn't have to start
+     over. Data is cleared on successful submit. */
+  const DRAFT_KEY    = 'crg_claim_draft';
   const DRAFT_FIELDS = ['ms-name','ms-business','ms-email','ms-phone',
                         'ms-debtor','ms-amount','ms-date','ms-description'];
+  const DRAFT_CHECKS = ['ms-consent']; // checkboxes handled separately
 
   function saveDraft() {
     try {
@@ -210,6 +228,10 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWDyBaEdV1quwp
       DRAFT_FIELDS.forEach(id => {
         const el = document.getElementById(id);
         if (el) draft[id] = el.value;
+      });
+      DRAFT_CHECKS.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) draft[id] = el.checked;
       });
       localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
     } catch {}
@@ -222,21 +244,53 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWDyBaEdV1quwp
       const draft = JSON.parse(raw);
       DRAFT_FIELDS.forEach(id => {
         const el = document.getElementById(id);
-        if (el && draft[id]) el.value = draft[id];
+        if (el && draft[id] !== undefined) el.value = draft[id];
+      });
+      DRAFT_CHECKS.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && draft[id] !== undefined) el.checked = draft[id];
       });
     } catch {}
   }
 
   function clearDraft() {
-    try { localStorage.removeItem(DRAFT_KEY); } catch {}
+    try {
+      localStorage.removeItem(DRAFT_KEY);
+      localStorage.removeItem(DRAFT_ID_KEY);
+    } catch {}
   }
 
   restoreDraft(); // populate fields if a draft exists
 
+  /* ── Step 1 enquiry POST ───────────────────────────────────────
+     Fires after Step 1 validates. Creates a row in Google Sheets
+     with the contact details and consent. No email is triggered
+     at this stage — that happens only on full submit at Step 4.
+     Uses no-cors (Apps Script limitation) so errors are silent. */
+  function sendEnquiry() {
+    if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes('REPLACE')) return;
+    const payload = new URLSearchParams({
+      status:   'enquiry',
+      draftId:  getDraftId(),
+      name:     document.getElementById('ms-name')?.value     || '',
+      business: document.getElementById('ms-business')?.value || '',
+      email:    document.getElementById('ms-email')?.value    || '',
+      phone:    document.getElementById('ms-phone')?.value    || '',
+      consent:  document.getElementById('ms-consent')?.checked ? 'Yes' : 'No',
+    });
+    fetch(APPS_SCRIPT_URL, {
+      method:  'POST',
+      mode:    'no-cors',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body:    payload.toString(),
+    }).catch(e => console.error('[enquiry POST]', e));
+  }
+
   /* ── Navigation ── */
   nextBtn.addEventListener('click', () => {
     if (!validateSlide(currentStep)) return;
-    saveDraft(); // persist progress after each validated step
+    saveDraft();
+    if (currentStep === 1) sendEnquiry(); // capture contact + consent immediately
     if (currentStep < TOTAL_STEPS) setStep(currentStep + 1);
   });
 
@@ -272,15 +326,17 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWDyBaEdV1quwp
        The trade-off is we cannot read the response — but the data
        is reliably written to the Sheet regardless.           ── */
     const payload = new URLSearchParams({
+      status:          'complete',
+      draftId:         getDraftId(),
       name:            document.getElementById('ms-name')?.value        || '',
       business:        document.getElementById('ms-business')?.value    || '',
       email:           document.getElementById('ms-email')?.value       || '',
       phone:           document.getElementById('ms-phone')?.value       || '',
+      consent:         document.getElementById('ms-consent')?.checked ? 'Yes' : 'No',
       debtor:          document.getElementById('ms-debtor')?.value      || '',
       amount:          document.getElementById('ms-amount')?.value      || '',
       invoiceDate:     document.getElementById('ms-date')?.value        || '',
       description:     document.getElementById('ms-description')?.value || '',
-      consent:         document.getElementById('ms-consent')?.checked ? 'yes' : 'no',
       stripeConnected: String(stripeConnected),
       files:           JSON.stringify(encodedFiles),
     });
