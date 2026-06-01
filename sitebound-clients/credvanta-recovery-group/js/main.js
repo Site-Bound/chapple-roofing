@@ -134,6 +134,18 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWDyBaEdV1quwp
   let stripeConnected = false;
   const uploadedFiles = [];
 
+  /* ── Viewport height — matches active slide so card shrinks/grows ── */
+  const viewport = track.closest('.ms-viewport');
+
+  function updateViewportHeight() {
+    if (!viewport) return;
+    const slide = track.querySelector(`[data-slide="${currentStep}"]`);
+    if (slide) viewport.style.height = slide.offsetHeight + 'px';
+  }
+
+  // Re-measure on resize so the card stays correct at every breakpoint
+  window.addEventListener('resize', updateViewportHeight, { passive: true });
+
   /* ── Progress update ── */
   function setStep(step) {
     currentStep = step;
@@ -155,6 +167,9 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWDyBaEdV1quwp
     backBtn.hidden = step === 1;
     nextBtn.hidden = step === TOTAL_STEPS;
     submitBtn.hidden = step !== TOTAL_STEPS;
+    // Update viewport height to match the new active slide
+    // requestAnimationFrame ensures the slide has painted before measuring
+    requestAnimationFrame(updateViewportHeight);
     // Scroll form into view on mobile
     if (window.innerWidth < 900) {
       document.getElementById('claim-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
