@@ -1,46 +1,36 @@
 /**
  * ═══════════════════════════════════════════════════════════════
- * CREDVANTA RECOVERY GROUP — Google Apps Script  (v2)
+ * CREDVANTA RECOVERY GROUP — Google Apps Script  (v3)
  * Receives claim form submissions → Google Sheets + Google Drive
  * ═══════════════════════════════════════════════════════════════
  *
+ * COLUMN ORDER — matches the existing sheet exactly (v1 columns
+ * 1-12 are unchanged; Status and Consent are appended at 13-14).
+ *
+ *  A  Timestamp          B  Name              C  Business Name
+ *  D  Email              E  Phone             F  Debtor Company
+ *  G  Invoice Amount (£) H  Invoice Date      I  Description
+ *  J  Stripe Connected   K  Files (Drive)     L  Submission ID
+ *  M  Status             N  Consent to Contact
+ *
  * HOW IT WORKS (two-stage submission)
  * ─────────────────────────────────────────────────────────────
- * Stage 1 — Step 1 "Continue":
- *   Receives status=enquiry with name/business/email/phone/consent
- *   and a unique Draft ID. Appends a new row with status "Enquiry".
- *   No notification email is sent at this point.
+ * Stage 1 — Step 1 "Continue" (status=enquiry):
+ *   Appends a new row with contact details only.
+ *   Debt fields are blank. Status = "Enquiry".
+ *   No notification email at this stage.
  *
- * Stage 2 — Step 4 "Submit Claim":
- *   Receives status=complete with the same Draft ID plus all
- *   remaining fields (debtor, amount, description, files).
- *   The script finds the matching Enquiry row by Draft ID and
- *   updates it in place with the full details, then changes the
- *   status to "Complete" and sends the notification email.
- *   If no matching row is found (e.g. browser refreshed between
- *   steps), a new Complete row is appended instead.
+ * Stage 2 — Step 4 "Submit Claim" (status=complete):
+ *   Finds the matching Enquiry row by Submission ID (col L) and
+ *   updates it with the full claim data, then sends the email.
+ *   If no matching row is found, appends a new complete row.
  *
- * SETUP INSTRUCTIONS (one-time, ~5 minutes)
+ * SETUP
  * ─────────────────────────────────────────────────────────────
- * 1. Go to https://script.google.com → New project
- * 2. Paste this entire file into the Code.gs editor
- * 3. Replace the two constants below:
- *      SPREADSHEET_ID  → from your Google Sheet URL
- *      DRIVE_FOLDER_ID → from your Google Drive folder URL
- * 4. Click Deploy → New deployment (or Manage → edit existing)
- *      Type:            Web app
- *      Execute as:      Me (your Google account)
- *      Who has access:  Anyone
- * 5. Copy the Web App URL into js/main.js as APPS_SCRIPT_URL
- *
- * SHEET COLUMNS (written automatically on first use)
- * ─────────────────────────────────────────────────────────────
- * A  Timestamp          B  Status            C  Draft ID
- * D  Name               E  Business Name     F  Email
- * G  Phone              H  Consent           I  Debtor Company
- * J  Invoice Amount (£) K  Invoice Date      L  Description
- * M  Stripe Connected   N  Files (Drive)     O  Completed
- * ─────────────────────────────────────────────────────────────
+ * 1. Replace SPREADSHEET_ID and DRIVE_FOLDER_ID below.
+ * 2. Deploy → Manage deployments → edit existing deployment
+ *    (keep the same URL — do NOT create a new deployment).
+ * ═══════════════════════════════════════════════════════════════
  */
 
 // ── CONFIGURE THESE TWO VALUES ────────────────────────────────
@@ -51,74 +41,63 @@ var DRIVE_FOLDER_ID = 'REPLACE_WITH_YOUR_DRIVE_FOLDER_ID';
 var SHEET_NAME         = 'Claims';
 var NOTIFICATION_EMAIL = 'recover@credvanta.co.uk';
 
-var HEADERS = [
-  'Timestamp',
-  'Status',
-  'Draft ID',
-  'Name',
-  'Business Name',
-  'Email',
-  'Phone',
-  'Consent to Contact',
-  'Debtor Company',
-  'Invoice Amount (£)',
-  'Invoice Date',
-  'Description',
-  'Stripe Connected',
-  'Files (Drive Links)',
-  'Completed',
-];
-
-// Column index map (0-based) — must match HEADERS order above
+// Column indexes (0-based) — columns A-L match the existing v1
+// sheet exactly so no existing data is displaced.
 var COL = {
-  timestamp:  0,
-  status:     1,
-  draftId:    2,
-  name:       3,
-  business:   4,
-  email:      5,
-  phone:      6,
-  consent:    7,
-  debtor:     8,
-  amount:     9,
-  invoiceDate:10,
-  description:11,
-  stripe:     12,
-  files:      13,
-  completed:  14,
+  timestamp:   0,   // A
+  name:        1,   // B
+  business:    2,   // C
+  email:       3,   // D
+  phone:       4,   // E
+  debtor:      5,   // F
+  amount:      6,   // G
+  invoiceDate: 7,   // H
+  description: 8,   // I
+  stripe:      9,   // J
+  files:       10,  // K
+  submissionId:11,  // L  (Draft ID stored here — same purpose as old Submission ID)
+  status:      12,  // M  (new — appended after existing columns)
+  consent:     13,  // N  (new — appended after existing columns)
 };
 
-/**
- * Main POST handler — called by both Step 1 (enquiry) and Step 4 (complete).
- */
+var TOTAL_COLS = 14;
+
+// Headers written only when the sheet is brand new and empty.
+// Existing sheets keep their current headers — Status and Consent
+// columns (M, N) will appear without a header until added manually.
+var HEADERS = [
+  'Timestamp', 'Name', 'Business Name', 'Email', 'Phone',
+  'Debtor Company', 'Invoice Amount (£)', 'Invoice Date', 'Description',
+  'Stripe Connected', 'Files (Drive Links)', 'Submission ID',
+  'Status', 'Consent to Contact',
+];
+
+// ─────────────────────────────────────────────────────────────
+
 function doPost(e) {
   var lock = LockService.getScriptLock();
   lock.waitLock(10000);
 
   try {
-    var p       = e.parameter;
-    var status  = p.status  || 'complete';
-    var draftId = p.draftId || '';
+    var p      = e.parameter;
+    var status = (p.status || 'complete').toLowerCase();
 
     var sheet = getOrCreateSheet();
 
     if (status === 'enquiry') {
-      // ── Stage 1: append a new Enquiry row ──────────────────
-      appendEnquiry(sheet, p, draftId);
+      appendEnquiry(sheet, p);
 
     } else {
-      // ── Stage 2: update existing row or append Complete ────
+      // Stage 2: update existing enquiry row, or append if not found
       var fileLinks = uploadFilesToDrive(p);
-
-      var rowIndex = draftId ? findRowByDraftId(sheet, draftId) : -1;
+      var rowIndex  = p.draftId ? findRowByDraftId(sheet, p.draftId) : -1;
 
       if (rowIndex > 0) {
         updateRow(sheet, rowIndex, p, fileLinks);
       } else {
-        appendComplete(sheet, p, draftId, fileLinks);
+        appendComplete(sheet, p, fileLinks);
       }
 
-      // Notification email fires only on complete submission
       sendNotificationEmail(p, fileLinks);
     }
 
@@ -145,9 +124,9 @@ function getOrCreateSheet() {
   }
   var ss    = SpreadsheetApp.openById(SPREADSHEET_ID);
   var sheet = ss.getSheetByName(SHEET_NAME);
-  if (!sheet) {
-    sheet = ss.insertSheet(SHEET_NAME);
-  }
+  if (!sheet) sheet = ss.insertSheet(SHEET_NAME);
+
+  // Only write headers on a completely blank sheet
   if (sheet.getLastRow() === 0) {
     sheet.appendRow(HEADERS);
     sheet.getRange(1, 1, 1, HEADERS.length)
@@ -160,76 +139,81 @@ function getOrCreateSheet() {
 }
 
 /**
- * Append a new Enquiry row (Stage 1 — Step 1 Continue).
- * Debt fields are left blank; they are filled in when Stage 2 arrives.
+ * Build a blank row array of the correct length.
  */
-function appendEnquiry(sheet, p, draftId) {
-  var row = new Array(HEADERS.length).fill('');
-  row[COL.timestamp] = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm:ss');
-  row[COL.status]    = 'Enquiry';
-  row[COL.draftId]   = draftId;
-  row[COL.name]      = p.name     || '';
-  row[COL.business]  = p.business || '';
-  row[COL.email]     = p.email    || '';
-  row[COL.phone]     = p.phone    || '';
-  row[COL.consent]   = p.consent  || '';
+function blankRow() {
+  var row = [];
+  for (var i = 0; i < TOTAL_COLS; i++) row.push('');
+  return row;
+}
+
+/**
+ * Stage 1 — append a partial Enquiry row.
+ * Debt-related columns are left blank; filled in at Stage 2.
+ */
+function appendEnquiry(sheet, p) {
+  var row = blankRow();
+  row[COL.timestamp]    = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm:ss');
+  row[COL.name]         = p.name     || '';
+  row[COL.business]     = p.business || '';
+  row[COL.email]        = p.email    || '';
+  row[COL.phone]        = p.phone    || '';
+  row[COL.submissionId] = p.draftId  || '';
+  row[COL.status]       = 'Enquiry';
+  row[COL.consent]      = p.consent  || '';
   sheet.appendRow(row);
 }
 
 /**
- * Append a new Complete row (Stage 2 — no matching Enquiry found).
+ * Stage 2 — append a complete row (no matching enquiry found).
  */
-function appendComplete(sheet, p, draftId, fileLinks) {
-  var row = new Array(HEADERS.length).fill('');
-  var now = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm:ss');
-  row[COL.timestamp]   = now;
-  row[COL.status]      = 'Complete';
-  row[COL.draftId]     = draftId;
-  row[COL.name]        = p.name        || '';
-  row[COL.business]    = p.business    || '';
-  row[COL.email]       = p.email       || '';
-  row[COL.phone]       = p.phone       || '';
-  row[COL.consent]     = p.consent     || '';
-  row[COL.debtor]      = p.debtor      || '';
-  row[COL.amount]      = p.amount      || '';
-  row[COL.invoiceDate] = p.invoiceDate || '';
-  row[COL.description] = p.description || '';
-  row[COL.stripe]      = p.stripeConnected === 'true' ? 'Yes' : 'No';
-  row[COL.files]       = fileLinks;
-  row[COL.completed]   = now;
+function appendComplete(sheet, p, fileLinks) {
+  var row = blankRow();
+  row[COL.timestamp]    = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm:ss');
+  row[COL.name]         = p.name            || '';
+  row[COL.business]     = p.business        || '';
+  row[COL.email]        = p.email           || '';
+  row[COL.phone]        = p.phone           || '';
+  row[COL.debtor]       = p.debtor          || '';
+  row[COL.amount]       = p.amount          || '';
+  row[COL.invoiceDate]  = p.invoiceDate     || '';
+  row[COL.description]  = p.description     || '';
+  row[COL.stripe]       = p.stripeConnected === 'true' ? 'Yes' : 'No';
+  row[COL.files]        = fileLinks;
+  row[COL.submissionId] = p.draftId         || Utilities.getUuid();
+  row[COL.status]       = 'Complete';
+  row[COL.consent]      = p.consent         || '';
   sheet.appendRow(row);
 }
 
 /**
- * Find the first row whose Draft ID column matches draftId.
- * Returns the 1-based sheet row number, or -1 if not found.
+ * Stage 2 — update an existing Enquiry row in place.
+ * Only fills in the blank debt columns; leaves contact columns intact.
+ */
+function updateRow(sheet, rowIndex, p, fileLinks) {
+  // Update cell-by-cell so contact details already in the row are preserved
+  sheet.getRange(rowIndex, COL.debtor       + 1).setValue(p.debtor          || '');
+  sheet.getRange(rowIndex, COL.amount       + 1).setValue(p.amount          || '');
+  sheet.getRange(rowIndex, COL.invoiceDate  + 1).setValue(p.invoiceDate     || '');
+  sheet.getRange(rowIndex, COL.description  + 1).setValue(p.description     || '');
+  sheet.getRange(rowIndex, COL.stripe       + 1).setValue(p.stripeConnected === 'true' ? 'Yes' : 'No');
+  sheet.getRange(rowIndex, COL.files        + 1).setValue(fileLinks);
+  sheet.getRange(rowIndex, COL.status       + 1).setValue('Complete');
+  sheet.getRange(rowIndex, COL.consent      + 1).setValue(p.consent         || '');
+}
+
+/**
+ * Find the 1-based row number of the Enquiry row with the given draftId.
+ * Returns -1 if not found.
  */
 function findRowByDraftId(sheet, draftId) {
   var lastRow = sheet.getLastRow();
   if (lastRow < 2) return -1;
-  // Read only the Draft ID column (COL.draftId + 1 for 1-based)
-  var col    = sheet.getRange(2, COL.draftId + 1, lastRow - 1, 1).getValues();
+  var col  = sheet.getRange(2, COL.submissionId + 1, lastRow - 1, 1).getValues();
   for (var i = 0; i < col.length; i++) {
-    if (col[i][0] === draftId) return i + 2; // +1 for header, +1 for 0-based
+    if (col[i][0] === draftId) return i + 2;
   }
   return -1;
-}
-
-/**
- * Update an existing Enquiry row in place with the full submission data.
- */
-function updateRow(sheet, rowIndex, p, fileLinks) {
-  var now = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm:ss');
-  // Update individual cells — preserves any data already in the row
-  sheet.getRange(rowIndex, COL.status      + 1).setValue('Complete');
-  sheet.getRange(rowIndex, COL.consent     + 1).setValue(p.consent     || '');
-  sheet.getRange(rowIndex, COL.debtor      + 1).setValue(p.debtor      || '');
-  sheet.getRange(rowIndex, COL.amount      + 1).setValue(p.amount      || '');
-  sheet.getRange(rowIndex, COL.invoiceDate + 1).setValue(p.invoiceDate || '');
-  sheet.getRange(rowIndex, COL.description + 1).setValue(p.description || '');
-  sheet.getRange(rowIndex, COL.stripe      + 1).setValue(p.stripeConnected === 'true' ? 'Yes' : 'No');
-  sheet.getRange(rowIndex, COL.files       + 1).setValue(fileLinks);
-  sheet.getRange(rowIndex, COL.completed   + 1).setValue(now);
 }
 
 // ── File upload ───────────────────────────────────────────────
@@ -242,7 +226,8 @@ function uploadFilesToDrive(p) {
     var label  = (p.business || 'Unnamed') + ' — ' +
                  Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm');
     var folder = root.createFolder(label);
-    var links  = files.map(function(file) {
+
+    var links = files.map(function(file) {
       if (!file.data || !file.name) return null;
       try {
         var decoded   = Utilities.base64Decode(file.data);
@@ -254,6 +239,7 @@ function uploadFilesToDrive(p) {
         return file.name + ': upload failed (' + fe.message + ')';
       }
     }).filter(Boolean);
+
     return links.join('\n');
   } catch (err) {
     console.error('Drive upload failed:', err.message);
@@ -261,40 +247,35 @@ function uploadFilesToDrive(p) {
   }
 }
 
-// ── Notification email ────────────────────────────────────────
+// ── Notification email (fires on complete submissions only) ───
 
 function sendNotificationEmail(p, fileLinks) {
   try {
     var sheetLink = SPREADSHEET_ID.includes('REPLACE')
-      ? '⚠️  Google Sheet not yet configured.'
+      ? '(Sheet not yet configured)'
       : 'https://docs.google.com/spreadsheets/d/' + SPREADSHEET_ID;
 
     MailApp.sendEmail({
       to:      NOTIFICATION_EMAIL,
       subject: 'New Claim: ' + (p.business || 'Unknown') + ' — £' + (p.amount || '?'),
-      body:    'New claim submitted via the website.\n\n'
-               + '──────────────────────────────────\n'
-               + 'CLAIMANT\n'
-               + '──────────────────────────────────\n'
-               + 'Name:     ' + (p.name        || '') + '\n'
-               + 'Business: ' + (p.business    || '') + '\n'
-               + 'Email:    ' + (p.email       || '') + '\n'
-               + 'Phone:    ' + (p.phone       || '') + '\n'
-               + 'Consent:  ' + (p.consent     || '') + '\n\n'
-               + '──────────────────────────────────\n'
-               + 'DEBT\n'
-               + '──────────────────────────────────\n'
-               + 'Debtor:      ' + (p.debtor      || '') + '\n'
-               + 'Amount:      £' + (p.amount     || '') + '\n'
-               + 'Invoice Date:' + (p.invoiceDate || '') + '\n'
-               + 'Description: ' + (p.description || '') + '\n\n'
-               + (fileLinks ? '──────────────────────────────────\n'
-                            + 'FILES\n'
-                            + '──────────────────────────────────\n'
-                            + fileLinks + '\n\n' : '')
-               + '──────────────────────────────────\n'
-               + 'Draft ID: ' + (p.draftId || 'n/a') + '\n'
-               + 'View sheet: ' + sheetLink,
+      body:
+        'New claim submitted via the website.\n\n'
+        + 'CLAIMANT\n'
+        + '---\n'
+        + 'Name:     ' + (p.name        || '') + '\n'
+        + 'Business: ' + (p.business    || '') + '\n'
+        + 'Email:    ' + (p.email       || '') + '\n'
+        + 'Phone:    ' + (p.phone       || '') + '\n'
+        + 'Consent:  ' + (p.consent     || '') + '\n\n'
+        + 'DEBT\n'
+        + '---\n'
+        + 'Debtor:       ' + (p.debtor      || '') + '\n'
+        + 'Amount:       £' + (p.amount     || '') + '\n'
+        + 'Invoice Date: ' + (p.invoiceDate || '') + '\n'
+        + 'Description:  ' + (p.description || '') + '\n\n'
+        + (fileLinks ? 'FILES\n---\n' + fileLinks + '\n\n' : '')
+        + 'Draft ID:   ' + (p.draftId || 'n/a') + '\n'
+        + 'View sheet: ' + sheetLink,
     });
   } catch (err) {
     console.error('Email send failed:', err.message);
@@ -306,6 +287,6 @@ function sendNotificationEmail(p, fileLinks) {
  */
 function doGet() {
   return ContentService
-    .createTextOutput('Credvanta Recovery Group — Claims endpoint is live (v2).')
+    .createTextOutput('Credvanta Recovery Group — Claims endpoint is live (v3).')
     .setMimeType(ContentService.MimeType.TEXT);
 }
