@@ -4,13 +4,18 @@
    Returns { endpoint, params } with SHA-512 signature
    ═══════════════════════════════════════════════════════════════ */
 
-const MERCHANT_ID    = '290682';
-const SIGNING_KEY    = '1448986500a239cd19452089208848afed775d30f3d24ae167314c13f1cd412d';
 const TAYLR_ENDPOINT = 'https://payments.taylr.io/hosted/';
 const REDIRECT_URL   = 'https://www.credvantarecovery.co.uk/payment-complete.html';
 
 export async function onRequestPost(context) {
   try {
+    const MERCHANT_ID = context.env.TAYLR_MERCHANT_ID;
+    const SIGNING_KEY = context.env.TAYLR_SIGNING_KEY;
+
+    if (!MERCHANT_ID || !SIGNING_KEY) {
+      return errorResponse('Payment configuration error — please contact support', 500, context.request);
+    }
+
     const body = await context.request.json();
     const { amount, ref, email } = body;
 
@@ -84,7 +89,12 @@ function phpUrlencode(str) {
 
 function corsHeaders(req) {
   const origin = req?.headers?.get('Origin') || '';
-  const allowed = origin.includes('credvantarecoverygroup.com') ? origin : 'https://www.credvantarecoverygroup.com';
+  const allowed =
+    origin.includes('credvantarecovery.co.uk') ||
+    origin.includes('credvantarecoverygroup.com') ||
+    origin.includes('localhost')
+      ? origin
+      : 'https://www.credvantarecovery.co.uk';
   return {
     'Access-Control-Allow-Origin':  allowed,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
