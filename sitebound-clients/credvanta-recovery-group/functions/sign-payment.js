@@ -9,15 +9,24 @@ const REDIRECT_URL   = 'https://www.credvantarecovery.co.uk/payment-complete.htm
 
 export async function onRequestPost(context) {
   try {
-    const MERCHANT_ID = context.env.TAYLR_MERCHANT_ID;
     const SIGNING_KEY = context.env.TAYLR_SIGNING_KEY;
 
-    if (!MERCHANT_ID || !SIGNING_KEY) {
+    if (!SIGNING_KEY) {
       return errorResponse('Payment configuration error — please contact support', 500, context.request);
     }
 
     const body = await context.request.json();
-    const { amount, ref, email } = body;
+    const { amount, ref, email, merchantId } = body;
+
+    // Use the per-creditor merchant ID from the lookup result if provided,
+    // falling back to the default env var merchant ID
+    const MERCHANT_ID = (merchantId && String(merchantId).trim())
+      ? String(merchantId).trim()
+      : context.env.TAYLR_MERCHANT_ID;
+
+    if (!MERCHANT_ID) {
+      return errorResponse('Payment configuration error — please contact support', 500, context.request);
+    }
 
     if (!amount || !ref) {
       return errorResponse('Missing required fields: amount and ref', 400, context.request);

@@ -255,7 +255,11 @@ function validateModal(fields) {
       const amountField   = document.getElementById('d-amount');
       const amountHint    = document.getElementById('d-amount-hint');
       const amountFull    = document.getElementById('d-amount-full');
-      if (invoiceField) invoiceField.value = ref;
+      if (invoiceField) {
+        invoiceField.value = ref;
+        // Store the creditor's merchant ID so payment routes to the correct account
+        invoiceField.dataset.merchantId = record.payment_token_id || '';
+      }
       if (!blockPayment && amountField) {
         amountField.value = balance.toFixed(2);
         amountField.max   = balance.toFixed(2);
@@ -443,12 +447,14 @@ function validateModal(fields) {
   payBtn.disabled = false;
 
   payBtn.addEventListener('click', () => {
+    const invEl = document.getElementById('d-invoice');
     taylrPayment({
-      ref:     document.getElementById('d-invoice')?.value?.trim() || '',
-      amount:  document.getElementById('d-amount')?.value          || '',
-      email:   document.getElementById('d-email')?.value           || '',
-      btn:     payBtn,
-      errorEl: document.getElementById('d-card-errors'),
+      ref:        invEl?.value?.trim()            || '',
+      amount:     document.getElementById('d-amount')?.value || '',
+      email:      document.getElementById('d-email')?.value  || '',
+      merchantId: invEl?.dataset?.merchantId      || '',
+      btn:        payBtn,
+      errorEl:    document.getElementById('d-card-errors'),
     });
   });
 })();

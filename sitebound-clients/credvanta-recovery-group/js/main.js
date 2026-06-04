@@ -532,7 +532,7 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWDyBaEdV1quwp
    then submits a hidden form to the Taylr hosted payment page.
    ═══════════════════════════════════════════════════════════════ */
 
-async function taylrPayment({ ref, amount, email, btn, errorEl }) {
+async function taylrPayment({ ref, amount, email, merchantId, btn, errorEl }) {
   /* Validate */
   const amtVal = parseFloat(amount);
   if (!amount || isNaN(amtVal) || amtVal <= 0) {
@@ -550,10 +550,13 @@ async function taylrPayment({ ref, amount, email, btn, errorEl }) {
   if (errorEl) errorEl.hidden = true;
 
   try {
+    const payload = { amount: String(amtVal), ref: String(ref), email: email.trim() };
+    if (merchantId) payload.merchantId = String(merchantId);
+
     const res = await fetch('/sign-payment', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ amount: String(amtVal), ref: String(ref), email: email.trim() }),
+      body:    JSON.stringify(payload),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const { endpoint, params, error } = await res.json();
@@ -591,12 +594,14 @@ async function taylrPayment({ ref, amount, email, btn, errorEl }) {
   payBtn.disabled = false;
 
   payBtn.addEventListener('click', () => {
+    const invEl = document.getElementById('pay-invoice-num');
     taylrPayment({
-      ref:     document.getElementById('pay-invoice-num')?.value?.trim() || '',
-      amount:  document.getElementById('pay-amount')?.value              || '',
-      email:   document.getElementById('pay-email')?.value               || '',
-      btn:     payBtn,
-      errorEl: document.getElementById('card-errors'),
+      ref:        invEl?.value?.trim()          || '',
+      amount:     document.getElementById('pay-amount')?.value  || '',
+      email:      document.getElementById('pay-email')?.value   || '',
+      merchantId: invEl?.dataset?.merchantId    || '',
+      btn:        payBtn,
+      errorEl:    document.getElementById('card-errors'),
     });
   });
 })();
@@ -790,7 +795,11 @@ function getStatusMessage(status, balance) {
       const amtEl      = document.getElementById('pay-amount');
       const amtHintEl  = document.getElementById('pay-amount-hint');
       const amtFullEl  = document.getElementById('pay-amount-full');
-      if (invEl) invEl.value = ref;
+      if (invEl) {
+        invEl.value = ref;
+        // Store the creditor's merchant ID so payment routes to the correct account
+        invEl.dataset.merchantId = record.payment_token_id || '';
+      }
       if (!blockPayment && amtEl) {
         amtEl.value = balance.toFixed(2);
         amtEl.max   = balance.toFixed(2);
