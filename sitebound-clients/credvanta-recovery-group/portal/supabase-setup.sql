@@ -11,15 +11,19 @@
 -- ── 1. Client login accounts ──────────────────────────────────
 CREATE TABLE IF NOT EXISTS portal_clients (
   id            UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
-  client_ref    TEXT        UNIQUE NOT NULL,  -- e.g. CRG-001
+  client_ref    TEXT        UNIQUE NOT NULL,  -- human-friendly login (e.g. CRG-001)
+  client_id     TEXT        UNIQUE,           -- links to live_cases.client_id (e.g. CRGC-xxxxx)
   email         TEXT        UNIQUE NOT NULL,
-  full_name     TEXT        NOT NULL,         -- MUST match client_name in live_cases
+  full_name     TEXT,                         -- display name shown in the portal
   password_hash TEXT        NOT NULL,
   password_salt TEXT        NOT NULL,
   active        BOOLEAN     DEFAULT TRUE,
   last_login    TIMESTAMPTZ,
   created_at    TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- If upgrading an existing portal_clients table, run this:
+-- ALTER TABLE portal_clients ADD COLUMN IF NOT EXISTS client_id TEXT UNIQUE;
 
 -- ── 2. Password reset tokens ──────────────────────────────────
 CREATE TABLE IF NOT EXISTS portal_reset_tokens (
@@ -43,14 +47,15 @@ GRANT ALL ON portal_clients      TO service_role;
 GRANT ALL ON portal_reset_tokens TO service_role;
 
 -- ─────────────────────────────────────────────────────────────
--- IMPORTANT: full_name in portal_clients MUST exactly match
--- the client_name value used in your live_cases table.
+-- IMPORTANT: client_id in portal_clients MUST exactly match the
+-- client_id value used in your live_cases table for that client.
 --
--- Example: if cases for a client are stored in live_cases with
---   client_name = 'Growthline Connections Ltd'
+-- Example: if your team's internal record for a client is
+--   live_cases.client_id = 'CRGC-2627050036'
 -- then portal_clients must have:
---   full_name = 'Growthline Connections Ltd'
+--   client_id = 'CRGC-2627050036'
 --
--- The portal filters live_cases WHERE client_name = full_name
--- to show each client only their own cases.
+-- The portal filters live_cases WHERE client_id = portal_clients.client_id
+-- to show each client only their own cases. This is unique even if two
+-- clients share the same business name.
 -- ─────────────────────────────────────────────────────────────
