@@ -84,33 +84,47 @@ export async function onRequestPost(context) {
     }
 
     // ── Push to Google Sheet ───────────────────────────────────
+    // Matches the main site Start a Claim payload exactly — same Apps Script,
+    // same column layout. status=complete + draftId tells v3 Apps Script
+    // to write a new "Complete" row directly (no enquiry update step).
     const payload = new URLSearchParams({
-      source:         'client_portal',
-      name:           client.full_name  || clientRef,
-      business:       clientRef,
-      email:          client.email      || '',
-      phone:          '',
-      debtor:         debtorName,
-      amount:         String(amountOwed),
-      invoiceDate:    caseData.invoice_date   || '',
-      description:    caseData.description    || '',
-      files:          JSON.stringify(encodedFiles),
-      debtor_company: caseData.debtor_company || '',
-      debtor_email:   caseData.debtor_email   || '',
-      debtor_phone:   caseData.debtor_phone   || '',
-      debtor_address: caseData.debtor_address || '',
-      invoice_number: caseData.invoice_number || '',
+      status:          'complete',
+      draftId:         `PORTAL-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
+      source:          'client_portal',
+      name:            client.full_name  || clientRef,
+      business:        clientRef,
+      email:           client.email      || '',
+      phone:           '',
+      debtor:          debtorName,
+      amount:          String(amountOwed),
+      invoiceDate:     caseData.invoice_date   || '',
+      description:     caseData.description    || '',
+      stripeConnected: 'false',
+      files:           JSON.stringify(encodedFiles),
+      debtor_company:  caseData.debtor_company || '',
+      debtor_email:    caseData.debtor_email   || '',
+      debtor_phone:    caseData.debtor_phone   || '',
+      debtor_address:  caseData.debtor_address || '',
+      invoice_number:  caseData.invoice_number || '',
     });
 
-    fetch(APPS_SCRIPT_URL, {
+    // CRITICAL: Cloudflare Workers terminate the function when the response
+    // returns, killing any in-flight fetch() that wasn't awaited or wrapped
+    // in waitUntil(). Without this, the Sheets POST (and the files inside it)
+    // never actually completed.
+    const sheetsPromise = fetch(APPS_SCRIPT_URL, {
       method:  'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body:    payload.toString(),
+    }).then(r => {
+      console.log('[portal/submit-case] sheets response', r.status);
     }).catch(e => console.error('[portal/submit-case] sheets error', e));
+
+    context.waitUntil(sheetsPromise);
 
     // ── Email notification to Credvanta team ───────────────────
     const teamEmail = env.TEAM_EMAIL || 'recover@credvanta.co.uk';
-    fetch('https://api.resend.com/emails', {
+    const emailPromise = fetch('https://api.resend.com/emails', {
       method:  'POST',
       headers: { 'Authorization': `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -136,6 +150,8 @@ export async function onRequestPost(context) {
         `,
       }),
     }).catch(e => console.error('[portal/submit-case] email error', e));
+
+    context.waitUntil(emailPromise);
 
     return json({ success: true }, 201, req);
 
