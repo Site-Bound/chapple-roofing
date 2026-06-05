@@ -11,8 +11,7 @@
 -- ── 1. Client login accounts ──────────────────────────────────
 CREATE TABLE IF NOT EXISTS portal_clients (
   id            UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
-  client_ref    TEXT        UNIQUE NOT NULL,  -- human-friendly login (e.g. CRG-001)
-  client_id     TEXT        UNIQUE,           -- links to live_cases.client_id (e.g. CRGC-xxxxx)
+  client_ref    TEXT        UNIQUE NOT NULL,  -- login + filter (e.g. CRGC-26270501)
   email         TEXT        UNIQUE NOT NULL,
   full_name     TEXT,                         -- display name shown in the portal
   password_hash TEXT        NOT NULL,
@@ -22,8 +21,8 @@ CREATE TABLE IF NOT EXISTS portal_clients (
   created_at    TIMESTAMPTZ DEFAULT NOW()
 );
 
--- If upgrading an existing portal_clients table, run this:
--- ALTER TABLE portal_clients ADD COLUMN IF NOT EXISTS client_id TEXT UNIQUE;
+-- If upgrading from the old schema with a separate client_id column:
+-- ALTER TABLE portal_clients DROP COLUMN IF EXISTS client_id;
 
 -- ── 2. Password reset tokens ──────────────────────────────────
 CREATE TABLE IF NOT EXISTS portal_reset_tokens (
@@ -47,15 +46,19 @@ GRANT ALL ON portal_clients      TO service_role;
 GRANT ALL ON portal_reset_tokens TO service_role;
 
 -- ─────────────────────────────────────────────────────────────
--- IMPORTANT: client_id in portal_clients MUST exactly match the
+-- IMPORTANT: client_ref in portal_clients MUST exactly match the
 -- client_id value used in your live_cases table for that client.
 --
--- Example: if your team's internal record for a client is
---   live_cases.client_id = 'CRGC-2627050036'
--- then portal_clients must have:
---   client_id = 'CRGC-2627050036'
+-- The client's login reference IS their live_cases client_id —
+-- one value, one purpose, no mapping required.
 --
--- The portal filters live_cases WHERE client_id = portal_clients.client_id
--- to show each client only their own cases. This is unique even if two
+-- Example: if your team's internal record for a client is
+--   live_cases.client_id = 'CRGC-26270501'
+-- then create their portal account with:
+--   client_ref = 'CRGC-26270501'
+-- and the client logs in with that same reference.
+--
+-- The portal filters live_cases WHERE client_id = portal_clients.client_ref
+-- to show each client only their own cases. Unique even if two
 -- clients share the same business name.
 -- ─────────────────────────────────────────────────────────────

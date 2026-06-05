@@ -1,10 +1,12 @@
 /* GET /portal/cases
    Returns all live_cases rows for the authenticated client.
-   Filters by client_id (the team's internal unique reference like
-   CRGC-xxxxxxxxxx) rather than client_name, so clients with the same
-   business name are never confused with each other. */
 
-import { json, err, onRequestOptions, verifySession, getBearer, sb }
+   The portal client's login reference (client_ref) is identical to
+   the team's internal client_id used in live_cases — so we filter
+   directly without an intermediate lookup. One unique value per
+   client, no mapping required. */
+
+import { json, err, onRequestOptions, verifySession, getBearer }
   from './_shared.js';
 
 export { onRequestOptions };
@@ -13,18 +15,10 @@ export async function onRequestGet(context) {
   const { request: req, env } = context;
 
   try {
-    // Verify session
+    // Verify session — clientRef IS the live_cases.client_id (CRGC-xxxxxxxxxx)
     const token     = getBearer(req);
     const clientRef = token ? await verifySession(token, env.PORTAL_SESSION_SECRET) : null;
     if (!clientRef) return err('Unauthorised.', 401, req);
-
-    // Look up the client's linked live_cases client_id
-    const clients = await sb(env).select('portal_clients', { client_ref: clientRef }, 'client_id');
-    const client  = clients[0];
-    if (!client?.client_id) {
-      // Account exists but isn't linked to a live_cases client_id yet
-      return json({ cases: [] }, 200, req);
-    }
 
     // Fetch matching rows from live_cases using the service key
     const url = new URL(`${env.SUPABASE_URL}/rest/v1/live_cases`);
@@ -32,7 +26,7 @@ export async function onRequestGet(context) {
       'select',
       'case_reference_number,client_invoice_number,debtor_business_name,debtor_contact_name,original_balance,current_balance,status'
     );
-    url.searchParams.set('client_id', `eq.${client.client_id}`);
+    url.searchParams.set('client_id', `eq.${clientRef}`);
     url.searchParams.set('order', 'id.desc');
 
     const res = await fetch(url.toString(), {
