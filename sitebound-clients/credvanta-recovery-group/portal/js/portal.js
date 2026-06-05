@@ -535,17 +535,21 @@ function initSubmitForm(token) {
     setLoading(btn, true);
 
     try {
+      // Optional chaining so missing form fields (e.g. stale cached HTML)
+      // send blank values rather than crashing the submit handler
+      const val = id => document.getElementById(id)?.value?.trim() ?? '';
+
       const fd = new FormData();
-      fd.append('debtorCompany',    debtorCompany);
+      fd.append('debtorCompany',     debtorCompany);
       fd.append('debtorContactName', debtorName);
-      fd.append('debtorEmail',      document.getElementById('debtor-email').value.trim());
-      fd.append('debtorTelephone',  document.getElementById('debtor-telephone').value.trim());
-      fd.append('debtorMobile',     document.getElementById('debtor-mobile').value.trim());
-      fd.append('debtorAddress',    document.getElementById('debtor-address').value.trim());
-      fd.append('amountOwed',       amountOwed);
-      fd.append('invoiceNumber',    document.getElementById('invoice-number').value.trim());
-      fd.append('invoiceDate',      document.getElementById('invoice-date').value);
-      fd.append('description',      document.getElementById('description').value.trim());
+      fd.append('debtorEmail',       val('debtor-email'));
+      fd.append('debtorTelephone',   val('debtor-telephone'));
+      fd.append('debtorMobile',      val('debtor-mobile'));
+      fd.append('debtorAddress',     val('debtor-address'));
+      fd.append('amountOwed',        amountOwed);
+      fd.append('invoiceNumber',     val('invoice-number'));
+      fd.append('invoiceDate',       document.getElementById('invoice-date')?.value ?? '');
+      fd.append('description',       val('description'));
 
       selectedFiles.forEach(f => fd.append('files', f));
 
