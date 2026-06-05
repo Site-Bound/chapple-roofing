@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════
- * CREDVANTA RECOVERY GROUP — Google Apps Script  (v3)
+ * CREDVANTA RECOVERY GROUP — Google Apps Script  (v4)
  * Receives claim form submissions → Google Sheets + Google Drive
  * ═══════════════════════════════════════════════════════════════
  *
@@ -41,33 +41,41 @@ var DRIVE_FOLDER_ID = 'REPLACE_WITH_YOUR_DRIVE_FOLDER_ID';
 var SHEET_NAME         = 'Claims';
 var NOTIFICATION_EMAIL = 'recover@credvanta.co.uk';
 
-// Column indexes (0-based) — columns A-L match the existing v1
-// sheet exactly so no existing data is displaced.
+// Column indexes (0-based) — matches the sheet's current layout
+// after the client added 5 debtor-contact columns (G-K) and pushed
+// all downstream columns to the right.
 var COL = {
-  timestamp:   0,   // A
-  name:        1,   // B
-  business:    2,   // C
-  email:       3,   // D
-  phone:       4,   // E
-  debtor:      5,   // F
-  amount:      6,   // G
-  invoiceDate: 7,   // H
-  description: 8,   // I
-  stripe:      9,   // J
-  files:       10,  // K
-  submissionId:11,  // L  (Draft ID stored here — same purpose as old Submission ID)
-  status:      12,  // M  (new — appended after existing columns)
-  consent:     13,  // N  (new — appended after existing columns)
+  timestamp:              0,   // A
+  name:                   1,   // B
+  business:               2,   // C
+  email:                  3,   // D
+  phone:                  4,   // E
+  debtor_company:         5,   // F (was: debtor)
+  debtor_contact_name:    6,   // G (new)
+  debtor_contact_email:   7,   // H (new)
+  debtor_contact_telephone: 8, // I (new)
+  debtor_contact_mobile:  9,   // J (new)
+  debtor_address:         10,  // K (new)
+  amount:                 11,  // L (was 6)
+  invoiceDate:            12,  // M (was 7)
+  description:            13,  // N (was 8)
+  stripe:                 14,  // O (was 9)
+  files:                  15,  // P (was 10)
+  submissionId:           16,  // Q (was 11)
+  status:                 17,  // R (was 12)
+  consent:                18,  // S (was 13)
 };
 
-var TOTAL_COLS = 14;
+var TOTAL_COLS = 19;
 
 // Headers written only when the sheet is brand new and empty.
-// Existing sheets keep their current headers — Status and Consent
-// columns (M, N) will appear without a header until added manually.
+// Existing sheets keep their current (manually-added) headers.
 var HEADERS = [
   'Timestamp', 'Name', 'Business Name', 'Email', 'Phone',
-  'Debtor Company', 'Invoice Amount (£)', 'Invoice Date', 'Description',
+  'Debtor Company', 'Debtor Contact Name',
+  'Debtor contact email', 'Debtor contact telephone', 'Debtor contact mobile',
+  'Debtor Address',
+  'Invoice Amount (£)', 'Invoice Date', 'Description',
   'Stripe Connected', 'Files (Drive Links)', 'Submission ID',
   'Status', 'Consent to Contact',
 ];
@@ -166,40 +174,51 @@ function appendEnquiry(sheet, p) {
 
 /**
  * Stage 2 — append a complete row (no matching enquiry found).
+ * Backward compatible: accepts `debtor` as a fallback for `debtor_company`
+ * so older payloads still land correctly.
  */
 function appendComplete(sheet, p, fileLinks) {
   var row = blankRow();
-  row[COL.timestamp]    = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm:ss');
-  row[COL.name]         = p.name            || '';
-  row[COL.business]     = p.business        || '';
-  row[COL.email]        = p.email           || '';
-  row[COL.phone]        = p.phone           || '';
-  row[COL.debtor]       = p.debtor          || '';
-  row[COL.amount]       = p.amount          || '';
-  row[COL.invoiceDate]  = p.invoiceDate     || '';
-  row[COL.description]  = p.description     || '';
-  row[COL.stripe]       = p.stripeConnected === 'true' ? 'Yes' : 'No';
-  row[COL.files]        = fileLinks;
-  row[COL.submissionId] = p.draftId         || Utilities.getUuid();
-  row[COL.status]       = 'Complete';
-  row[COL.consent]      = p.consent         || '';
+  row[COL.timestamp]                = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm:ss');
+  row[COL.name]                     = p.name                     || '';
+  row[COL.business]                 = p.business                 || '';
+  row[COL.email]                    = p.email                    || '';
+  row[COL.phone]                    = p.phone                    || '';
+  row[COL.debtor_company]           = p.debtor_company           || p.debtor || '';
+  row[COL.debtor_contact_name]      = p.debtor_contact_name      || '';
+  row[COL.debtor_contact_email]     = p.debtor_contact_email     || p.debtor_email || '';
+  row[COL.debtor_contact_telephone] = p.debtor_contact_telephone || p.debtor_phone || '';
+  row[COL.debtor_contact_mobile]    = p.debtor_contact_mobile    || '';
+  row[COL.debtor_address]           = p.debtor_address           || '';
+  row[COL.amount]                   = p.amount                   || '';
+  row[COL.invoiceDate]              = p.invoiceDate              || '';
+  row[COL.description]              = p.description              || '';
+  row[COL.stripe]                   = p.stripeConnected === 'true' ? 'Yes' : 'No';
+  row[COL.files]                    = fileLinks;
+  row[COL.submissionId]             = p.draftId                  || Utilities.getUuid();
+  row[COL.status]                   = 'Complete';
+  row[COL.consent]                  = p.consent                  || '';
   sheet.appendRow(row);
 }
 
 /**
  * Stage 2 — update an existing Enquiry row in place.
- * Only fills in the blank debt columns; leaves contact columns intact.
+ * Only fills in the blank debt/debtor columns; leaves claimant contact intact.
  */
 function updateRow(sheet, rowIndex, p, fileLinks) {
-  // Update cell-by-cell so contact details already in the row are preserved
-  sheet.getRange(rowIndex, COL.debtor       + 1).setValue(p.debtor          || '');
-  sheet.getRange(rowIndex, COL.amount       + 1).setValue(p.amount          || '');
-  sheet.getRange(rowIndex, COL.invoiceDate  + 1).setValue(p.invoiceDate     || '');
-  sheet.getRange(rowIndex, COL.description  + 1).setValue(p.description     || '');
-  sheet.getRange(rowIndex, COL.stripe       + 1).setValue(p.stripeConnected === 'true' ? 'Yes' : 'No');
-  sheet.getRange(rowIndex, COL.files        + 1).setValue(fileLinks);
-  sheet.getRange(rowIndex, COL.status       + 1).setValue('Complete');
-  sheet.getRange(rowIndex, COL.consent      + 1).setValue(p.consent         || '');
+  sheet.getRange(rowIndex, COL.debtor_company           + 1).setValue(p.debtor_company           || p.debtor || '');
+  sheet.getRange(rowIndex, COL.debtor_contact_name      + 1).setValue(p.debtor_contact_name      || '');
+  sheet.getRange(rowIndex, COL.debtor_contact_email     + 1).setValue(p.debtor_contact_email     || p.debtor_email || '');
+  sheet.getRange(rowIndex, COL.debtor_contact_telephone + 1).setValue(p.debtor_contact_telephone || p.debtor_phone || '');
+  sheet.getRange(rowIndex, COL.debtor_contact_mobile    + 1).setValue(p.debtor_contact_mobile    || '');
+  sheet.getRange(rowIndex, COL.debtor_address           + 1).setValue(p.debtor_address           || '');
+  sheet.getRange(rowIndex, COL.amount                   + 1).setValue(p.amount                   || '');
+  sheet.getRange(rowIndex, COL.invoiceDate              + 1).setValue(p.invoiceDate              || '');
+  sheet.getRange(rowIndex, COL.description              + 1).setValue(p.description              || '');
+  sheet.getRange(rowIndex, COL.stripe                   + 1).setValue(p.stripeConnected === 'true' ? 'Yes' : 'No');
+  sheet.getRange(rowIndex, COL.files                    + 1).setValue(fileLinks);
+  sheet.getRange(rowIndex, COL.status                   + 1).setValue('Complete');
+  sheet.getRange(rowIndex, COL.consent                  + 1).setValue(p.consent                  || '');
 }
 
 /**
@@ -287,6 +306,6 @@ function sendNotificationEmail(p, fileLinks) {
  */
 function doGet() {
   return ContentService
-    .createTextOutput('Credvanta Recovery Group — Claims endpoint is live (v3).')
+    .createTextOutput('Credvanta Recovery Group — Claims endpoint is live (v4).')
     .setMimeType(ContentService.MimeType.TEXT);
 }

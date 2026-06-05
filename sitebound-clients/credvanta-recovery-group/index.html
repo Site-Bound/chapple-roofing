@@ -233,9 +233,35 @@
                     <p>Give us the details of what's owed and who owes it.</p>
                   </div>
                   <div class="ms-fields">
-                    <div class="form-group">
-                      <label for="ms-debtor">Debtor Company Name <span aria-hidden="true">*</span></label>
-                      <input type="text" id="ms-debtor" name="debtor" placeholder="Company that owes you money" required>
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label for="ms-debtor">Debtor Company <span aria-hidden="true">*</span></label>
+                        <input type="text" id="ms-debtor" name="debtor" placeholder="Company that owes you money" required>
+                      </div>
+                      <div class="form-group">
+                        <label for="ms-debtor-contact">Debtor Contact Name</label>
+                        <input type="text" id="ms-debtor-contact" name="debtorContactName" placeholder="Primary contact at the company">
+                      </div>
+                    </div>
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label for="ms-debtor-email">Debtor Contact Email</label>
+                        <input type="email" id="ms-debtor-email" name="debtorContactEmail" placeholder="contact@debtorcompany.com">
+                      </div>
+                      <div class="form-group">
+                        <label for="ms-debtor-tel">Debtor Contact Telephone</label>
+                        <input type="tel" id="ms-debtor-tel" name="debtorContactTelephone" placeholder="0161 000 0000">
+                      </div>
+                    </div>
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label for="ms-debtor-mobile">Debtor Contact Mobile</label>
+                        <input type="tel" id="ms-debtor-mobile" name="debtorContactMobile" placeholder="07700 000000">
+                      </div>
+                      <div class="form-group">
+                        <label for="ms-debtor-address">Debtor Address</label>
+                        <input type="text" id="ms-debtor-address" name="debtorAddress" placeholder="Full postal address">
+                      </div>
                     </div>
                     <div class="form-row">
                       <div class="form-group">
@@ -249,7 +275,7 @@
                     </div>
                     <div class="form-group">
                       <label for="ms-description">Brief Description of the Debt <span aria-hidden="true">*</span></label>
-                      <textarea id="ms-description" name="description" rows="4" placeholder="e.g. Payment for goods delivered in January 2025, invoice ref INV-001. Debtor has not responded to three payment requests." required></textarea>
+                      <textarea id="ms-description" name="description" rows="3" placeholder="e.g. Payment for goods delivered in January 2025, invoice ref INV-001. Debtor has not responded to three payment requests." required></textarea>
                     </div>
                   </div>
                 </div>

@@ -517,8 +517,14 @@ function initSubmitForm(token) {
     const debtorName = document.getElementById('debtor-name').value.trim();
     const amountOwed = document.getElementById('amount-owed').value.trim();
 
+    const debtorCompany = document.getElementById('debtor-company').value.trim();
+
+    if (!debtorCompany) {
+      showError(errBox, errText, 'Debtor company is required.');
+      return;
+    }
     if (!debtorName) {
-      showError(errBox, errText, 'Debtor name is required.');
+      showError(errBox, errText, 'Debtor contact name is required.');
       return;
     }
     if (!amountOwed || parseFloat(amountOwed) <= 0) {
@@ -530,15 +536,16 @@ function initSubmitForm(token) {
 
     try {
       const fd = new FormData();
-      fd.append('debtorName',    debtorName);
-      fd.append('debtorCompany', document.getElementById('debtor-company').value.trim());
-      fd.append('debtorEmail',   document.getElementById('debtor-email').value.trim());
-      fd.append('debtorPhone',   document.getElementById('debtor-phone').value.trim());
-      fd.append('debtorAddress', document.getElementById('debtor-address').value.trim());
-      fd.append('amountOwed',    amountOwed);
-      fd.append('invoiceNumber', document.getElementById('invoice-number').value.trim());
-      fd.append('invoiceDate',   document.getElementById('invoice-date').value);
-      fd.append('description',   document.getElementById('description').value.trim());
+      fd.append('debtorCompany',    debtorCompany);
+      fd.append('debtorContactName', debtorName);
+      fd.append('debtorEmail',      document.getElementById('debtor-email').value.trim());
+      fd.append('debtorTelephone',  document.getElementById('debtor-telephone').value.trim());
+      fd.append('debtorMobile',     document.getElementById('debtor-mobile').value.trim());
+      fd.append('debtorAddress',    document.getElementById('debtor-address').value.trim());
+      fd.append('amountOwed',       amountOwed);
+      fd.append('invoiceNumber',    document.getElementById('invoice-number').value.trim());
+      fd.append('invoiceDate',      document.getElementById('invoice-date').value);
+      fd.append('description',      document.getElementById('description').value.trim());
 
       selectedFiles.forEach(f => fd.append('files', f));
 

@@ -234,7 +234,9 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWDyBaEdV1quwp
      over. Data is cleared on successful submit. */
   const DRAFT_KEY    = 'crg_claim_draft';
   const DRAFT_FIELDS = ['ms-name','ms-business','ms-email','ms-phone',
-                        'ms-debtor','ms-amount','ms-date','ms-description'];
+                        'ms-debtor','ms-debtor-contact','ms-debtor-email',
+                        'ms-debtor-tel','ms-debtor-mobile','ms-debtor-address',
+                        'ms-amount','ms-date','ms-description'];
   const DRAFT_CHECKS = ['ms-consent']; // checkboxes handled separately
 
   function saveDraft() {
@@ -341,19 +343,29 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWDyBaEdV1quwp
        The trade-off is we cannot read the response — but the data
        is reliably written to the Sheet regardless.           ── */
     const payload = new URLSearchParams({
-      status:          'complete',
-      draftId:         getDraftId(),
-      name:            document.getElementById('ms-name')?.value        || '',
-      business:        document.getElementById('ms-business')?.value    || '',
-      email:           document.getElementById('ms-email')?.value       || '',
-      phone:           document.getElementById('ms-phone')?.value       || '',
-      consent:         document.getElementById('ms-consent')?.checked ? 'Yes' : 'No',
-      debtor:          document.getElementById('ms-debtor')?.value      || '',
-      amount:          document.getElementById('ms-amount')?.value      || '',
-      invoiceDate:     document.getElementById('ms-date')?.value        || '',
-      description:     document.getElementById('ms-description')?.value || '',
-      stripeConnected: String(stripeConnected),
-      files:           JSON.stringify(encodedFiles),
+      status:                   'complete',
+      draftId:                  getDraftId(),
+      // Claimant
+      name:                     document.getElementById('ms-name')?.value     || '',
+      business:                 document.getElementById('ms-business')?.value || '',
+      email:                    document.getElementById('ms-email')?.value    || '',
+      phone:                    document.getElementById('ms-phone')?.value    || '',
+      consent:                  document.getElementById('ms-consent')?.checked ? 'Yes' : 'No',
+      // Debtor company + contact details (matches new sheet columns F-K)
+      debtor_company:           document.getElementById('ms-debtor')?.value          || '',
+      debtor_contact_name:      document.getElementById('ms-debtor-contact')?.value  || '',
+      debtor_contact_email:     document.getElementById('ms-debtor-email')?.value    || '',
+      debtor_contact_telephone: document.getElementById('ms-debtor-tel')?.value      || '',
+      debtor_contact_mobile:    document.getElementById('ms-debtor-mobile')?.value   || '',
+      debtor_address:           document.getElementById('ms-debtor-address')?.value  || '',
+      // Backward-compatible alias — Apps Script falls back to this if debtor_company is empty
+      debtor:                   document.getElementById('ms-debtor')?.value          || '',
+      // Debt details
+      amount:                   document.getElementById('ms-amount')?.value      || '',
+      invoiceDate:              document.getElementById('ms-date')?.value        || '',
+      description:              document.getElementById('ms-description')?.value || '',
+      stripeConnected:          String(stripeConnected),
+      files:                    JSON.stringify(encodedFiles),
     });
 
     try {
