@@ -398,6 +398,7 @@ function initSubmitForm(token) {
   const successPanel = document.getElementById('submit-success');
   const clearBtn     = document.getElementById('clear-form-btn');
   const anotherBtn   = document.getElementById('submit-another-btn');
+  const successLogoutBtn = document.getElementById('submit-logout-btn');
   const fileInput    = document.getElementById('file-input');
   const fileDrop     = document.getElementById('file-drop');
   const fileList     = document.getElementById('file-list');
@@ -499,6 +500,14 @@ function initSubmitForm(token) {
     form.style.display         = '';
   });
 
+  // Sign out from success panel
+  if (successLogoutBtn) {
+    successLogoutBtn.addEventListener('click', () => {
+      clearSession();
+      window.location.replace('/portal/');
+    });
+  }
+
   // ── Form submit ────────────────────────────────
 
   form.addEventListener('submit', async (e) => {
@@ -552,9 +561,10 @@ function initSubmitForm(token) {
         return;
       }
 
-      // Show success
+      // Show success — must use explicit 'block' because .success-panel
+      // has display:none in CSS; setting to '' would fall back to that rule.
       form.style.display         = 'none';
-      successPanel.style.display = '';
+      successPanel.style.display = 'block';
 
       // Refresh cases list and badge in background
       loadCases(token);

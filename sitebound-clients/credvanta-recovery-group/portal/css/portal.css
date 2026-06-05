@@ -804,6 +804,17 @@ a:hover { text-decoration: underline; }
   margin-bottom: 8px;
 }
 
+.success-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+@media (max-width: 480px) {
+  .success-actions { flex-direction: column; align-items: stretch; width: 100%; max-width: 280px; margin-left: auto; margin-right: auto; }
+}
+
 .success-panel p {
   color: var(--gray-600);
   font-size: 0.875rem;
