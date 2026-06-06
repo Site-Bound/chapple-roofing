@@ -282,27 +282,26 @@ a:hover { text-decoration: underline; }
 }
 
 .portal-topbar {
-  background: #F4F1E9; /* warm professional cream — premium feel, sits well against navy */
+  background: var(--off-white); /* matches the page background — header blends seamlessly */
   padding: 0 24px;
-  height: 80px;
+  height: 96px; /* taller again for the bigger logo */
   display: flex;
   align-items: center;
   justify-content: space-between;
   position: sticky;
   top: 0;
   z-index: 50;
-  border-bottom: 1px solid #E8E4D8;
-  box-shadow: 0 1px 3px rgba(0,0,0,.04);
+  border-bottom: 1px solid var(--gray-200);
 }
 
 .topbar-logo {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 18px;
 }
 
 .topbar-logo img {
-  height: 58px; /* enlarged ~60% from 36px */
+  height: 76px; /* enlarged ~30% from 58px */
   width: auto;
 }
 
@@ -320,9 +319,9 @@ a:hover { text-decoration: underline; }
 }
 
 .btn-logout {
-  background: rgba(255,255,255,0.7);
+  background: var(--white);
   color: var(--navy);
-  border: 1px solid #E0DBCD;
+  border: 1px solid var(--gray-200);
   padding: 8px 16px;
   border-radius: 6px;
   font-size: 0.825rem;
@@ -941,9 +940,9 @@ a:hover { text-decoration: underline; }
 /* ─── RESPONSIVE ─────────────────────────────────────────────── */
 @media (max-width: 680px) {
   .portal-content       { padding: 16px; }
-  .portal-topbar        { padding: 0 16px; height: 68px; }
-  .topbar-logo          { gap: 10px; }
-  .topbar-logo img      { height: 46px; } /* scaled-down version of the 58px desktop logo */
+  .portal-topbar        { padding: 0 16px; height: 78px; }
+  .topbar-logo          { gap: 12px; }
+  .topbar-logo img      { height: 58px; } /* scaled-down version of the 76px desktop logo */
   .topbar-client strong { font-size: 0.88rem; }
   .topbar-client        { font-size: 0.7rem; line-height: 1.3; }
   .btn-logout           { padding: 7px 12px; font-size: 0.78rem; }
