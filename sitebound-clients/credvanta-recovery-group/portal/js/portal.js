@@ -139,11 +139,17 @@ function liveStatusClass(status) {
   return 'badge-submitted';
 }
 
-/* Returns true for cases that are still open (not settled/paid/closed) */
+/* Returns true for cases that are still open. Closed = paid in full,
+   settlement accepted, resolved, unrecoverable, or generic closed/settled. */
 function isOpenCase(status) {
   if (!status) return true;
   const s = status.toLowerCase();
-  return !(s.includes('settled') || s.includes('paid') || s.includes('closed'));
+  if (s.includes('unrecover'))                          return false;
+  if (s.includes('resolved'))                           return false;
+  if (s.includes('paid') && s.includes('full'))         return false;
+  if (s.includes('settlement') && s.includes('accept')) return false;
+  if (s.includes('settled') || s.includes('closed'))    return false;
+  return true;
 }
 
 function statusBadge(status) {
@@ -587,17 +593,147 @@ function initSubmitForm(token) {
   });
 }
 
-/* ── Status messages (mirrors main site debtor lookup) ───────── */
+/* ── Status messages ──────────────────────────────────────────
+   Free-text status from live_cases is matched (case-insensitive,
+   substring) against this catalogue. Each entry has:
+   - type:    visual treatment (action/escalated/progress/completed/closed)
+   - header:  optional bold header line (e.g. "Client Action Required")
+   - body:    array of paragraphs
+   Returns null when no match found (no message shown).
+   ──────────────────────────────────────────────────────────── */
 
-const STATUS_MESSAGES = {
-  submitted:   { type: 'info',    text: 'Your case has been received and is being reviewed by our team. We will be in touch shortly.' },
-  active:      { type: 'info',    text: 'Your case is being actively worked on. Our team will keep you updated on progress.' },
-  letter_sent: { type: 'info',    text: 'A formal demand letter has been sent to the debtor. We are awaiting their response.' },
-  in_dispute:  { type: 'warning', text: 'The debtor has raised a dispute. Our team is reviewing the details and will contact you.' },
-  legal:       { type: 'warning', text: 'Your case has been referred for legal action. Our team will update you as proceedings progress.' },
-  settled:     { type: 'success', text: 'This debt has been successfully recovered. Thank you for using Credvanta Recovery Group.' },
-  closed:      { type: 'info',    text: 'This case has been closed. Please contact us if you have any questions.' },
+const PORTAL_CONTACT_PHONE = '020 8129 1490';
+const PORTAL_CONTACT_TAG   = `<a href="tel:02081291490">${PORTAL_CONTACT_PHONE}</a>`;
+const CONTACT_FOOTER       = `If you have any questions or concerns, please contact our team on ${PORTAL_CONTACT_TAG}. We are available 24 hours a day, 7 days a week.`;
+const EMAIL_FOOTER         = `Please see your emails for full details. ${CONTACT_FOOTER}`;
+
+const CASE_STATUS_MESSAGES = {
+  active: {
+    type: 'progress',
+    body: ['This case is currently active and being worked by our recovery team. We continue to pursue the outstanding balance and will provide updates as activity progresses.'],
+  },
+  partial_payment: {
+    type: 'progress',
+    body: ['A partial payment has been received from the debtor and the outstanding balance has been reduced. We continue to pursue recovery of the remaining balance and will update you as further payments are received.'],
+  },
+  payment_plan: {
+    type: 'progress',
+    body: [
+      'A payment arrangement is currently in place with the debtor. We are actively monitoring the arrangement and will notify you immediately if any agreed payments are missed.',
+      `Please see your emails for full details regarding this arrangement. ${CONTACT_FOOTER}`,
+    ],
+  },
+  proposed_payment_plan: {
+    type: 'action',
+    header: 'Client Action Required',
+    body: [
+      'The debtor has proposed a payment arrangement to clear the outstanding balance. We are currently awaiting your approval before the arrangement can be implemented.',
+      `Please see your emails for full details of the proposed arrangement. ${CONTACT_FOOTER}`,
+    ],
+  },
+  settlement_requested: {
+    type: 'action',
+    header: 'Client Action Required',
+    body: [
+      'The debtor has submitted a settlement offer to resolve this matter. We are currently awaiting your decision before responding to the debtor.',
+      `Please see your emails for full details of the proposed settlement. ${CONTACT_FOOTER}`,
+    ],
+  },
+  settlement_offered: {
+    type: 'progress',
+    body: [
+      'An approved settlement offer has been presented to the debtor. We are currently awaiting their response and will update you as soon as a decision is received.',
+      EMAIL_FOOTER,
+    ],
+  },
+  settlement_accepted: {
+    type: 'completed',
+    body: ['The debtor has accepted the settlement offer and payment has been received. This matter has now been resolved and the case has been successfully closed.'],
+  },
+  legal: {
+    type: 'escalated',
+    header: 'We will always seek your approval before commencing legal action or incurring any legal costs on your behalf.',
+    body: [
+      'This case has been escalated for legal review and/or legal action is being considered or progressed.',
+      `Please see your emails for full details regarding this escalation. ${CONTACT_FOOTER}`,
+    ],
+  },
+  dispute: {
+    type: 'action',
+    header: 'Client Action Required',
+    body: [
+      'The debtor has disputed this debt and the matter is currently under review. Our team is assessing the information available and will update you once the review has been completed.',
+      `Please see your emails for full details regarding the dispute. We may require further evidence or clarification from you. ${CONTACT_FOOTER}`,
+    ],
+  },
+  on_hold: {
+    type: 'progress',
+    body: [
+      'This case is currently on hold and recovery activity has been temporarily paused.',
+      `Please see your emails for further details. ${CONTACT_FOOTER}`,
+    ],
+  },
+  paid_in_full: {
+    type: 'completed',
+    body: ['This debt has been recovered in full and the case has been successfully completed. No further action is required.'],
+  },
+  unrecoverable: {
+    type: 'closed',
+    body: [
+      'Unfortunately, we have been unable to recover this debt and the case has now been returned to you.',
+      'Where legal action was recommended, this status may indicate that the recommendation was declined and recovery options have therefore been exhausted. Please refer to previous correspondence for full details and recommendations.',
+      'Should you wish to proceed with legal action in the future, you may refer the matter back to us at any time and our team will be happy to assist.',
+      CONTACT_FOOTER,
+    ],
+  },
+  resolved: {
+    type: 'completed',
+    body: [
+      'This case has now been closed. A partial payment was recovered from the debtor; however, the remaining balance has been deemed unrecoverable.',
+      `Please see your emails for further information. ${CONTACT_FOOTER}`,
+    ],
+  },
 };
+
+/* Match a free-text live_cases.status against the message catalogue.
+   Order matters — most specific checks first. */
+function getCaseStatusMessage(status) {
+  if (!status) return null;
+  const s = String(status).toLowerCase();
+
+  // Action required (red)
+  if (s.includes('proposed') && (s.includes('plan') || s.includes('arrangement'))) return CASE_STATUS_MESSAGES.proposed_payment_plan;
+  if (s.includes('settlement') && s.includes('request'))                            return CASE_STATUS_MESSAGES.settlement_requested;
+  if (s.includes('dispute'))                                                        return CASE_STATUS_MESSAGES.dispute;
+
+  // Escalated (orange)
+  if (s.includes('legal') || s.includes('court') || s.includes('escalat'))          return CASE_STATUS_MESSAGES.legal;
+
+  // Settlement variants (must check before generic 'settled')
+  if (s.includes('settlement') && s.includes('accept'))                             return CASE_STATUS_MESSAGES.settlement_accepted;
+  if (s.includes('settlement') && (s.includes('offered') || s.includes('present'))) return CASE_STATUS_MESSAGES.settlement_offered;
+
+  // Completed (green)
+  if (s.includes('paid') && s.includes('full'))                                     return CASE_STATUS_MESSAGES.paid_in_full;
+  if (s.includes('resolved'))                                                       return CASE_STATUS_MESSAGES.resolved;
+
+  // Closed unsuccessful (black/grey)
+  if (s.includes('unrecover'))                                                      return CASE_STATUS_MESSAGES.unrecoverable;
+
+  // In progress (blue)
+  if (s.includes('partial'))                                                        return CASE_STATUS_MESSAGES.partial_payment;
+  if ((s.includes('payment') && (s.includes('plan') || s.includes('arrangement'))) || s.includes('instal'))
+                                                                                    return CASE_STATUS_MESSAGES.payment_plan;
+  if (s.includes('hold'))                                                           return CASE_STATUS_MESSAGES.on_hold;
+
+  // Backward-compatible defaults
+  if (s.includes('settled'))                                                        return CASE_STATUS_MESSAGES.settlement_accepted;
+  if (s.includes('paid'))                                                           return CASE_STATUS_MESSAGES.paid_in_full;
+  if (s.includes('active') || s.includes('live') || s.includes('letter') || s.includes('open') || s.includes('submitted'))
+                                                                                    return CASE_STATUS_MESSAGES.active;
+
+  return null;
+}
 
 /* ── Cases Panel ─────────────────────────────────────────── */
 
@@ -788,6 +924,14 @@ function renderCaseCard(c) {
     ? `<div class="case-meta-row"><span class="case-meta-label">Invoice</span><span>${escHtml(c.client_invoice_number)}</span></div>`
     : '';
 
+  // Status message — team-defined text, colour-coded by category
+  const msg = getCaseStatusMessage(c.status);
+  const statusMessageBlock = msg ? `
+    <div class="case-status-message case-status-message--${msg.type}">
+      ${msg.header ? `<p class="case-status-message__header">${escHtml(msg.header)}</p>` : ''}
+      ${msg.body.map(p => `<p>${p}</p>`).join('')}
+    </div>` : '';
+
   return `
     <div class="case-card">
       <div class="case-card-header">
@@ -801,6 +945,7 @@ function renderCaseCard(c) {
         ${refRow}
         ${invRow}
       </div>
+      ${statusMessageBlock}
     </div>`;
 }
 

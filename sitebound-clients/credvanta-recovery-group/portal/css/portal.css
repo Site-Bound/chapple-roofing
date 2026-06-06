@@ -719,6 +719,83 @@ a:hover { text-decoration: underline; }
   padding: 0 20px 14px;
 }
 
+/* ─── CASE STATUS MESSAGE BLOCK ──────────────────────────────── */
+.case-status-message {
+  margin: 0 20px 18px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  border-left: 4px solid;
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+.case-status-message p {
+  margin: 0;
+}
+.case-status-message p + p {
+  margin-top: 8px;
+}
+.case-status-message a {
+  font-weight: 600;
+}
+.case-status-message__header {
+  font-weight: 700 !important;
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 8px !important;
+}
+
+/* Client Action Required — red */
+.case-status-message--action {
+  background: #FEF2F2;
+  border-color: #DC2626;
+  color: #7F1D1D;
+}
+.case-status-message--action a              { color: #991B1B; }
+.case-status-message--action .case-status-message__header { color: #DC2626; }
+
+/* Escalated / Legal — amber */
+.case-status-message--escalated {
+  background: #FFF7ED;
+  border-color: #EA580C;
+  color: #7C2D12;
+}
+.case-status-message--escalated a              { color: #9A3412; }
+.case-status-message--escalated .case-status-message__header {
+  color: #C2410C;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+/* In Progress — blue */
+.case-status-message--progress {
+  background: #EFF6FF;
+  border-color: var(--blue);
+  color: #1E3A8A;
+}
+.case-status-message--progress a              { color: #1E40AF; }
+.case-status-message--progress .case-status-message__header { color: var(--blue); }
+
+/* Completed — green */
+.case-status-message--completed {
+  background: #F0FDF4;
+  border-color: #16A34A;
+  color: #14532D;
+}
+.case-status-message--completed a              { color: #166534; }
+.case-status-message--completed .case-status-message__header { color: #15803D; }
+
+/* Closed unsuccessful — slate */
+.case-status-message--closed {
+  background: #F3F4F6;
+  border-color: #4B5563;
+  color: #1F2937;
+}
+.case-status-message--closed a              { color: #1F2937; }
+.case-status-message--closed .case-status-message__header { color: #1F2937; }
+
 .case-meta-row {
   display: flex;
   align-items: center;
@@ -968,6 +1045,7 @@ a:hover { text-decoration: underline; }
   .case-balance-value { font-size: 0.95rem; }
   .case-balance-row--outstanding .case-balance-value { font-size: 1.05rem; }
   .case-meta        { padding: 0 16px 14px; gap: 4px 14px; }
+  .case-status-message { margin: 0 16px 16px; padding: 12px 14px; font-size: 0.825rem; }
 
   /* Search bar */
   .cases-search-wrap { width: 100%; }
