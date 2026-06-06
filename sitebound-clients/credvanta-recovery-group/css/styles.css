@@ -32,7 +32,15 @@
 
 /* ─── RESET ──────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; font-size: 16px; }
+html { scroll-behavior: smooth; font-size: 16px; scroll-padding-top: 110px; }
+
+/* Anchor links land at the top of the section — not behind the fixed header.
+   Belt-and-braces: html scroll-padding-top covers cross-page jumps, and
+   section[id]/[id] scroll-margin-top covers in-page jumps. */
+section[id],
+[id] {
+  scroll-margin-top: 110px;
+}
 body {
   font-family: var(--font-body);
   color: var(--gray-800);
@@ -2052,6 +2060,10 @@ blockquote cite span { font-size: 0.82rem; color: var(--gray-400); }
 }
 
 @media (max-width: 680px) {
+  /* Header is shorter on mobile (single row, no top tagline strip) — reduce offset */
+  html { scroll-padding-top: 80px; }
+  section[id], [id] { scroll-margin-top: 80px; }
+
   /* ── Container ── */
   .container { padding: 0 16px; }
 
