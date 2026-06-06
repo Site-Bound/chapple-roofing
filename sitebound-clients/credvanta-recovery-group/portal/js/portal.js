@@ -139,14 +139,15 @@ function liveStatusClass(status) {
   return 'badge-submitted';
 }
 
-/* Returns true for cases that are still open. Closed = paid in full,
-   settlement accepted, resolved, unrecoverable, or generic closed/settled. */
+/* Returns true for cases that are still open. Closed = paid in full /
+   paid, settlement accepted, resolved, unrecoverable, or generic
+   closed/settled. 'Partially Paid' explicitly stays ongoing. */
 function isOpenCase(status) {
   if (!status) return true;
   const s = status.toLowerCase();
   if (s.includes('unrecover'))                          return false;
   if (s.includes('resolved'))                           return false;
-  if (s.includes('paid') && s.includes('full'))         return false;
+  if (s.includes('paid') && !s.includes('partial'))     return false; // 'paid' or 'paid in full', NOT 'partially paid'
   if (s.includes('settlement') && s.includes('accept')) return false;
   if (s.includes('settled') || s.includes('closed'))    return false;
   return true;
