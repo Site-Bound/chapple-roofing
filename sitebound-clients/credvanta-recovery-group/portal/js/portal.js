@@ -150,6 +150,8 @@ function isOpenCase(status) {
   if (s.includes('paid') && !s.includes('partial'))     return false; // 'paid' or 'paid in full', NOT 'partially paid'
   if (s.includes('settlement') && s.includes('accept')) return false;
   if (s.includes('settled') || s.includes('closed'))    return false;
+  // FCA regulated / consumer debt — closed and returned to client
+  if (s.includes('consumer') || s.includes('fca regulated') || s.includes('regulated debt')) return false;
   return true;
 }
 
@@ -694,6 +696,17 @@ const CASE_STATUS_MESSAGES = {
       `Please see your emails for further information. ${CONTACT_FOOTER}`,
     ],
   },
+  fca_regulated: {
+    type: 'closed',
+    header: 'FCA Regulated Debt / Consumer Debt — Case Closed',
+    body: [
+      'This case has been identified as a debt that falls within a regulated category, which may include consumer debts, regulated credit agreements, or other debts subject to FCA regulation.',
+      'As Credvanta operates exclusively as a business-to-business (B2B) debt recovery agency, we are unable to process or recover debts that fall within regulated categories, including consumer debts and regulated credit agreements.',
+      'As a result, this case has been closed and returned to you without action.',
+      `If you believe this debt has been incorrectly classified or would like us to review the matter further, please contact our team on ${PORTAL_CONTACT_TAG}. We are available 24 hours a day, 7 days a week.`,
+      'We apologise that we are unable to assist with this matter on this occasion.',
+    ],
+  },
 };
 
 /* Match a free-text live_cases.status against the message catalogue.
@@ -701,6 +714,12 @@ const CASE_STATUS_MESSAGES = {
 function getCaseStatusMessage(status) {
   if (!status) return null;
   const s = String(status).toLowerCase();
+
+  // FCA-regulated / consumer debt — must be checked first because these
+  // cases are returned without action and shouldn't fall through to other
+  // status messages.
+  if (s.includes('fca regulated') || s.includes('regulated debt') || s.includes('consumer'))
+    return CASE_STATUS_MESSAGES.fca_regulated;
 
   // Action required (red)
   if (s.includes('proposed') && (s.includes('plan') || s.includes('arrangement'))) return CASE_STATUS_MESSAGES.proposed_payment_plan;
