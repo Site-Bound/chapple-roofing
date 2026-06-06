@@ -601,35 +601,104 @@ const STATUS_MESSAGES = {
 
 /* ── Cases Panel ─────────────────────────────────────────── */
 
-let _allCases = []; // stored for client-side search filtering
+let _allCases     = []; // all cases for the client
+let _activeSubtab = 'ongoing'; // 'ongoing' or 'closed'
+
+/* Apply both sub-tab filter AND search filter, then render */
+function refreshCasesView() {
+  const grid       = document.getElementById('cases-grid');
+  const noResults  = document.getElementById('cases-no-results');
+  const subEmpty   = document.getElementById('subtab-empty');
+  const subEmptyTxt = document.getElementById('subtab-empty-text');
+  const searchInput = document.getElementById('cases-search');
+  const q = (searchInput?.value || '').trim().toLowerCase();
+
+  // Filter by sub-tab
+  const bySubtab = _allCases.filter(c =>
+    _activeSubtab === 'ongoing' ? isOpenCase(c.status) : !isOpenCase(c.status)
+  );
+
+  // Apply search if any
+  const filtered = q ? bySubtab.filter(c => caseMatchesSearch(c, q)) : bySubtab;
+
+  // Reset display states
+  if (noResults) noResults.style.display = 'none';
+  if (subEmpty)  subEmpty.style.display  = 'none';
+
+  if (filtered.length === 0) {
+    grid.style.display = 'none';
+    if (q) {
+      if (noResults) noResults.style.display = '';
+    } else {
+      if (subEmptyTxt) subEmptyTxt.textContent = `No ${_activeSubtab} cases.`;
+      if (subEmpty)    subEmpty.style.display = '';
+    }
+    return;
+  }
+
+  renderCasesGrid(filtered);
+}
+
+/* Wire up the Ongoing/Closed sub-tab buttons (idempotent) */
+function initSubtabs() {
+  const subtabBtns = document.querySelectorAll('.subtab-btn');
+  subtabBtns.forEach(btn => {
+    if (btn.dataset.wired === '1') return;
+    btn.dataset.wired = '1';
+    btn.addEventListener('click', () => {
+      _activeSubtab = btn.dataset.subtab;
+      subtabBtns.forEach(b => {
+        b.classList.toggle('active', b === btn);
+        b.setAttribute('aria-selected', b === btn ? 'true' : 'false');
+      });
+      refreshCasesView();
+    });
+  });
+}
 
 async function loadCases(token) {
-  const loading    = document.getElementById('cases-loading');
-  const empty      = document.getElementById('cases-empty');
-  const noResults  = document.getElementById('cases-no-results');
-  const grid       = document.getElementById('cases-grid');
-  const countBadge = document.getElementById('cases-count');
-  const searchWrap = document.getElementById('cases-search-wrap');
+  const loading       = document.getElementById('cases-loading');
+  const empty         = document.getElementById('cases-empty');
+  const countBadge    = document.getElementById('cases-count');
+  const searchWrap    = document.getElementById('cases-search-wrap');
+  const subtabsWrap   = document.getElementById('cases-subtabs');
+  const countOngoing  = document.getElementById('count-ongoing');
+  const countClosed   = document.getElementById('count-closed');
+
+  /* Helper to apply case data once received (works for demo and live) */
+  function applyCases(cases) {
+    loading.style.display = 'none';
+    _allCases = cases;
+
+    const ongoing = _allCases.filter(c => isOpenCase(c.status)).length;
+    const closed  = _allCases.length - ongoing;
+
+    countBadge.textContent   = ongoing;
+    countBadge.style.display = ongoing > 0 ? '' : 'none';
+    if (countOngoing) countOngoing.textContent = ongoing;
+    if (countClosed)  countClosed.textContent  = closed;
+
+    if (_allCases.length === 0) {
+      empty.style.display = '';
+      return;
+    }
+
+    if (subtabsWrap) subtabsWrap.style.display = '';
+    if (searchWrap)  searchWrap.style.display  = '';
+    initSubtabs();
+    refreshCasesView();
+
+    // Wire up search (idempotent)
+    const searchInput = document.getElementById('cases-search');
+    if (searchInput && !searchInput.dataset.wired) {
+      searchInput.dataset.wired = '1';
+      searchInput.addEventListener('input', refreshCasesView);
+    }
+  }
 
   // Demo mode — skip API, use mock data
   if (isDemo()) {
-    loading.style.display = 'none';
-    _allCases = DEMO_CASES;
-    const activeCount = _allCases.filter(c => isOpenCase(c.status)).length;
-    countBadge.textContent   = activeCount;
-    countBadge.style.display = activeCount > 0 ? '' : 'none';
-    if (searchWrap) searchWrap.style.display = '';
-    renderCasesGrid(_allCases);
-    const searchInput = document.getElementById('cases-search');
-    if (searchInput) {
-      searchInput.addEventListener('input', () => {
-        const q = searchInput.value.trim().toLowerCase();
-        if (!q) { if (noResults) noResults.style.display = 'none'; renderCasesGrid(_allCases); return; }
-        const filtered = _allCases.filter(c => caseMatchesSearch(c, q));
-        if (filtered.length === 0) { grid.style.display = 'none'; if (noResults) noResults.style.display = ''; }
-        else { if (noResults) noResults.style.display = 'none'; renderCasesGrid(filtered); }
-      });
-    }
+    applyCases(DEMO_CASES);
     return;
   }
 
@@ -645,50 +714,15 @@ async function loadCases(token) {
     }
 
     const data = await res.json();
-    loading.style.display = 'none';
 
     if (!res.ok || !Array.isArray(data.cases)) {
+      loading.style.display = 'none';
       empty.style.display = '';
       return;
     }
 
-    _allCases = data.cases;
+    applyCases(data.cases);
 
-    // Badge — open (not settled/paid/closed) case count
-    const activeCount = _allCases.filter(c => isOpenCase(c.status)).length;
-    countBadge.textContent   = activeCount;
-    countBadge.style.display = activeCount > 0 ? '' : 'none';
-
-    if (_allCases.length === 0) {
-      empty.style.display = '';
-      return;
-    }
-
-    // Show search bar once more than one case exists
-    if (_allCases.length > 1 && searchWrap) searchWrap.style.display = '';
-
-    renderCasesGrid(_allCases);
-
-    // Wire up search
-    const searchInput = document.getElementById('cases-search');
-    if (searchInput) {
-      searchInput.addEventListener('input', () => {
-        const q = searchInput.value.trim().toLowerCase();
-        if (!q) {
-          if (noResults) noResults.style.display = 'none';
-          renderCasesGrid(_allCases);
-          return;
-        }
-        const filtered = _allCases.filter(c => caseMatchesSearch(c, q));
-        if (filtered.length === 0) {
-          grid.style.display                         = 'none';
-          if (noResults) noResults.style.display     = '';
-        } else {
-          if (noResults) noResults.style.display     = 'none';
-          renderCasesGrid(filtered);
-        }
-      });
-    }
   } catch {
     loading.style.display = 'none';
     empty.style.display   = '';
@@ -729,13 +763,22 @@ function renderCaseCard(c) {
   const debtorSub    = c.debtor_business_name && c.debtor_contact_name
     ? ` <span class="case-company">· ${escHtml(c.debtor_contact_name)}</span>` : '';
 
-  // Amount: show original balance; if partially recovered, show remaining too
+  // Balances — show initial and outstanding as two clearly labelled lines
   const original = parseFloat(c.original_balance) || 0;
   const current  = parseFloat(c.current_balance);
-  const recovered = !isNaN(current) && current < original && current >= 0;
-  const amountHtml = recovered
-    ? `${formatCurrency(original)} <span class="case-balance-remaining">(${formatCurrency(current)} outstanding)</span>`
-    : formatCurrency(original);
+  const outstanding = !isNaN(current) ? current : original;
+
+  const balanceBlock = `
+    <div class="case-balances">
+      <div class="case-balance-row">
+        <span class="case-balance-label">Initial Balance</span>
+        <span class="case-balance-value">${formatCurrency(original)}</span>
+      </div>
+      <div class="case-balance-row case-balance-row--outstanding">
+        <span class="case-balance-label">Outstanding</span>
+        <span class="case-balance-value">${formatCurrency(outstanding)}</span>
+      </div>
+    </div>`;
 
   // Reference rows
   const refRow = c.case_reference_number
@@ -748,12 +791,12 @@ function renderCaseCard(c) {
   return `
     <div class="case-card">
       <div class="case-card-header">
-        <div>
+        <div class="case-card-debtor">
           <div class="case-debtor">${escHtml(debtorLabel)}${debtorSub}</div>
-          <div class="case-amount">${amountHtml}</div>
         </div>
         <div>${statusBadge(c.status)}</div>
       </div>
+      ${balanceBlock}
       <div class="case-meta">
         ${refRow}
         ${invRow}

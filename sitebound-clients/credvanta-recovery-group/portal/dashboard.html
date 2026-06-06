@@ -40,14 +40,14 @@
 
   <!-- Tabs -->
   <nav class="portal-tabs" role="tablist">
-    <button class="tab-btn active" data-tab="submit" role="tab" aria-selected="true">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="margin-right:6px;vertical-align:-2px"><path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      Submit New Debt
-    </button>
-    <button class="tab-btn" data-tab="cases" role="tab" aria-selected="false">
+    <button class="tab-btn active" data-tab="cases" role="tab" aria-selected="true">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="margin-right:6px;vertical-align:-2px"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="2"/><path d="M7 9h10M7 13h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       My Cases
       <span id="cases-count" class="badge badge-active" style="margin-left:6px;display:none"></span>
+    </button>
+    <button class="tab-btn" data-tab="submit" role="tab" aria-selected="false">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="margin-right:6px;vertical-align:-2px"><path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Submit New Debt
     </button>
   </nav>
 
@@ -55,7 +55,7 @@
   <main class="portal-content">
 
     <!-- ── Submit Panel ── -->
-    <div class="tab-panel active" id="panel-submit" role="tabpanel">
+    <div class="tab-panel" id="panel-submit" role="tabpanel">
       <h1 class="panel-title">Submit a New Debt</h1>
       <p class="panel-subtitle">Fill in the debtor's details and attach any supporting documents. We'll pick this up and be in touch.</p>
 
@@ -167,9 +167,19 @@
     </div>
 
     <!-- ── Cases Panel ── -->
-    <div class="tab-panel" id="panel-cases" role="tabpanel">
+    <div class="tab-panel active" id="panel-cases" role="tabpanel">
       <h1 class="panel-title">My Cases</h1>
       <p class="panel-subtitle">All debts you've submitted. Status updates are made by the Credvanta team.</p>
+
+      <!-- Sub-tabs: Ongoing / Closed -->
+      <div class="cases-subtabs" id="cases-subtabs" role="tablist" aria-label="Cases filter" style="display:none">
+        <button type="button" class="subtab-btn active" data-subtab="ongoing" role="tab" aria-selected="true">
+          Ongoing <span class="subtab-count" id="count-ongoing">0</span>
+        </button>
+        <button type="button" class="subtab-btn" data-subtab="closed" role="tab" aria-selected="false">
+          Closed <span class="subtab-count" id="count-closed">0</span>
+        </button>
+      </div>
 
       <div class="cases-search-wrap" id="cases-search-wrap" style="display:none">
         <div class="cases-search-inner">
@@ -190,6 +200,11 @@
       <div id="cases-no-results" class="cases-empty" style="display:none">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         <p>No cases match your search.</p>
+      </div>
+
+      <div id="subtab-empty" class="cases-empty" style="display:none">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 9h10M7 13h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <p id="subtab-empty-text">No ongoing cases.</p>
       </div>
 
       <div id="cases-grid" class="cases-grid" style="display:none"></div>

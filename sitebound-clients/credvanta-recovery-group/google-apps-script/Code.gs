@@ -274,6 +274,13 @@ function sendNotificationEmail(p, fileLinks) {
       ? '(Sheet not yet configured)'
       : 'https://docs.google.com/spreadsheets/d/' + SPREADSHEET_ID;
 
+    var debtorCompany    = p.debtor_company           || p.debtor       || '';
+    var debtorContact    = p.debtor_contact_name      || '';
+    var debtorEmail      = p.debtor_contact_email     || p.debtor_email || '';
+    var debtorTelephone  = p.debtor_contact_telephone || p.debtor_phone || '';
+    var debtorMobile     = p.debtor_contact_mobile    || '';
+    var debtorAddress    = p.debtor_address           || '';
+
     MailApp.sendEmail({
       to:      NOTIFICATION_EMAIL,
       subject: 'New Claim: ' + (p.business || 'Unknown') + ' — £' + (p.amount || '?'),
@@ -281,17 +288,25 @@ function sendNotificationEmail(p, fileLinks) {
         'New claim submitted via the website.\n\n'
         + 'CLAIMANT\n'
         + '---\n'
-        + 'Name:     ' + (p.name        || '') + '\n'
-        + 'Business: ' + (p.business    || '') + '\n'
-        + 'Email:    ' + (p.email       || '') + '\n'
-        + 'Phone:    ' + (p.phone       || '') + '\n'
-        + 'Consent:  ' + (p.consent     || '') + '\n\n'
+        + 'Name:     ' + (p.name     || '') + '\n'
+        + 'Business: ' + (p.business || '') + '\n'
+        + 'Email:    ' + (p.email    || '') + '\n'
+        + 'Phone:    ' + (p.phone    || '') + '\n'
+        + 'Consent:  ' + (p.consent  || '') + '\n\n'
+        + 'DEBTOR\n'
+        + '---\n'
+        + 'Company:           ' + debtorCompany   + '\n'
+        + 'Contact Name:      ' + debtorContact   + '\n'
+        + 'Contact Email:     ' + debtorEmail     + '\n'
+        + 'Contact Telephone: ' + debtorTelephone + '\n'
+        + 'Contact Mobile:    ' + debtorMobile    + '\n'
+        + 'Address:           ' + debtorAddress   + '\n\n'
         + 'DEBT\n'
         + '---\n'
-        + 'Debtor:       ' + (p.debtor      || '') + '\n'
-        + 'Amount:       £' + (p.amount     || '') + '\n'
-        + 'Invoice Date: ' + (p.invoiceDate || '') + '\n'
-        + 'Description:  ' + (p.description || '') + '\n\n'
+        + 'Amount:       £' + (p.amount         || '') + '\n'
+        + 'Invoice No.:  ' + (p.invoice_number || '') + '\n'
+        + 'Invoice Date: ' + (p.invoiceDate    || '') + '\n'
+        + 'Description:  ' + (p.description    || '') + '\n\n'
         + (fileLinks ? 'FILES\n---\n' + fileLinks + '\n\n' : '')
         + 'Draft ID:   ' + (p.draftId || 'n/a') + '\n'
         + 'View sheet: ' + sheetLink,
