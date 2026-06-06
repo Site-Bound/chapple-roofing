@@ -84,7 +84,22 @@ function getToken() {
 }
 
 function getClientRef() {
-  return localStorage.getItem(CLIENT_REF_KEY);
+  const stored = localStorage.getItem(CLIENT_REF_KEY);
+  if (stored) return stored;
+
+  // Fallback: extract clientRef from the session token if localStorage is empty.
+  // Token format: btoa(`${clientRef}::${timestamp}::${signature}`)
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (!token || token === DEMO_TOKEN) return stored;
+  try {
+    const decoded = atob(token);
+    const parts = decoded.split('::');
+    if (parts[0]) {
+      localStorage.setItem(CLIENT_REF_KEY, parts[0]); // cache for next time
+      return parts[0];
+    }
+  } catch {}
+  return null;
 }
 
 function getClientName() {

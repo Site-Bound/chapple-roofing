@@ -343,11 +343,11 @@ a:hover { text-decoration: underline; }
   gap: 14px;
 }
 
-/* Contact us phone block */
+/* Contact phone — icon + number on a single line */
 .topbar-contact {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   padding: 8px 14px;
   border-radius: 8px;
   text-decoration: none;
@@ -356,23 +356,12 @@ a:hover { text-decoration: underline; }
 }
 .topbar-contact:hover { background: rgba(26,58,107,0.06); }
 .topbar-contact svg { color: var(--blue); flex-shrink: 0; }
-.topbar-contact-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.2;
-}
-.topbar-contact-label {
-  font-size: 0.68rem;
-  font-weight: 600;
-  color: var(--gray-600);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
 .topbar-contact-number {
-  font-size: 0.92rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: var(--navy);
   letter-spacing: 0.01em;
+  line-height: 1;
 }
 
 .btn-logout {
@@ -1085,7 +1074,7 @@ a:hover { text-decoration: underline; }
 
   /* Contact: collapse to icon-only on mobile so it stays tappable but compact */
   .topbar-contact          { padding: 8px 10px; }
-  .topbar-contact-text     { display: none; }
+  .topbar-contact-number   { display: none; }
   .topbar-contact svg      { width: 20px; height: 20px; }
   .form-row             { grid-template-columns: 1fr; }
   .submit-section       { padding: 16px; }
