@@ -356,8 +356,10 @@ function initDashboard() {
     return;
   }
 
-  // Populate name in topbar
+  // Populate name + client reference in topbar
   document.getElementById('topbar-name').textContent = getClientName();
+  const refEl = document.getElementById('topbar-ref');
+  if (refEl) refEl.textContent = getClientRef() || '—';
 
   // Logout
   document.getElementById('logout-btn').addEventListener('click', () => {
