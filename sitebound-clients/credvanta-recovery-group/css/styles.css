@@ -1647,16 +1647,17 @@ blockquote cite span { font-size: 0.82rem; color: var(--gray-400); }
 .footer-credit {
   margin-top: 14px;
   padding-top: 14px;
-  border-top: 1px solid rgba(255,255,255,.08);
+  border-top: 1px solid var(--gray-200);
   font-size: 0.72rem !important;
   letter-spacing: 0.02em;
+  color: var(--gray-600);
 }
 .footer-credit a {
-  color: var(--gray-200);
-  font-weight: 600;
+  color: var(--navy);
+  font-weight: 700;
   transition: color var(--transition);
 }
-.footer-credit a:hover { color: var(--white); }
+.footer-credit a:hover { color: var(--blue); text-decoration: underline; }
 
 /* ═══════════════════════════════════════════════════════════════
    BACK TO TOP
