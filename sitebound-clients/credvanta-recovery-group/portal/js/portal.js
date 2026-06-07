@@ -167,6 +167,8 @@ function isOpenCase(status) {
   if (s.includes('settled') || s.includes('closed'))    return false;
   // FCA regulated / consumer debt — closed and returned to client
   if (s.includes('consumer') || s.includes('fca regulated') || s.includes('regulated debt')) return false;
+  // Case recalled by client — no longer under active recovery
+  if (s.includes('recall')) return false;
   return true;
 }
 
@@ -724,6 +726,12 @@ const CASE_STATUS_MESSAGES = {
       'We apologise that we are unable to assist with this matter on this occasion.',
     ],
   },
+  recalled: {
+    type: 'closed',
+    body: [
+      `This case has been recalled at your request and is no longer under active recovery. Should you wish to reopen this case, please contact our team on ${PORTAL_CONTACT_TAG}.`,
+    ],
+  },
 };
 
 /* Match a free-text live_cases.status against the message catalogue.
@@ -737,6 +745,10 @@ function getCaseStatusMessage(status) {
   // status messages.
   if (s.includes('fca regulated') || s.includes('regulated debt') || s.includes('consumer'))
     return CASE_STATUS_MESSAGES.fca_regulated;
+
+  // Case recalled by client — also a hard close that shouldn't fall through
+  if (s.includes('recall'))
+    return CASE_STATUS_MESSAGES.recalled;
 
   // Action required (red)
   if (s.includes('proposed') && (s.includes('plan') || s.includes('arrangement'))) return CASE_STATUS_MESSAGES.proposed_payment_plan;
