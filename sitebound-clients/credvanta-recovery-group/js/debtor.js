@@ -46,6 +46,70 @@ document.addEventListener('keydown', e => {
   }
 });
 
+/* ═══════════════════════════════════════════════════════════════
+   AUTO-OPEN FORM FROM URL
+   Lets the team email shareable links that open the right form:
+     /debtor?form=payment-plan       → Payment Plan
+     /debtor?form=dispute            → Dispute an Invoice
+     /debtor?form=proof-of-payment   → Upload Proof of Payment
+     /debtor?form=callback           → Request a Call Back
+   Also accepts the same value as a URL hash (e.g. /debtor#form=dispute).
+   Optional &ref=INV-001 pre-fills the invoice reference inside the form.
+   ═══════════════════════════════════════════════════════════════ */
+(function initFormDeepLinks() {
+  const FORM_MAP = {
+    'payment-plan':      'modal-payment-plan',
+    'payment_plan':      'modal-payment-plan',
+    'paymentplan':       'modal-payment-plan',
+    'dispute':           'modal-dispute',
+    'proof-of-payment':  'modal-proof-payment',
+    'proof_of_payment':  'modal-proof-payment',
+    'proof-payment':     'modal-proof-payment',
+    'proof':             'modal-proof-payment',
+    'callback':          'modal-callback',
+    'call-back':         'modal-callback',
+    'call_back':         'modal-callback',
+  };
+
+  // Field IDs for pre-fill (matches the invoice/reference input inside each modal)
+  const REF_FIELDS = {
+    'modal-payment-plan':  'mpp-invoice',
+    'modal-dispute':       'mdi-invoice',
+    'modal-proof-payment': 'mpo-invoice',
+    'modal-callback':      'mcb-invoice',
+  };
+
+  // Read the requested form from query string OR hash (e.g. ?form=dispute or #form=dispute)
+  const params  = new URLSearchParams(window.location.search);
+  const hashStr = (window.location.hash || '').replace(/^#/, '');
+  const hashParams = new URLSearchParams(hashStr.includes('=') ? hashStr : '');
+
+  const requested = (params.get('form') || hashParams.get('form') || '').trim().toLowerCase();
+  if (!requested) return;
+
+  const modalId = FORM_MAP[requested];
+  if (!modalId) return;
+
+  // Optional invoice reference pre-fill
+  const ref = (params.get('ref') || hashParams.get('ref') || '').trim();
+
+  // Wait until the DOM is ready, then open the matching modal
+  function openAndFill() {
+    openDebtorModal(modalId);
+    if (ref) {
+      const fieldId = REF_FIELDS[modalId];
+      const input = fieldId ? document.getElementById(fieldId) : null;
+      if (input) input.value = ref;
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', openAndFill);
+  } else {
+    openAndFill();
+  }
+})();
+
 /* ═══════════════════════════════════════════════════
    FAQ ACCORDION
    ═══════════════════════════════════════════════════ */
