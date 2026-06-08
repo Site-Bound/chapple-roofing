@@ -258,7 +258,7 @@ function welcomeEmailHtml({ name, ref, setupLink, baseUrl }) {
             </tr>
           </table>
 
-          <p style="${P}">To get started, please set up your password by clicking the button below:</p>
+          <p style="${P}">To activate your account, please set up your password using the secure link below:</p>
 
           <p style="text-align:center;margin:28px 0">
             <a href="${setupLink}"
@@ -267,37 +267,33 @@ function welcomeEmailHtml({ name, ref, setupLink, baseUrl }) {
             </a>
           </p>
 
-          <p style="font-family:Arial,sans-serif;font-size:13px;color:#666;margin:0 0 8px;text-align:center">
-            This link is valid for ${WELCOME_LINK_DAYS} days.
+          <p style="font-family:Arial,sans-serif;font-size:13px;color:#888;line-height:1.5;margin:0 0 14px">
+            <em>For your security, we do not send passwords by email. The button above takes you to a secure page where you'll choose your own password. Your setup link is valid for ${WELCOME_LINK_DAYS} days.</em>
           </p>
 
-          <p style="font-family:Arial,sans-serif;font-size:13px;color:#888;line-height:1.5;margin:0 0 22px">
-            <em>For your security, we don't send passwords by email. The button above takes you to a secure page where you'll choose your own password. After that, you'll log in at <a href="${baseUrl}" style="color:#1851C4">${portalHost}</a> using your Username and the password you set.</em>
+          <p style="${P}">
+            Once your password is set, you'll log in at <a href="${baseUrl}" style="color:#1851C4">${portalHost}</a> using your Username and the password you have chosen. You can change your password at any time using the "Forgot your password?" link on the login page.
           </p>
 
           <!-- What you can do -->
           <h2 style="${H2}">What You Can Do Through The Portal</h2>
 
-          <p style="${P}">Your client portal is the central hub for managing your account with Credvanta.</p>
-          <p style="${P}">Through the portal, you can:</p>
+          <p style="${P}">Your client portal is the central hub for managing your account with Credvanta. Through the portal, you can:</p>
 
           <ul style="padding:0 0 0 20px;margin:0 0 18px">
-            <li style="${LI}">Submit new debt recovery instructions.</li>
-            <li style="${LI}">View all cases you have instructed us on.</li>
-            <li style="${LI}">Track the progress of each case in real time.</li>
-            <li style="${LI}">Upload supporting documents and evidence.</li>
-            <li style="${LI}">View updates from our recovery team.</li>
-            <li style="${LI}">Monitor outstanding balances and recovery activity.</li>
-            <li style="${LI}">Communicate securely with our team.</li>
+            <li style="${LI}">Submit new debt recovery instructions</li>
+            <li style="${LI}">View all cases you have instructed us on</li>
+            <li style="${LI}">Track the progress of each case in real time</li>
+            <li style="${LI}">Upload supporting documents and evidence</li>
+            <li style="${LI}">View updates from our recovery team</li>
+            <li style="${LI}">Monitor outstanding balances and recovery activity</li>
           </ul>
 
           <!-- Case submission -->
           <h2 style="${H2}">Case Submission &amp; Review Process</h2>
 
-          <p style="${P}">All new cases submitted through the portal are reviewed by our team before recovery action begins.</p>
-
           <p style="${P}">
-            Once a case has been submitted, it will be reviewed and approved within 24 hours. Following approval, the case will be allocated to a member of our recovery team and will then appear within your portal for tracking and management.
+            All new cases submitted through the portal are reviewed by our team before recovery action begins. Once submitted, a case will be reviewed and approved within 24 hours, allocated to a member of our recovery team, and will then appear within your portal for tracking and management.
           </p>
 
           <p style="${P}">
@@ -307,10 +303,8 @@ function welcomeEmailHtml({ name, ref, setupLink, baseUrl }) {
           <!-- Important note -->
           <h2 style="${H2}">Important &mdash; Case Reference Numbers</h2>
 
-          <p style="${P}">Each case submitted to Credvanta will be assigned its own unique Case Reference Number.</p>
-
           <p style="${P}">
-            If you contact our team by telephone or email regarding a specific matter, please quote the relevant Case Reference Number. This allows us to locate the correct file quickly and provide you with the most accurate update.
+            Each case submitted to Credvanta will be assigned its own unique Case Reference Number. When contacting our team by telephone or email regarding a specific matter, please quote the relevant Case Reference Number &mdash; this allows us to locate the correct file quickly and provide you with the most accurate update.
           </p>
 
           <p style="${P}">
@@ -320,10 +314,8 @@ function welcomeEmailHtml({ name, ref, setupLink, baseUrl }) {
           <!-- Need help -->
           <h2 style="${H2}">Need Assistance?</h2>
 
-          <p style="${P}">Our team is available 24 hours a day, 7 days a week to support you.</p>
-
           <p style="${P}">
-            If you need assistance with your account, require an update on a case, or need help submitting a new instruction, please do not hesitate to contact us.
+            Our team is available 24 hours a day, 7 days a week. If you need assistance with your account, an update on a case, or help submitting a new instruction, please get in touch.
           </p>
 
           <table style="width:100%;border-collapse:collapse;margin:0 0 18px;font-family:Arial,sans-serif;font-size:15px">
@@ -338,7 +330,7 @@ function welcomeEmailHtml({ name, ref, setupLink, baseUrl }) {
           </table>
 
           <p style="${P}">
-            When contacting us regarding a specific case, please have the relevant Case Reference Number available to help us assist you as quickly as possible.
+            When contacting us regarding a specific case, please have the relevant Case Reference Number available so we can assist you as quickly as possible.
           </p>
 
           <!-- Sign-off -->
