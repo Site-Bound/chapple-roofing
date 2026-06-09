@@ -690,6 +690,28 @@ address { font-style: normal; }
   gap: 16px;
 }
 .header-tagline { color: var(--gray-400); font-weight: 500; }
+
+/* Right-side group: Client Portal link + phone number */
+.header-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+.header-portal-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255,255,255,0.85);
+  font-weight: 600;
+  font-size: 0.82rem;
+  padding: 4px 0;
+  border-right: 1px solid rgba(255,255,255,0.18);
+  padding-right: 18px;
+  transition: color var(--transition);
+}
+.header-portal-link:hover { color: var(--white); }
+.header-portal-link svg { color: var(--blue-light); }
+
 .header-phone {
   display: flex;
   align-items: center;
@@ -2097,6 +2119,8 @@ blockquote cite span { font-size: 0.82rem; color: var(--gray-400); }
   /* ── Header ── */
   .header-top { padding: 5px 0; }
   .header-tagline { display: none; }
+  /* Hide header portal link on mobile — same item lives in the hamburger menu */
+  .header-portal-link { display: none; }
 
   /* ── Hero ── */
   .hero { padding: 106px 0 56px; }
