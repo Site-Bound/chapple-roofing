@@ -98,9 +98,9 @@ a:hover { text-decoration: underline; }
 
 .auth-logo {
   display: block;
-  height: 84px; /* enlarged ~60% from 52px */
+  height: 150px; /* enlarged ~80% from 84px */
   width: auto;
-  margin: 0 auto 12px;
+  margin: 0 auto 8px;
 }
 
 .auth-card-header p {
