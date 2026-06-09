@@ -45,9 +45,13 @@ CREATE TABLE IF NOT EXISTS portal_reset_tokens (
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_portal_reset_token_hash ON portal_reset_tokens(token_hash);
 
--- Disable RLS (server-side functions use service key — no RLS needed)
-ALTER TABLE portal_clients       DISABLE ROW LEVEL SECURITY;
-ALTER TABLE portal_reset_tokens  DISABLE ROW LEVEL SECURITY;
+-- Enable RLS with no policies — only the service_role (which bypasses
+-- RLS) can read or write. Our Cloudflare Functions use the service key,
+-- so this is transparent to them. Anything using the anon key gets zero
+-- access to these tables. Silences Supabase's "Table publicly accessible"
+-- security advisory.
+ALTER TABLE portal_clients      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE portal_reset_tokens ENABLE ROW LEVEL SECURITY;
 
 -- Grant access to service role (required after Supabase May 2026 change)
 GRANT ALL ON portal_clients      TO service_role;
