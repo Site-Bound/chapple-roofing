@@ -129,33 +129,20 @@ a:hover { text-decoration: underline; }
 }
 
 .auth-footer {
-  padding: 0 32px 20px;
+  padding: 0 32px 28px;
   text-align: center;
   font-size: 0.82rem;
   color: var(--gray-400);
 }
 
+.auth-footer p { margin: 0; }
+.auth-footer p + p { margin-top: 8px; }
+
 .auth-footer a {
   color: var(--blue);
   font-weight: 500;
 }
-
-/* "Don't have an account?" call-to-action below the login form */
-.auth-signup {
-  padding: 18px 32px 28px;
-  text-align: center;
-  font-size: 0.82rem;
-  color: var(--gray-600);
-  border-top: 1px solid var(--gray-200);
-  background: var(--off-white);
-}
-.auth-signup p { margin: 0; }
-.auth-signup a {
-  color: var(--blue);
-  font-weight: 600;
-  margin-left: 4px;
-}
-.auth-signup a:hover { text-decoration: underline; }
+.auth-footer a:hover { text-decoration: underline; }
 
 /* ─── FORMS ──────────────────────────────────────────────────── */
 .form-group { margin-bottom: 16px; }
