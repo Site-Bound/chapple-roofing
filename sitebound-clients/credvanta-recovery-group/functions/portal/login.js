@@ -26,6 +26,11 @@ export async function onRequestPost(context) {
       return err('Invalid credentials.', 401, req);
     }
 
+    // Account exists but hasn't been activated (no password set yet)
+    if (!client.password_hash || !client.password_salt) {
+      return err('Your account has not been activated yet. Please check your email for the welcome message, or use "Forgot your password?" to receive a setup link.', 403, req);
+    }
+
     // Verify password
     const hash = await hashPassword(password, client.password_salt);
     if (hash !== client.password_hash) {

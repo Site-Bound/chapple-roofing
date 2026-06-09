@@ -9,20 +9,28 @@
 -- ═══════════════════════════════════════════════════════════════
 
 -- ── 1. Client login accounts ──────────────────────────────────
+-- password_hash + password_salt are NULLABLE so the team can add
+-- a row directly via the Supabase Table Editor without needing to
+-- pre-generate a password. The Supabase webhook fires on insert,
+-- emails the client a setup link, and they choose their own password
+-- which then populates these columns.
 CREATE TABLE IF NOT EXISTS portal_clients (
   id            UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
   client_ref    TEXT        UNIQUE NOT NULL,  -- login + filter (e.g. CRGC-26270501)
   email         TEXT        UNIQUE NOT NULL,
   full_name     TEXT,                         -- display name shown in the portal
-  password_hash TEXT        NOT NULL,
-  password_salt TEXT        NOT NULL,
+  password_hash TEXT,                         -- nullable — set by the client via welcome link
+  password_salt TEXT,                         -- nullable — set by the client via welcome link
   active        BOOLEAN     DEFAULT TRUE,
   last_login    TIMESTAMPTZ,
   created_at    TIMESTAMPTZ DEFAULT NOW()
 );
 
--- If upgrading from the old schema with a separate client_id column:
+-- ── Migrations for existing installations ─────────────────────
+-- If upgrading from an old schema:
 -- ALTER TABLE portal_clients DROP COLUMN IF EXISTS client_id;
+-- ALTER TABLE portal_clients ALTER COLUMN password_hash DROP NOT NULL;
+-- ALTER TABLE portal_clients ALTER COLUMN password_salt DROP NOT NULL;
 
 -- ── 2. Password reset tokens ──────────────────────────────────
 CREATE TABLE IF NOT EXISTS portal_reset_tokens (
