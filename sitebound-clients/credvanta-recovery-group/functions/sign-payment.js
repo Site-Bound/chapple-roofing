@@ -48,6 +48,11 @@ export async function onRequestPost(context) {
       countryCode:       '826',
       currencyCode:      '826',
       merchantID:        MERCHANT_ID,
+      // merchantWebsite is required by the gateway — it identifies the
+      // originating site to the acquirer. Without it Taylr returns
+      // "Missing merchantWebsite" and the transaction never reaches
+      // the card form.
+      merchantWebsite:   SITE_ORIGIN,
       orderRef:          String(ref).trim().toUpperCase(),
       redirectURL:       REDIRECT_URL,
       transactionUnique,
