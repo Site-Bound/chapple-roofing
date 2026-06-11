@@ -8,7 +8,11 @@
 
 import { verifySignature, classifyOutcome } from './_taylr.js';
 
-const STATIC_PAGE = '/payment-complete.html';
+// Static receipt page. Renamed from payment-complete.html so it doesn't
+// collide with this Function endpoint at /payment-complete — Cloudflare
+// Pages would otherwise strip the .html and bounce us into a redirect
+// loop (Function → /payment-complete.html → strip → /payment-complete → …).
+const STATIC_PAGE = '/payment-receipt.html';
 
 /* Taylr posts the response body as application/x-www-form-urlencoded.
    We parse it, verify the signature, then redirect to the static page
