@@ -1,49 +1,50 @@
 /* ═══════════════════════════════════════════════════════════════
    Taylr payment signing — Cloudflare Pages Function
-   POST /sign-payment  { amount, ref, email }
+   POST /sign-payment  { amount, ref, email, merchantId? }
    Returns { endpoint, params } with SHA-512 signature
+
+   redirectURL → /payment-complete  (Function endpoint that accepts
+   Taylr's POST, verifies the signature, then forwards the browser
+   to /payment-complete.html with the outcome flags.)
+
+   callbackURL → /payment-callback  (Server-to-server notification.
+   Taylr will POST a copy of the response here independently of the
+   browser redirect — used for reliable balance updates.)
    ═══════════════════════════════════════════════════════════════ */
 
+import { generateSignature } from './_taylr.js';
+
 const TAYLR_ENDPOINT = 'https://payments.taylr.io/hosted/';
-const REDIRECT_URL   = 'https://www.credvantarecovery.co.uk/payment-complete.html';
+const SITE_ORIGIN    = 'https://www.credvantarecovery.co.uk';
+const REDIRECT_URL   = `${SITE_ORIGIN}/payment-complete`;
+const CALLBACK_URL   = `${SITE_ORIGIN}/payment-callback`;
 
 export async function onRequestPost(context) {
   try {
     const SIGNING_KEY = context.env.TAYLR_SIGNING_KEY;
-
-    if (!SIGNING_KEY) {
-      return errorResponse('Payment configuration error — please contact support', 500, context.request);
-    }
+    if (!SIGNING_KEY) return errorResponse('Payment configuration error — please contact support', 500, context.request);
 
     const body = await context.request.json();
     const { amount, ref, email, merchantId } = body;
 
-    // Use the per-creditor merchant ID from the lookup result if provided,
-    // falling back to the default env var merchant ID
     const MERCHANT_ID = (merchantId && String(merchantId).trim())
       ? String(merchantId).trim()
       : context.env.TAYLR_MERCHANT_ID;
 
-    if (!MERCHANT_ID) {
-      return errorResponse('Payment configuration error — please contact support', 500, context.request);
-    }
-
-    if (!amount || !ref) {
-      return errorResponse('Missing required fields: amount and ref', 400, context.request);
-    }
+    if (!MERCHANT_ID)         return errorResponse('Payment configuration error — please contact support', 500, context.request);
+    if (!amount || !ref)      return errorResponse('Missing required fields: amount and ref', 400, context.request);
 
     const amountPence = Math.round(parseFloat(amount) * 100);
     if (!Number.isFinite(amountPence) || amountPence <= 0) {
       return errorResponse('Invalid amount', 400, context.request);
     }
 
-    /* transactionUnique: timestamp + random suffix — required by gateway to
-       prevent duplicate submissions and tie the request to a session */
     const transactionUnique = Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
     const params = {
       action:            'SALE',
       amount:            String(amountPence),
+      callbackURL:       CALLBACK_URL,
       countryCode:       '826',
       currencyCode:      '826',
       merchantID:        MERCHANT_ID,
@@ -63,37 +64,14 @@ export async function onRequestPost(context) {
       JSON.stringify({ endpoint: TAYLR_ENDPOINT, params }),
       { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders(context.request) } }
     );
-  } catch {
+  } catch (e) {
+    console.error('[sign-payment]', e);
     return errorResponse('Internal error — please try again', 500, context.request);
   }
 }
 
 export async function onRequestOptions(context) {
   return new Response(null, { status: 204, headers: corsHeaders(context.request) });
-}
-
-/* ── SHA-512 signature matching PHP http_build_query + hash('sha512') ── */
-async function generateSignature(params, secret) {
-  /* Step 1: sort alphabetically by key (ASCII order, matching PHP ksort) */
-  const sorted = Object.entries(params)
-    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
-    .map(([k, v]) => `${phpUrlencode(k)}=${phpUrlencode(String(v))}`)
-    .join('&');
-
-  /* Step 2: normalise line endings (CR+LF, LF+CR, CR → LF) */
-  const normalized = sorted.replace(/%0D%0A|%0A%0D|%0D/gi, '%0A');
-
-  /* Step 3: append secret key, SHA-512 hash */
-  const toHash     = normalized + secret;
-  const hashBuffer = await crypto.subtle.digest('SHA-512', new TextEncoder().encode(toHash));
-  return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-/* Matches PHP urlencode() — RFC 1738, spaces as + */
-function phpUrlencode(str) {
-  return encodeURIComponent(str)
-    .replace(/%20/g, '+')
-    .replace(/[!'()*]/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase());
 }
 
 function corsHeaders(req) {

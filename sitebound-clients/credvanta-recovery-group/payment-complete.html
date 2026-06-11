@@ -125,22 +125,19 @@
 
   <div class="pc-wrap">
     <div class="pc-card">
-      <div class="pc-icon">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M22 4L12 14.01l-3-3" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+      <div class="pc-icon" id="pc-icon">
+        <!-- Icon swapped by JS based on outcome (success / declined / error) -->
       </div>
-      <h1>Payment Received</h1>
-      <p>Thank you — your payment has been processed successfully.</p>
-      <p>A receipt will be sent to your email address shortly. Please keep this for your records.</p>
+      <h1 id="pc-title">Processing your payment…</h1>
+      <p id="pc-message-primary">Please wait a moment.</p>
+      <p id="pc-message-secondary" style="display:none"></p>
       <div class="pc-ref" id="pc-ref-block">
         <strong>Reference:</strong> <span id="pc-ref-val">—</span>
       </div>
       <p style="font-size:0.82rem;color:var(--gray-400);margin-bottom:28px">
         If you have any questions please call us on <a href="tel:08009757066" style="color:var(--blue)">0800 975 7066</a>.
       </p>
-      <div class="pc-actions">
+      <div class="pc-actions" id="pc-actions">
         <a href="/debtor.html" class="btn btn-outline">Return to Portal</a>
         <a href="/" class="btn btn-primary">Credvanta Home</a>
       </div>
@@ -148,17 +145,69 @@
   </div>
 
   <script>
-    /* Read POST response data submitted by Taylr and display order reference */
+    /* Render success / declined / error UI based on the query string
+       set by /payment-complete (the Function endpoint that received
+       Taylr's POST and verified the signature server-side). */
     (function() {
-      try {
-        const ref = document.referrer; // fallback
-        const params = new URLSearchParams(window.location.search);
-        const orderRef = params.get('orderRef');
-        if (orderRef) {
-          document.getElementById('pc-ref-val').textContent = orderRef;
-          document.getElementById('pc-ref-block').style.display = 'block';
-        }
-      } catch {}
+      const params  = new URLSearchParams(window.location.search);
+      const status  = params.get('status') || '';
+      const orderRef = params.get('orderRef') || '';
+      const message  = params.get('responseMessage') || '';
+      const amount   = params.get('amount') || '';
+
+      const iconBox      = document.getElementById('pc-icon');
+      const titleEl      = document.getElementById('pc-title');
+      const primary      = document.getElementById('pc-message-primary');
+      const secondary    = document.getElementById('pc-message-secondary');
+      const refBlock     = document.getElementById('pc-ref-block');
+      const refVal       = document.getElementById('pc-ref-val');
+      const actions      = document.getElementById('pc-actions');
+
+      const ICON_SUCCESS = '<svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 4L12 14.01l-3-3" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      const ICON_FAIL    = '<svg width="32" height="32" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#dc2626" stroke-width="2.5"/><path d="M15 9l-6 6M9 9l6 6" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round"/></svg>';
+      const ICON_INFO    = '<svg width="32" height="32" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#1851C4" stroke-width="2.5"/><path d="M12 8v4m0 4h.01" stroke="#1851C4" stroke-width="2.5" stroke-linecap="round"/></svg>';
+
+      function setIconBg(hex) { iconBox.style.background = hex; }
+
+      if (status === 'success') {
+        iconBox.innerHTML = ICON_SUCCESS;
+        setIconBg('#F0FDF4');
+        titleEl.textContent = 'Payment Received';
+        primary.textContent = 'Thank you — your payment has been processed successfully.';
+        secondary.textContent = 'A receipt will be sent to your email address shortly. Please keep this for your records.';
+        secondary.style.display = '';
+      } else if (status === 'declined') {
+        iconBox.innerHTML = ICON_FAIL;
+        setIconBg('#FEF2F2');
+        titleEl.textContent = 'Payment Declined';
+        primary.textContent = 'Your card issuer declined this transaction. No funds have been taken.';
+        secondary.textContent = message
+          ? 'Reason: ' + message + '. Please try a different card, or contact your bank for more information.'
+          : 'Please try a different card, or contact your bank for more information.';
+        secondary.style.display = '';
+        // Replace primary action with "Try again"
+        actions.innerHTML = '<a href="/debtor.html" class="btn btn-primary">Try a different card</a><a href="/" class="btn btn-outline">Credvanta Home</a>';
+      } else if (status === 'error') {
+        iconBox.innerHTML = ICON_INFO;
+        setIconBg('#EFF6FF');
+        titleEl.textContent = 'Payment Could Not Be Processed';
+        primary.textContent = 'We were unable to verify your payment. If a charge appears on your account, please contact us so we can investigate.';
+        secondary.textContent = message ? 'Details: ' + message : '';
+        secondary.style.display = message ? '' : 'none';
+        actions.innerHTML = '<a href="/debtor.html" class="btn btn-primary">Return to Portal</a><a href="tel:08009757066" class="btn btn-outline">Call 0800 975 7066</a>';
+      } else {
+        // No status param — likely a stale bookmark / direct visit
+        iconBox.innerHTML = ICON_INFO;
+        setIconBg('#EFF6FF');
+        titleEl.textContent = 'Payment Portal';
+        primary.textContent = 'There is no recent transaction to display.';
+        secondary.style.display = 'none';
+      }
+
+      if (orderRef) {
+        refVal.textContent = orderRef;
+        refBlock.style.display = 'block';
+      }
     })();
   </script>
 
