@@ -1,0 +1,53 @@
+CLOUDFLARE PAGES — PRODUCTION ENVIRONMENT VARIABLES
+═══════════════════════════════════════════════════════════════
+
+Settings > Environment Variables > Production
+
+UPDATE THESE (Change from test → live):
+─────────────────────────────────────────
+TAYLR_MERCHANT_ID
+  Current: 290682
+  New:     290684
+
+TAYLR_SIGNING_KEY
+  Current: (test key, different value)
+  New:     5fbfb863c18792acbb4e36ca6c88411e73b34354fd331deeed9244f94e407221
+
+PAYMENT_AUTO_UPDATE_BALANCE
+  Current: (not set / empty)
+  New:     true
+
+
+VERIFY THESE EXIST (should already be set):
+─────────────────────────────────────────
+SUPABASE_URL
+  Example: https://xxxxxxxxxxxx.supabase.co
+
+SUPABASE_SERVICE_KEY
+  (Long base64 string starting with eyJhbGc...)
+
+SUPABASE_ANON_KEY
+  (Long base64 string starting with eyJhbGc...)
+
+(Other existing vars: WEBHOOK_SECRET, PORTAL_SESSION_SECRET, RESEND_API_KEY, etc.)
+
+
+VERIFICATION CHECKLIST:
+─────────────────────
+After updating, verify:
+☐ All three TAYLR_* vars are exactly as shown (no spaces, exact case)
+☐ SUPABASE_URL and SUPABASE_SERVICE_KEY are present
+☐ Cloudflare shows "Deployment in progress" after saving
+☐ Functions are accessible at:
+    - https://www.credvantarecovery.co.uk/sign-payment
+    - https://www.credvantarecovery.co.uk/payment-complete
+    - https://www.credvantarecovery.co.uk/payment-callback
+
+
+TAYLR INTEGRATION STATUS:
+─────────────────────
+Merchant ID:        290684 (LIVE)
+Endpoint:          https://payments.taylr.io/hosted/
+IP Whitelisting:   DISABLED
+Callback Support:  ENABLED
+Signature Method:  SHA-512 (RFC 1738 URL encoding)

@@ -3,13 +3,22 @@
    POST /sign-payment  { amount, ref, email, merchantId? }
    Returns { endpoint, params } with SHA-512 signature
 
-   redirectURL → /payment-complete  (Function endpoint that accepts
-   Taylr's POST, verifies the signature, then forwards the browser
-   to /payment-complete.html with the outcome flags.)
+   Environment variables required (set in Cloudflare Dashboard):
+     TAYLR_MERCHANT_ID: 290684 (LIVE account)
+     TAYLR_SIGNING_KEY: 5fbfb863c18792acbb4e36ca6c88411e73b34354fd331deeed9244f94e407221
+     PAYMENT_AUTO_UPDATE_BALANCE: true
+     SUPABASE_URL, SUPABASE_SERVICE_KEY
 
-   callbackURL → /payment-callback  (Server-to-server notification.
-   Taylr will POST a copy of the response here independently of the
-   browser redirect — used for reliable balance updates.)
+   Taylr hosted endpoint: https://payments.taylr.io/hosted/
+   IP whitelisting: DISABLED (Cloudflare Workers use rotating IPs)
+
+   Flow:
+   1. POST to /sign-payment with { amount, ref, email }
+   2. Returns { endpoint, params } — frontend POSTs these to Taylr
+   3. Taylr redirects customer to /payment-complete (signed response)
+   4. Function verifies signature, redirects to /payment-receipt.html
+   5. Taylr POSTs to /payment-callback (server-to-server, independent)
+   6. Callback verifies signature, updates live_cases.current_balance
    ═══════════════════════════════════════════════════════════════ */
 
 import { generateSignature } from './_taylr.js';

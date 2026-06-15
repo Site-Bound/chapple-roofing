@@ -4,13 +4,21 @@
    of the browser redirect. Used for reliable reconciliation even if
    the customer closes their browser before /payment-complete loads.
 
+   Environment variables required:
+     TAYLR_SIGNING_KEY: 5fbfb863c18792acbb4e36ca6c88411e73b34354fd331deeed9244f94e407221
+     PAYMENT_AUTO_UPDATE_BALANCE: true (enable balance updates on successful payment)
+     SUPABASE_URL, SUPABASE_SERVICE_KEY (required for balance update)
+
    Behaviour:
      1. Parse the form body (application/x-www-form-urlencoded)
-     2. Verify the inbound signature using TAYLR_SIGNING_KEY
-     3. If verified AND payment was successful, log it.
-        (Auto-balance-update is gated behind PAYMENT_AUTO_UPDATE_BALANCE
-        env var — leave unset until Keiran confirms he wants it.)
-     4. Always return HTTP 200 to Taylr — they retry on non-2xx and
+     2. Verify the inbound signature using TAYLR_SIGNING_KEY (constant-time)
+     3. Classify outcome: success | declined | error
+     4. If verified AND payment was successful AND PAYMENT_AUTO_UPDATE_BALANCE=true:
+        - Fetch current live_cases balance for the orderRef
+        - Reduce balance by the payment amount
+        - Update status to 'Paid in Full' if balance reaches zero
+        - Log the update
+     5. Always return HTTP 200 to Taylr — they retry on non-2xx and
         we don't want them to re-fire a successful notification.
 
    Security:
