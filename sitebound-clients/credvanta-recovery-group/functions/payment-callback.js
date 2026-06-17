@@ -61,22 +61,49 @@ export async function onRequestPost(context) {
   const amountPence = parseInt(params.amount || '0', 10);
   const txID = params.transactionID || '';
 
+  // Balance auto-update is ON unless explicitly disabled. We match
+  // case-insensitively and trim whitespace so a value of "True", "TRUE"
+  // or " true " set in the Cloudflare dashboard still counts as enabled.
+  // Only the literal string "false" turns it off.
+  const autoUpdateEnabled =
+    String(env.PAYMENT_AUTO_UPDATE_BALANCE ?? 'true').trim().toLowerCase() !== 'false';
+
   console.log('[payment-callback] verified callback', {
-    outcome, orderRef, amountPence, txID,
+    outcome, orderRef, amountPence, txID, autoUpdateEnabled,
     responseCode:    params.responseCode,
     responseStatus:  params.responseStatus,
     responseMessage: params.responseMessage,
   });
 
   // Successful payment — update the live_cases balance if enabled
-  if (outcome === 'success' && env.PAYMENT_AUTO_UPDATE_BALANCE === 'true') {
+  let updateError = null;
+  if (outcome === 'success' && autoUpdateEnabled) {
     try {
       await reduceCaseBalance(env, orderRef, amountPence);
     } catch (e) {
+      updateError = String(e && e.message || e);
       console.error('[payment-callback] balance update failed', e);
       // Still return 200 so Taylr doesn't retry — the payment was
       // recorded correctly on their side, we just couldn't sync.
     }
+  }
+
+  // Diagnostic mode — only reachable with a VALID signature (already
+  // verified above), so only a caller holding the signing key can use it.
+  // Returns non-secret booleans about config state to pinpoint failures.
+  // Never exposes keys or values.
+  if (params.__debug === '1') {
+    return new Response(JSON.stringify({
+      verified,
+      outcome,
+      autoUpdateEnabled,
+      autoUpdateRaw:   env.PAYMENT_AUTO_UPDATE_BALANCE ?? null,
+      hasSupabaseUrl:  !!env.SUPABASE_URL,
+      hasServiceKey:   !!env.SUPABASE_SERVICE_KEY,
+      orderRef,
+      amountPence,
+      updateError,
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } });
   }
 
   return ok();
