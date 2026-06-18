@@ -390,8 +390,153 @@ function initDashboard() {
   // Submit form
   initSubmitForm(token);
 
+  // Document upload modal (used by per-case "Upload documents" buttons)
+  initDocUpload(token);
+
   // Cases (load immediately — badge count needed)
   loadCases(token);
+}
+
+/* ── Document Upload Modal ───────────────────────────────────
+   One modal, reused by every case card's "Upload documents"
+   button. openDocModal(caseRef) sets the active case and shows it. */
+
+let _docToken   = null;
+let _docCaseRef = null;
+let _docFiles   = [];
+
+function openDocModal(caseRef) {
+  _docCaseRef = caseRef;
+  _docFiles   = [];
+
+  const overlay = document.getElementById('doc-upload-modal');
+  if (!overlay) return;
+
+  document.getElementById('doc-modal-caseref').textContent = caseRef || '—';
+  renderDocFileList();
+  hideError(document.getElementById('doc-upload-error'));
+  document.getElementById('doc-upload-body').style.display    = '';
+  document.getElementById('doc-upload-success').hidden        = true;
+
+  overlay.hidden = false;
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDocModal() {
+  const overlay = document.getElementById('doc-upload-modal');
+  if (overlay) overlay.hidden = true;
+  document.body.style.overflow = '';
+}
+
+function renderDocFileList() {
+  const list = document.getElementById('doc-file-list');
+  if (!list) return;
+  list.innerHTML = '';
+  _docFiles.forEach((f, i) => {
+    const li = document.createElement('li');
+    li.className = 'file-item';
+    li.innerHTML = `
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M14 3v4a1 1 0 001 1h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M17 21H7a2 2 0 01-2-2V5a2 2 0 012-2h7l5 5v11a2 2 0 01-2 2z" stroke="currentColor" stroke-width="1.5"/></svg>
+      <span class="file-name">${escHtml(f.name)}</span>
+      <span class="file-size">${docFileSize(f.size)}</span>
+      <button type="button" class="file-remove" aria-label="Remove file" data-index="${i}">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>`;
+    list.appendChild(li);
+  });
+  list.querySelectorAll('.file-remove').forEach(btn => {
+    btn.addEventListener('click', () => {
+      _docFiles.splice(parseInt(btn.dataset.index, 10), 1);
+      renderDocFileList();
+    });
+  });
+}
+
+function docFileSize(bytes) {
+  if (bytes < 1024)        return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function initDocUpload(token) {
+  _docToken = token;
+
+  const overlay   = document.getElementById('doc-upload-modal');
+  if (!overlay) return;
+
+  const drop      = document.getElementById('doc-file-drop');
+  const input     = document.getElementById('doc-file-input');
+  const sendBtn   = document.getElementById('doc-send-btn');
+  const cancelBtn = document.getElementById('doc-cancel-btn');
+  const closeBtn  = document.getElementById('doc-modal-close');
+  const doneBtn   = document.getElementById('doc-done-btn');
+  const errBox    = document.getElementById('doc-upload-error');
+  const errText   = document.getElementById('doc-upload-error-text');
+
+  function addDocFiles(files) {
+    const maxSize = 10 * 1024 * 1024;
+    files.forEach(f => {
+      if (f.size > maxSize) { alert(`"${f.name}" exceeds the 10MB limit and was not added.`); return; }
+      if (_docFiles.some(x => x.name === f.name && x.size === f.size)) return;
+      _docFiles.push(f);
+    });
+    renderDocFileList();
+  }
+
+  drop.addEventListener('click', (e) => { if (e.target !== input) input.click(); });
+  input.addEventListener('change', () => { addDocFiles(Array.from(input.files)); input.value = ''; });
+  drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('drag-over'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('drag-over'));
+  drop.addEventListener('drop', (e) => {
+    e.preventDefault(); drop.classList.remove('drag-over');
+    addDocFiles(Array.from(e.dataTransfer.files));
+  });
+
+  closeBtn.addEventListener('click', closeDocModal);
+  cancelBtn.addEventListener('click', closeDocModal);
+  if (doneBtn) doneBtn.addEventListener('click', () => { closeDocModal(); loadCases(_docToken); });
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeDocModal(); });
+
+  sendBtn.addEventListener('click', async () => {
+    hideError(errBox);
+
+    if (!_docFiles.length) { showError(errBox, errText, 'Please add at least one file to upload.'); return; }
+    if (isDemo())          { showError(errBox, errText, 'Document upload is not available in demo mode.'); return; }
+
+    setLoading(sendBtn, true);
+    try {
+      const fd = new FormData();
+      fd.append('caseRef', _docCaseRef || '');
+      _docFiles.forEach(f => fd.append('files', f));
+
+      const res = await fetch(apiUrl('upload-document'), {
+        method:  'POST',
+        headers: { 'Authorization': `Bearer ${_docToken}` },
+        body:    fd,
+      });
+
+      if (res.status === 401) { clearSession(); window.location.replace('/portal/'); return; }
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) {
+        showError(errBox, errText, data.error || 'Upload failed. Please try again.');
+        return;
+      }
+
+      // Success — swap to the confirmation view
+      document.getElementById('doc-upload-body').style.display = 'none';
+      document.getElementById('doc-upload-success').hidden     = false;
+    } catch {
+      showError(errBox, errText, 'Could not connect. Please check your connection and try again.');
+    } finally {
+      setLoading(sendBtn, false, 'Upload');
+    }
+  });
+
+  // Close on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !overlay.hidden) closeDocModal();
+  });
 }
 
 /* ── Tab Switching ───────────────────────────────────────── */
@@ -929,6 +1074,11 @@ function renderCasesGrid(cases) {
         : 'Hide documents';
     });
   });
+
+  // Open the document upload modal for a specific case
+  grid.querySelectorAll('.case-upload-btn').forEach(btn => {
+    btn.addEventListener('click', () => openDocModal(btn.dataset.caseref));
+  });
 }
 
 /* Returns true if a live_cases record matches the search query */
@@ -981,6 +1131,15 @@ function renderCaseCard(c) {
       ${msg.body.map(p => `<p>${p}</p>`).join('')}
     </div>` : '';
 
+  // Upload documents action — only when the case has a reference to attach to
+  const uploadAction = c.case_reference_number ? `
+    <div class="case-actions">
+      <button type="button" class="btn btn-outline btn-sm case-upload-btn" data-caseref="${escHtml(c.case_reference_number)}">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="margin-right:6px;vertical-align:-2px"><path d="M12 16V4m0 0L7 9m5-5l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17v2a1 1 0 001 1h14a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        Upload documents
+      </button>
+    </div>` : '';
+
   return `
     <div class="case-card">
       <div class="case-card-header">
@@ -995,6 +1154,7 @@ function renderCaseCard(c) {
         ${invRow}
       </div>
       ${statusMessageBlock}
+      ${uploadAction}
     </div>`;
 }
 

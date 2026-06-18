@@ -88,6 +88,13 @@ function doPost(e) {
 
   try {
     var p      = e.parameter;
+
+    // ── Portal client document upload (evidence against an existing case) ──
+    // Routed early — these uploads only touch Drive + email, not the Sheet.
+    if ((p.type || '') === 'document-upload') {
+      return handleDocumentUpload(p);
+    }
+
     var status = (p.status || 'complete').toLowerCase();
 
     var sheet = getOrCreateSheet();
@@ -314,6 +321,83 @@ function sendNotificationEmail(p, fileLinks) {
   } catch (err) {
     console.error('Email send failed:', err.message);
   }
+}
+
+// ── Portal document upload ────────────────────────────────────
+//
+// Clients upload supporting documents/evidence against an existing
+// case from the portal. Files land in a per-case sub-folder under
+// the SAME root Drive folder used by the claim form, and a
+// notification email is sent to the team with the folder location.
+
+function handleDocumentUpload(p) {
+  var caseRef    = (p.caseRef    || '').toString().trim();
+  var clientName = (p.clientName || '').toString().trim();
+  var clientRef  = (p.clientRef  || '').toString().trim();
+
+  if (!caseRef)                       return jsonOut({ success: false, error: 'Missing case reference' });
+  if (DRIVE_FOLDER_ID.includes('REPLACE')) return jsonOut({ success: false, error: 'Drive folder not configured' });
+
+  var files = [];
+  try { files = JSON.parse(p.files || '[]'); } catch (e) { files = []; }
+  if (!files.length) return jsonOut({ success: false, error: 'No files received' });
+
+  var root   = DriveApp.getFolderById(DRIVE_FOLDER_ID);
+  var folder = findOrCreateCaseFolder(root, caseRef);
+
+  var saved = [];
+  files.forEach(function(file) {
+    if (!file || !file.data || !file.name) return;
+    try {
+      var decoded = Utilities.base64Decode(file.data);
+      var blob    = Utilities.newBlob(decoded, file.type || 'application/octet-stream', file.name);
+      var df      = folder.createFile(blob);
+      df.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+      saved.push(file.name);
+    } catch (fe) { /* skip a bad file, keep going */ }
+  });
+
+  if (!saved.length) return jsonOut({ success: false, error: 'No files could be saved' });
+
+  var folderUrl = folder.getUrl();
+  sendDocumentUploadEmail(caseRef, clientName || clientRef, saved, folderUrl);
+
+  return jsonOut({ success: true, saved: saved.length, folderUrl: folderUrl });
+}
+
+/**
+ * Find an existing per-case sub-folder by name, or create it.
+ * Keeps repeated uploads for the same case together in one folder.
+ */
+function findOrCreateCaseFolder(root, caseRef) {
+  var name = 'Case ' + caseRef + ' — Client Uploads';
+  var it   = root.getFoldersByName(name);
+  return it.hasNext() ? it.next() : root.createFolder(name);
+}
+
+function sendDocumentUploadEmail(caseRef, who, fileNames, folderUrl) {
+  try {
+    var count = fileNames.length;
+    MailApp.sendEmail({
+      to:      NOTIFICATION_EMAIL,
+      subject: 'Portal upload — Case ' + caseRef + ' (' + count + ' file' + (count === 1 ? '' : 's') + ')',
+      body:
+        'A client has uploaded documents via the portal.\n\n'
+        + 'Case Reference: ' + caseRef + '\n'
+        + 'Submitted by:   ' + (who || 'Unknown client') + '\n\n'
+        + 'Files uploaded:\n'
+        + fileNames.map(function(n){ return '  • ' + n; }).join('\n') + '\n\n'
+        + 'Folder location (click to open):\n' + folderUrl + '\n',
+    });
+  } catch (err) {
+    console.error('Document upload email failed:', err.message);
+  }
+}
+
+function jsonOut(obj) {
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 /**

@@ -228,6 +228,45 @@
 
   </main>
 
+  <!-- Document upload modal (shared across all case cards) -->
+  <div class="doc-modal-overlay" id="doc-upload-modal" hidden>
+    <div class="doc-modal" role="dialog" aria-modal="true" aria-labelledby="doc-modal-title">
+      <button type="button" class="doc-modal-close" id="doc-modal-close" aria-label="Close">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <h2 class="doc-modal-title" id="doc-modal-title">Upload Documents</h2>
+      <p class="doc-modal-sub">Attach supporting documents or evidence for case <strong id="doc-modal-caseref">—</strong>. Our team will be notified once received.</p>
+
+      <div id="doc-upload-body">
+        <div class="file-drop" id="doc-file-drop">
+          <input type="file" id="doc-file-input" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.webp,.txt">
+          <div class="file-drop-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0L7 9m5-5l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17v2a1 1 0 001 1h14a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </div>
+          <p>Drag &amp; drop files here, or click to browse</p>
+          <p class="file-hint">PDF, Word, Excel, images or text · up to 10MB each</p>
+        </div>
+        <ul class="file-list" id="doc-file-list"></ul>
+
+        <div class="alert alert-error" id="doc-upload-error" hidden>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 8v4m0 4h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span id="doc-upload-error-text"></span>
+        </div>
+
+        <div class="doc-modal-actions">
+          <button type="button" class="btn btn-outline" id="doc-cancel-btn">Cancel</button>
+          <button type="button" class="btn btn-primary" id="doc-send-btn">Upload</button>
+        </div>
+      </div>
+
+      <div id="doc-upload-success" class="doc-upload-success" hidden>
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#22c55e" stroke-width="1.6"/><path d="M8 12l2.5 2.5L16 9" stroke="#22c55e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <p>Your documents have been uploaded and our team has been notified.</p>
+        <button type="button" class="btn btn-primary" id="doc-done-btn">Done</button>
+      </div>
+    </div>
+  </div>
+
   <script src="/portal/js/portal.js"></script>
 </body>
 </html>
