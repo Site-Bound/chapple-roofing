@@ -1,0 +1,1702 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wakefield BID | Business Improvement District</title>
+  <meta name="description" content="Wakefield BID represents 400+ city-centre businesses, investing in events, safety, cleanliness and promotion to make Wakefield a better place to work, visit and invest.">
+  <meta property="og:title" content="Wakefield BID | Business Improvement District">
+  <meta property="og:description" content="Wakefield BID represents 400+ city-centre businesses. We invest in events, safety, cleanliness and promotion to make Wakefield thrive.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.wakefieldbid.co.uk/">
+  <meta property="og:image" content="https://www.wakefieldbid.co.uk/wp-content/uploads/2024/08/WFD30-scaled.jpg">
+  <meta property="og:locale" content="en_GB">
+  <meta property="og:site_name" content="Wakefield BID">
+  <link rel="canonical" href="https://www.wakefieldbid.co.uk/">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css" crossorigin="">
+
+  <!-- Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Wakefield BID",
+    "description": "Business Improvement District representing over 400 city-centre organisations in Wakefield since 2017.",
+    "url": "https://www.wakefieldbid.co.uk",
+    "telephone": "+441924782337",
+    "email": "info@wakefieldbid.co.uk",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "20 Wood St",
+      "addressLocality": "Wakefield",
+      "postalCode": "WF1 2ED",
+      "addressCountry": "GB"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 53.6842,
+      "longitude": -1.4983
+    },
+    "sameAs": [
+      "https://www.facebook.com/wakefieldbid",
+      "https://www.instagram.com/wakefieldbid",
+      "https://twitter.com/wakefieldbid",
+      "https://www.linkedin.com/company/wakefield-bid"
+    ]
+  }
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary:      #0d1b3e;
+      --primary-mid:  #162b5e;
+      --primary-light:#1e3a7a;
+      --accent:       #f0a500;
+      --accent-dark:  #c98a00;
+      --accent-light: #ffd166;
+      --bg:           #f8f7f4;
+      --surface:      #ffffff;
+      --border:       #e2ddd8;
+      --text:         #1a1a2e;
+      --text-soft:    #4a4a5e;
+      --text-muted:   #8a8a9a;
+
+      --font-display: 'Outfit', sans-serif;
+      --font-body:    'Source Sans 3', sans-serif;
+
+      --section-pad:  clamp(60px, 8vw, 110px);
+      --container:    1200px;
+      --radius:       10px;
+      --radius-lg:    20px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      font-size: clamp(0.95rem, 1.5vw, 1.05rem);
+      line-height: 1.75;
+      color: var(--text);
+      background: var(--bg);
+      overflow-x: hidden;
+    }
+
+    h1 { font-family: var(--font-display); font-size: clamp(2.6rem, 6vw, 5rem); line-height: 1.05; font-weight: 800; }
+    h2 { font-family: var(--font-display); font-size: clamp(1.8rem, 4vw, 2.8rem); line-height: 1.15; font-weight: 700; }
+    h3 { font-family: var(--font-display); font-size: clamp(1.15rem, 2.5vw, 1.5rem); font-weight: 600; }
+    h4 { font-family: var(--font-display); font-size: 1rem; font-weight: 600; }
+    p { font-family: var(--font-body); line-height: 1.75; }
+
+    a { color: inherit; text-decoration: none; }
+
+    .container {
+      max-width: var(--container);
+      margin-inline: auto;
+      padding-inline: clamp(1.25rem, 5vw, 2.5rem);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.75rem;
+      border-radius: 6px;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 0.95rem;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.15s;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn-primary { background: var(--accent); color: var(--primary); }
+    .btn-primary:hover { background: var(--accent-dark); }
+    .btn-outline { background: transparent; color: #fff; border-color: rgba(255,255,255,0.6); }
+    .btn-outline:hover { background: rgba(255,255,255,0.12); border-color: #fff; }
+    .btn-dark { background: var(--primary); color: #fff; }
+    .btn-dark:hover { background: var(--primary-mid); }
+
+    .label {
+      display: inline-block;
+      font-family: var(--font-display);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+
+    /* ─── REVEAL ─── */
+    .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.65s ease, transform 0.65s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+
+    /* ─── NAV ─── */
+    #nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      padding: 1.1rem 0;
+      transition: background 0.3s, box-shadow 0.3s, padding 0.3s;
+    }
+    #nav.scrolled {
+      background: var(--primary);
+      box-shadow: 0 2px 20px rgba(0,0,0,0.25);
+      padding: 0.7rem 0;
+    }
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+    }
+    .nav-logo img { height: 44px; width: auto; }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      list-style: none;
+    }
+    .nav-links a {
+      font-family: var(--font-display);
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.85);
+      padding: 0.4rem 0.8rem;
+      border-radius: 4px;
+      transition: color 0.2s, background 0.2s;
+    }
+    .nav-links a:hover { color: #fff; background: rgba(255,255,255,0.1); }
+    .nav-cta { font-size: 0.85rem !important; padding: 0.45rem 1.1rem !important; }
+
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: 4px;
+      background: none;
+      border: none;
+    }
+    .hamburger span {
+      display: block;
+      width: 24px;
+      height: 2px;
+      background: #fff;
+      border-radius: 2px;
+      transition: transform 0.25s, opacity 0.25s;
+    }
+    .nav-mobile { display: none; }
+
+    @media (max-width: 860px) {
+      .nav-links, .nav-cta-wrap { display: none; }
+      .hamburger { display: flex; }
+      .nav-mobile {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: var(--primary);
+        z-index: 999;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1.5rem;
+      }
+      .nav-mobile.open { display: flex; }
+      .nav-mobile a {
+        font-family: var(--font-display);
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: -0.02em;
+      }
+      .nav-mobile a:hover { color: var(--accent); }
+      .mobile-close {
+        position: absolute;
+        top: 1.5rem;
+        right: 1.75rem;
+        font-size: 2rem;
+        color: #fff;
+        cursor: pointer;
+        background: none;
+        border: none;
+        line-height: 1;
+      }
+    }
+
+    /* ─── HERO ─── */
+    #hero {
+      position: relative;
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background-image: url('https://www.wakefieldbid.co.uk/wp-content/uploads/2024/08/WFD30-scaled.jpg');
+      background-size: cover;
+      background-position: center 30%;
+      z-index: 0;
+    }
+    .hero-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(13,27,62,0.88) 0%, rgba(13,27,62,0.55) 60%, rgba(13,27,62,0.35) 100%);
+    }
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      padding-top: 6rem;
+      padding-bottom: 8rem;
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-family: var(--font-display);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent-light);
+      margin-bottom: 1.25rem;
+    }
+    .hero-eyebrow::before {
+      content: '';
+      display: block;
+      width: 32px;
+      height: 2px;
+      background: var(--accent);
+    }
+    .hero-content h1 {
+      color: #fff;
+      max-width: 760px;
+      margin-bottom: 1.25rem;
+    }
+    .hero-content h1 em {
+      font-style: normal;
+      color: var(--accent-light);
+    }
+    .hero-sub {
+      color: rgba(255,255,255,0.82);
+      max-width: 560px;
+      font-size: clamp(1rem, 2vw, 1.15rem);
+      margin-bottom: 2rem;
+      line-height: 1.65;
+    }
+    .hero-actions { display: flex; gap: 0.85rem; flex-wrap: wrap; }
+
+    .stats-strip {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(240,165,0,0.96);
+      backdrop-filter: blur(6px);
+      z-index: 2;
+    }
+    .stats-strip-inner {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding: 1.25rem 0;
+    }
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 0.5rem 1rem;
+      border-right: 1px solid rgba(13,27,62,0.2);
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-num {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1;
+    }
+    .stat-label {
+      font-family: var(--font-body);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: rgba(13,27,62,0.75);
+      margin-top: 0.2rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    @media (max-width: 640px) {
+      .stats-strip-inner { grid-template-columns: repeat(2, 1fr); }
+      .stat-item:nth-child(2) { border-right: none; }
+    }
+
+    /* ─── WHAT WE DO ─── */
+    #what-we-do {
+      padding-block: var(--section-pad);
+      background: var(--surface);
+    }
+    .section-header {
+      max-width: 680px;
+      margin-bottom: 3.5rem;
+    }
+    .section-header h2 { margin-bottom: 0.75rem; }
+    .section-header p { color: var(--text-soft); font-size: 1.05rem; }
+
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5px;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: 0 4px 40px rgba(13,27,62,0.1);
+    }
+    .pillar {
+      position: relative;
+      overflow: hidden;
+      min-height: 420px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 2.25rem;
+    }
+    .pillar-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      transition: transform 0.5s ease;
+    }
+    .pillar:hover .pillar-bg { transform: scale(1.04); }
+    .pillar-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(13,27,62,0.2) 0%, rgba(13,27,62,0.85) 100%);
+    }
+    .pillar-content { position: relative; z-index: 1; }
+    .pillar-tag {
+      display: inline-block;
+      font-family: var(--font-display);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent-light);
+      background: rgba(240,165,0,0.2);
+      border: 1px solid rgba(240,165,0,0.4);
+      padding: 0.2rem 0.6rem;
+      border-radius: 3px;
+      margin-bottom: 0.6rem;
+    }
+    .pillar h3 { color: #fff; font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .pillar p { color: rgba(255,255,255,0.8); font-size: 0.92rem; line-height: 1.6; }
+    .pillar-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+    .pillar-icon svg { width: 24px; height: 24px; color: var(--primary); }
+
+    @media (max-width: 768px) {
+      .pillars-grid { grid-template-columns: 1fr; }
+      .pillar { min-height: 320px; }
+    }
+
+    /* ─── INITIATIVES ─── */
+    #initiatives {
+      padding-block: var(--section-pad);
+      background: var(--bg);
+    }
+    .initiatives-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+    .initiative-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      transition: box-shadow 0.25s, transform 0.25s;
+    }
+    .initiative-card:hover {
+      box-shadow: 0 12px 36px rgba(13,27,62,0.12);
+      transform: translateY(-4px);
+    }
+    .initiative-img {
+      height: 220px;
+      overflow: hidden;
+    }
+    .initiative-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+    .initiative-card:hover .initiative-img img { transform: scale(1.05); }
+    .initiative-body { padding: 1.75rem; }
+    .initiative-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: var(--font-display);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--primary);
+      background: rgba(240,165,0,0.18);
+      padding: 0.2rem 0.65rem;
+      border-radius: 3px;
+      margin-bottom: 0.85rem;
+    }
+    .initiative-body h3 { margin-bottom: 0.5rem; color: var(--primary); }
+    .initiative-body p { color: var(--text-soft); font-size: 0.93rem; line-height: 1.65; }
+    .initiative-body a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent-dark);
+      margin-top: 1rem;
+      transition: gap 0.2s;
+    }
+    .initiative-body a:hover { gap: 0.6rem; }
+
+    /* Safer Wakefield feature card */
+    .initiative-card.featured {
+      grid-column: span 2;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    .initiative-card.featured .initiative-img { height: 100%; min-height: 280px; }
+    @media (max-width: 900px) {
+      .initiative-card.featured { grid-column: span 1; grid-template-columns: 1fr; }
+      .initiative-card.featured .initiative-img { height: 220px; }
+    }
+
+    /* ─── MEMBER MAP ─── */
+    #member-map {
+      padding-block: var(--section-pad);
+      background: var(--primary);
+    }
+    #member-map .section-header h2 { color: #fff; }
+    #member-map .section-header p { color: rgba(255,255,255,0.65); }
+    #member-map .label { color: var(--accent-light); }
+
+    .map-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    @media (max-width: 860px) {
+      .map-layout { grid-template-columns: 1fr; }
+    }
+
+    .map-sidebar {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+    }
+    .map-sidebar h4 {
+      font-family: var(--font-display);
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+    .filter-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      width: 100%;
+      padding: 0.65rem 0.9rem;
+      margin-bottom: 0.4rem;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+      font-family: var(--font-display);
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.8);
+    }
+    .filter-btn:hover { background: rgba(255,255,255,0.12); }
+    .filter-btn.active { background: var(--accent); border-color: var(--accent); color: var(--primary); font-weight: 700; }
+    .filter-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .filter-count {
+      margin-left: auto;
+      font-size: 0.75rem;
+      opacity: 0.7;
+    }
+    .map-sidebar-stats {
+      margin-top: 1.5rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    .map-sidebar-stats p {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.5);
+      line-height: 1.5;
+    }
+    .map-sidebar-stats strong { color: rgba(255,255,255,0.85); }
+
+    #map {
+      height: 540px;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 2px solid rgba(255,255,255,0.1);
+    }
+
+    /* Leaflet popup customisation */
+    .leaflet-popup-content-wrapper {
+      border-radius: 10px !important;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.2) !important;
+      font-family: var(--font-body) !important;
+    }
+    .leaflet-popup-content { margin: 0 !important; padding: 0 !important; min-width: 180px; }
+    .map-popup { padding: 1rem 1.1rem; }
+    .map-popup-cat {
+      font-family: var(--font-display);
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 0.3rem;
+    }
+    .map-popup h4 { font-family: var(--font-display); font-size: 0.95rem; color: var(--primary); margin-bottom: 0.1rem; }
+    .map-popup p { font-size: 0.8rem; color: var(--text-soft); line-height: 1.4; }
+
+    /* ─── IMPACT ─── */
+    #impact {
+      background: var(--accent);
+      padding-block: clamp(50px, 7vw, 90px);
+    }
+    .impact-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2rem;
+      text-align: center;
+    }
+    @media (max-width: 768px) {
+      .impact-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    .impact-item {}
+    .impact-num {
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1;
+      margin-bottom: 0.3rem;
+    }
+    .impact-desc {
+      font-family: var(--font-display);
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: rgba(13,27,62,0.7);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* ─── EVENTS ─── */
+    #events {
+      padding-block: var(--section-pad);
+      background: var(--surface);
+    }
+    .events-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+    .event-card {
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      display: flex;
+      transition: box-shadow 0.25s, transform 0.25s;
+    }
+    .event-card:hover {
+      box-shadow: 0 10px 30px rgba(13,27,62,0.1);
+      transform: translateY(-3px);
+    }
+    .event-date-col {
+      background: var(--primary);
+      color: #fff;
+      padding: 1.5rem 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-width: 80px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .event-day {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .event-month {
+      font-family: var(--font-display);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent-light);
+      margin-top: 0.2rem;
+    }
+    .event-year {
+      font-family: var(--font-display);
+      font-size: 0.65rem;
+      color: rgba(255,255,255,0.5);
+      margin-top: 0.1rem;
+    }
+    .event-body {
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background: var(--surface);
+    }
+    .event-time {
+      font-family: var(--font-display);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent-dark);
+      margin-bottom: 0.4rem;
+    }
+    .event-body h3 { font-size: 1.1rem; color: var(--primary); margin-bottom: 0.3rem; }
+    .event-body p { font-size: 0.88rem; color: var(--text-soft); line-height: 1.5; }
+
+    /* ─── NEWS ─── */
+    #news {
+      padding-block: var(--section-pad);
+      background: var(--bg);
+    }
+    .news-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .news-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      transition: box-shadow 0.25s, transform 0.25s;
+    }
+    .news-card:hover {
+      box-shadow: 0 10px 28px rgba(13,27,62,0.1);
+      transform: translateY(-3px);
+    }
+    .news-img {
+      height: 200px;
+      overflow: hidden;
+    }
+    .news-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s;
+    }
+    .news-card:hover .news-img img { transform: scale(1.05); }
+    .news-body { padding: 1.5rem; }
+    .news-meta {
+      font-family: var(--font-display);
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+    .news-body h3 { font-size: 1.05rem; color: var(--primary); margin-bottom: 0.4rem; line-height: 1.3; }
+    .news-body p { font-size: 0.88rem; color: var(--text-soft); line-height: 1.55; }
+
+    /* ─── JOIN ─── */
+    #join {
+      padding-block: var(--section-pad);
+      background: var(--primary);
+      position: relative;
+      overflow: hidden;
+    }
+    #join::before {
+      content: '';
+      position: absolute;
+      top: -200px; right: -200px;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(240,165,0,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .join-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+    @media (max-width: 768px) {
+      .join-grid { grid-template-columns: 1fr; }
+    }
+    .join-panel {
+      border-radius: var(--radius-lg);
+      padding: 2.5rem;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .join-panel.bid { background: rgba(255,255,255,0.06); }
+    .join-panel.safer { background: var(--accent); }
+    .join-panel.bid h3 { color: #fff; }
+    .join-panel.safer h3 { color: var(--primary); }
+    .join-panel.bid p { color: rgba(255,255,255,0.7); }
+    .join-panel.safer p { color: rgba(13,27,62,0.75); }
+    .join-panel h3 { font-size: 1.6rem; margin-bottom: 0.75rem; }
+    .join-panel p { font-size: 0.95rem; margin-bottom: 1.75rem; line-height: 1.65; }
+
+    .safer-logo { height: 60px; margin-bottom: 1.25rem; }
+    .safer-pricing {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .price-chip {
+      background: rgba(13,27,62,0.12);
+      border: 1px solid rgba(13,27,62,0.2);
+      border-radius: 6px;
+      padding: 0.4rem 0.85rem;
+      font-family: var(--font-display);
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--primary);
+      text-align: center;
+    }
+    .price-chip span { display: block; font-size: 0.65rem; font-weight: 400; opacity: 0.7; }
+
+    /* ─── CONTACT ─── */
+    #contact {
+      padding-block: var(--section-pad);
+      background: var(--surface);
+    }
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: start;
+    }
+    @media (max-width: 768px) {
+      .contact-grid { grid-template-columns: 1fr; }
+    }
+    .contact-info h2 { color: var(--primary); margin-bottom: 0.75rem; }
+    .contact-info p { color: var(--text-soft); margin-bottom: 2rem; }
+    .contact-details { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem; }
+    .contact-detail {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .contact-icon {
+      width: 44px;
+      height: 44px;
+      background: rgba(240,165,0,0.12);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .contact-icon svg { width: 20px; height: 20px; color: var(--accent-dark); }
+    .contact-detail-text { padding-top: 0.2rem; }
+    .contact-detail-text strong {
+      display: block;
+      font-family: var(--font-display);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 0.15rem;
+    }
+    .contact-detail-text a { color: var(--primary); font-weight: 400; }
+    .contact-detail-text a:hover { color: var(--accent-dark); }
+
+    .contact-form { display: flex; flex-direction: column; gap: 1rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 500px) { .form-row { grid-template-columns: 1fr; } }
+    .form-group { display: flex; flex-direction: column; gap: 0.35rem; }
+    .form-group label {
+      font-family: var(--font-display);
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+    }
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      padding: 0.75rem 1rem;
+      border: 1.5px solid var(--border);
+      border-radius: 7px;
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      color: var(--text);
+      background: var(--bg);
+      transition: border-color 0.2s;
+      outline: none;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus { border-color: var(--primary); }
+    .form-group textarea { resize: vertical; min-height: 120px; }
+    .form-submit { align-self: flex-start; }
+    .form-thankyou {
+      display: none;
+      background: rgba(15, 160, 80, 0.1);
+      border: 1.5px solid rgba(15, 160, 80, 0.3);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      color: #0a6632;
+      font-family: var(--font-display);
+      font-weight: 600;
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: #080f22;
+      color: rgba(255,255,255,0.65);
+      padding-top: 3.5rem;
+      padding-bottom: 2rem;
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1.6fr 1fr 1fr 1fr;
+      gap: 3rem;
+      margin-bottom: 3rem;
+    }
+    @media (max-width: 860px) {
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 480px) {
+      .footer-grid { grid-template-columns: 1fr; }
+    }
+    .footer-brand img { height: 48px; margin-bottom: 1.1rem; }
+    .footer-brand p { font-size: 0.88rem; line-height: 1.7; max-width: 260px; }
+    .footer-socials {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1.25rem;
+    }
+    .social-link {
+      width: 36px;
+      height: 36px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,0.6);
+      transition: background 0.2s, color 0.2s;
+    }
+    .social-link:hover { background: var(--accent); color: var(--primary); }
+    .social-link svg { width: 16px; height: 16px; }
+    .footer-col h5 {
+      font-family: var(--font-display);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 1rem;
+    }
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; }
+    .footer-col ul a {
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.6);
+      transition: color 0.2s;
+    }
+    .footer-col ul a:hover { color: #fff; }
+    .footer-bottom {
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding-top: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      font-size: 0.8rem;
+    }
+    .footer-bottom a { color: rgba(255,255,255,0.4); transition: color 0.2s; }
+    .footer-bottom a:hover { color: rgba(255,255,255,0.7); }
+    .sitebound-credit { color: rgba(255,255,255,0.3); }
+    .sitebound-credit a { color: var(--accent); opacity: 0.7; }
+    .sitebound-credit a:hover { opacity: 1; }
+  </style>
+</head>
+<body>
+
+<!-- ─── NAV ─── -->
+<nav id="nav">
+  <div class="container">
+    <div class="nav-inner">
+      <a href="#hero" class="nav-logo" aria-label="Wakefield BID home">
+        <img src="https://www.wakefieldbid.co.uk/wp-content/uploads/2022/09/logo-pink.png" alt="Wakefield BID logo" width="140" height="44">
+      </a>
+      <ul class="nav-links">
+        <li><a href="#what-we-do">What We Do</a></li>
+        <li><a href="#initiatives">Initiatives</a></li>
+        <li><a href="#member-map">Members</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#news">News</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+      <a href="#join" class="btn btn-primary nav-cta">Join the BID</a>
+      <button class="hamburger" aria-label="Open menu" id="hamburger">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile nav -->
+<nav class="nav-mobile" id="navMobile" role="navigation" aria-label="Mobile navigation">
+  <button class="mobile-close" id="mobileClose" aria-label="Close menu">&#x2715;</button>
+  <a href="#what-we-do" class="mob-link">What We Do</a>
+  <a href="#initiatives" class="mob-link">Initiatives</a>
+  <a href="#member-map" class="mob-link">Members</a>
+  <a href="#events" class="mob-link">Events</a>
+  <a href="#news" class="mob-link">News</a>
+  <a href="#contact" class="mob-link">Contact</a>
+  <a href="#join" class="btn btn-primary" style="margin-top:0.5rem">Join the BID</a>
+</nav>
+
+<!-- ─── HERO ─── -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="container hero-content">
+    <div class="hero-eyebrow">Wakefield Business Improvement District</div>
+    <h1>The City Centre,<br><em>Working Together</em></h1>
+    <p class="hero-sub">Over 400 Wakefield businesses united to invest in events, safety, cleanliness and the future of our city centre — since 2017.</p>
+    <div class="hero-actions">
+      <a href="#what-we-do" class="btn btn-primary">Discover What We Do</a>
+      <a href="#join" class="btn btn-outline">Join Wakefield BID</a>
+    </div>
+  </div>
+  <div class="stats-strip">
+    <div class="container">
+      <div class="stats-strip-inner">
+        <div class="stat-item">
+          <span class="stat-num">400+</span>
+          <span class="stat-label">Member Businesses</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num">£1.5M</span>
+          <span class="stat-label">Invested in Wakefield</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num">90+</span>
+          <span class="stat-label">Safer Wakefield Members</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num">4-yr</span>
+          <span class="stat-label">Crime Low in City Centre</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── WHAT WE DO ─── -->
+<section id="what-we-do">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="label">What We Do</span>
+      <h2>Three pillars. One goal.<br>A better Wakefield.</h2>
+      <p>Every penny of the BID levy is reinvested directly into the city centre — improving the environment, driving footfall, and protecting your business.</p>
+    </div>
+    <div class="pillars-grid">
+      <div class="pillar reveal">
+        <div class="pillar-bg" style="background-image: url('https://www.wakefieldbid.co.uk/wp-content/uploads/2024/09/WhatsApp-Image-2024-08-13-at-11.09.04_87d36e19-1024x768.jpg')"></div>
+        <div class="pillar-overlay"></div>
+        <div class="pillar-content">
+          <div class="pillar-tag">Place</div>
+          <div class="pillar-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
+          </div>
+          <h3>The Physical City</h3>
+          <p>Street Rangers deep-cleaning pavements, Wakefield in Bloom floral displays, and ongoing environmental improvements that make the city centre a place people want to be.</p>
+        </div>
+      </div>
+      <div class="pillar reveal reveal-delay-1">
+        <div class="pillar-bg" style="background-image: url('https://www.wakefieldbid.co.uk/wp-content/uploads/2024/08/wakefieldpride2024-pridebanner-1024x683.jpg')"></div>
+        <div class="pillar-overlay"></div>
+        <div class="pillar-content">
+          <div class="pillar-tag">Promotion</div>
+          <div class="pillar-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 110-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.461a20.845 20.845 0 01-1.44-4.282m3.102.069a18.03 18.03 0 01-.59-4.59c0-1.586.205-3.124.59-4.59m0 9.18a23.848 23.848 0 018.835 2.535M10.34 6.66a23.847 23.847 0 008.835-2.535m0 0A23.74 23.74 0 0018.795 3m.38 1.125a23.91 23.91 0 011.014 5.395m-1.014 8.855c-.118.38-.245.754-.38 1.125m.38-1.125a23.91 23.91 0 001.014-5.395m0-3.46c.495.413.811 1.035.811 1.73 0 .695-.316 1.317-.811 1.73m0-3.46a24.347 24.347 0 010 3.46"/></svg>
+          </div>
+          <h3>Getting the Word Out</h3>
+          <p>Festivals, events, and the Ey Up Wakefield consumer marketing campaign — bringing visitors in and putting Wakefield businesses in front of the audiences that matter.</p>
+        </div>
+      </div>
+      <div class="pillar reveal reveal-delay-2">
+        <div class="pillar-bg" style="background-image: url('https://www.wakefieldbid.co.uk/wp-content/uploads/2024/09/learning-wakefieldbid-website-1-1024x576.jpg')"></div>
+        <div class="pillar-overlay"></div>
+        <div class="pillar-content">
+          <div class="pillar-tag">Provision</div>
+          <div class="pillar-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5"/></svg>
+          </div>
+          <h3>Support for Members</h3>
+          <p>Free meeting rooms, 200+ live training courses through our city-centre learning hub, and direct business support — the tools your team needs, at no extra cost.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── INITIATIVES ─── -->
+<section id="initiatives">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="label">Key Initiatives</span>
+      <h2>Making a difference,<br>every single day.</h2>
+      <p>From dawn cleaning crews to late-night radio networks, Wakefield BID operates across the full life of the city centre.</p>
+    </div>
+    <div class="initiatives-grid">
+
+      <!-- Safer Wakefield — featured -->
+      <div class="initiative-card featured reveal">
+        <div class="initiative-img">
+          <img src="https://www.wakefieldbid.co.uk/wp-content/uploads/2025/03/4H9A3474.jpg" alt="Safer Wakefield team in Wakefield city centre" loading="lazy">
+        </div>
+        <div class="initiative-body" style="display:flex;flex-direction:column;justify-content:center;">
+          <img src="https://www.wakefieldbid.co.uk/wp-content/uploads/2025/05/sw-logo-913x1024.png" alt="Safer Wakefield" style="height:60px;width:auto;object-fit:contain;object-position:left;margin-bottom:1rem;">
+          <span class="initiative-badge">Business Crime Reduction Partnership</span>
+          <h3>Safer Wakefield</h3>
+          <p>90+ city-centre businesses connected through Hytera digital radios, a real-time intelligence app, and 24/7 support — working alongside West Yorkshire Police and Wakefield Council to keep crime at its lowest level in four years.</p>
+          <p style="margin-top:0.75rem;font-size:0.85rem;color:var(--text-muted);">From £30/month · One-month free trial available</p>
+          <a href="#join">Join Safer Wakefield →</a>
+        </div>
+      </div>
+
+      <!-- Street Rangers -->
+      <div class="initiative-card reveal reveal-delay-1">
+        <div class="initiative-img">
+          <img src="https://www.wakefieldbid.co.uk/wp-content/uploads/2025/07/bid-van-outsideoffice-768x1024.jpg" alt="Wakefield BID Street Rangers van" loading="lazy">
+        </div>
+        <div class="initiative-body">
+          <span class="initiative-badge">Daily Operations</span>
+          <h3>Street Rangers</h3>
+          <p>Our dedicated team is on the ground every morning — deep-cleaning pavements, removing graffiti, clearing spillages and maintaining the environment that our businesses depend on.</p>
+        </div>
+      </div>
+
+      <!-- Ey Up Wakefield -->
+      <div class="initiative-card reveal reveal-delay-2">
+        <div class="initiative-img">
+          <img src="https://www.wakefieldbid.co.uk/wp-content/uploads/2024/09/GUkhRiEXgAEOrid-1024x768.jpeg" alt="Ey Up Wakefield marketing campaign event" loading="lazy">
+        </div>
+        <div class="initiative-body">
+          <img src="https://www.wakefieldbid.co.uk/wp-content/uploads/2024/09/eyup-wakefield-logo-1024x1024.png" alt="Ey Up Wakefield" style="height:36px;width:auto;object-fit:contain;object-position:left;margin-bottom:0.75rem;">
+          <span class="initiative-badge">Consumer Marketing</span>
+          <h3>Ey Up Wakefield</h3>
+          <p>Our citywide consumer brand — promoting member businesses through campaigns, social media, and a unified identity that gives Wakefield's independent economy a voice.</p>
+        </div>
+      </div>
+
+      <!-- Wakefield in Bloom -->
+      <div class="initiative-card reveal reveal-delay-1">
+        <div class="initiative-img">
+          <img src="https://www.wakefieldbid.co.uk/wp-content/uploads/2024/08/WFD157-300x200.jpg" alt="Wakefield city centre floral display" loading="lazy" style="object-position:center;">
+        </div>
+        <div class="initiative-body">
+          <span class="initiative-badge">City Environment</span>
+          <h3>Wakefield in Bloom</h3>
+          <p>Seasonal planters and floral installations positioned throughout the city centre — small details that make a measurable difference to how visitors experience Wakefield.</p>
+        </div>
+      </div>
+
+      <!-- Training -->
+      <div class="initiative-card reveal reveal-delay-2">
+        <div class="initiative-img">
+          <img src="https://www.wakefieldbid.co.uk/wp-content/uploads/2024/09/learning-wakefieldbid-website-1-1024x576.jpg" alt="Wakefield BID learning hub training session" loading="lazy">
+        </div>
+        <div class="initiative-body">
+          <span class="initiative-badge">Member Benefit · Free</span>
+          <h3>City Centre Learning Hub</h3>
+          <p>Over 200 free, live training courses available exclusively to BID levy payers. Customer service, conflict resolution, digital skills, first aid — everything your team needs to grow.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─── MEMBER MAP ─── -->
+<section id="member-map">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="label">BID Members</span>
+      <h2 style="color:#fff">400+ businesses.<br>One city centre.</h2>
+      <p>Every pin on this map is a Wakefield BID member — a business investing in the future of our city. Click any pin to find out more.</p>
+    </div>
+    <div class="map-layout">
+      <div class="map-sidebar reveal">
+        <h4>Filter by type</h4>
+        <button class="filter-btn active" data-cat="all">
+          <span class="filter-dot" style="background:#6b7280"></span>
+          All Members
+          <span class="filter-count" id="count-all">31</span>
+        </button>
+        <button class="filter-btn" data-cat="retail">
+          <span class="filter-dot" style="background:#f0a500"></span>
+          Retail
+          <span class="filter-count" id="count-retail"></span>
+        </button>
+        <button class="filter-btn" data-cat="hospitality">
+          <span class="filter-dot" style="background:#16a34a"></span>
+          Hospitality &amp; Food
+          <span class="filter-count" id="count-hospitality"></span>
+        </button>
+        <button class="filter-btn" data-cat="services">
+          <span class="filter-dot" style="background:#2563eb"></span>
+          Professional Services
+          <span class="filter-count" id="count-services"></span>
+        </button>
+        <button class="filter-btn" data-cat="night">
+          <span class="filter-dot" style="background:#7c3aed"></span>
+          Night Economy
+          <span class="filter-count" id="count-night"></span>
+        </button>
+        <div class="map-sidebar-stats">
+          <p><strong>Are you a member?</strong><br>Contact us to have your business added to the map.</p>
+        </div>
+      </div>
+      <div id="map" class="reveal reveal-delay-1" role="region" aria-label="Interactive map of Wakefield BID member businesses"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── IMPACT ─── -->
+<section id="impact">
+  <div class="container">
+    <div class="impact-grid">
+      <div class="impact-item reveal">
+        <div class="impact-num">400+</div>
+        <div class="impact-desc">City Centre Members</div>
+      </div>
+      <div class="impact-item reveal reveal-delay-1">
+        <div class="impact-num">£1.5M</div>
+        <div class="impact-desc">Invested Since 2017</div>
+      </div>
+      <div class="impact-item reveal reveal-delay-2">
+        <div class="impact-num">200+</div>
+        <div class="impact-desc">Free Training Courses</div>
+      </div>
+      <div class="impact-item reveal reveal-delay-3">
+        <div class="impact-num">4yr</div>
+        <div class="impact-desc">Crime Low Achieved</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── EVENTS ─── -->
+<section id="events">
+  <div class="container">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:2.5rem;flex-wrap:wrap;gap:1rem;">
+      <div class="section-header reveal" style="margin-bottom:0;">
+        <span class="label">What's On</span>
+        <h2>Events in the<br>City Centre</h2>
+      </div>
+      <a href="https://www.wakefieldbid.co.uk/whats-on/" class="btn btn-dark reveal" target="_blank" rel="noopener">View All Events</a>
+    </div>
+    <div class="events-grid">
+      <div class="event-card reveal">
+        <div class="event-date-col">
+          <span class="event-day">29</span>
+          <span class="event-month">Jul</span>
+          <span class="event-year">2026</span>
+        </div>
+        <div class="event-body">
+          <div class="event-time">5:00pm – 9:00pm</div>
+          <h3>Wakefield Artwalk</h3>
+          <p>A self-guided evening trail through galleries, studios, and venues across the city centre.</p>
+        </div>
+      </div>
+      <div class="event-card reveal reveal-delay-1">
+        <div class="event-date-col">
+          <span class="event-day">30</span>
+          <span class="event-month">Sep</span>
+          <span class="event-year">2026</span>
+        </div>
+        <div class="event-body">
+          <div class="event-time">5:00pm – 9:00pm</div>
+          <h3>Wakefield Artwalk</h3>
+          <p>The autumn edition — late-night access to art spaces, live music, and city-centre culture.</p>
+        </div>
+      </div>
+      <div class="event-card reveal reveal-delay-2">
+        <div class="event-date-col">
+          <span class="event-day">25</span>
+          <span class="event-month">Nov</span>
+          <span class="event-year">2026</span>
+        </div>
+        <div class="event-body">
+          <div class="event-time">5:00pm – 9:00pm</div>
+          <h3>Wakefield Artwalk</h3>
+          <p>The festive edition — explore Wakefield's creative spaces as the city lights up for Christmas.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── NEWS ─── -->
+<section id="news">
+  <div class="container">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:2.5rem;flex-wrap:wrap;gap:1rem;">
+      <div class="section-header reveal" style="margin-bottom:0;">
+        <span class="label">Latest News</span>
+        <h2>From the BID</h2>
+      </div>
+      <a href="https://www.wakefieldbid.co.uk/news/" class="btn btn-dark reveal" target="_blank" rel="noopener">All News</a>
+    </div>
+    <div class="news-grid">
+      <div class="news-card reveal">
+        <div class="news-img">
+          <img src="https://www.wakefieldbid.co.uk/wp-content/uploads/2026/04/Wakefield-official-oepning-2-300x211.jpg" alt="Post Office official reopening in Wakefield" loading="lazy">
+        </div>
+        <div class="news-body">
+          <div class="news-meta">April 2026 · City Centre</div>
+          <h3>Post Office Returns to Wakefield City Centre</h3>
+          <p>A significant moment for the city — the Post Office officially reopened its doors to serve businesses and residents once again.</p>
+        </div>
+      </div>
+      <div class="news-card reveal reveal-delay-1">
+        <div class="news-img">
+          <img src="https://www.wakefieldbid.co.uk/wp-content/uploads/2026/03/BBN-802-300x200.jpg" alt="Best Bar None Awards Wakefield 2026" loading="lazy">
+        </div>
+        <div class="news-body">
+          <div class="news-meta">March 2026 · Safer Wakefield</div>
+          <h3>Best Bar None Awards 2026 Results</h3>
+          <p>Wakefield's night-time economy businesses celebrated at the annual Best Bar None Awards, recognising excellence in responsible service.</p>
+        </div>
+      </div>
+      <div class="news-card reveal reveal-delay-2">
+        <div class="news-img">
+          <img src="https://www.wakefieldbid.co.uk/wp-content/uploads/2026/02/CGI-image-of-Cathedral-Quarter--300x200.jpeg" alt="CGI image of the new Wakefield Cathedral Quarter development" loading="lazy">
+        </div>
+        <div class="news-body">
+          <div class="news-meta">February 2026 · Development</div>
+          <h3>Cathedral Quarter: What's Coming to Wakefield</h3>
+          <p>Plans for the Cathedral Quarter development take shape — here's what the regeneration means for businesses and visitors alike.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── JOIN ─── -->
+<section id="join">
+  <div class="container">
+    <div class="section-header reveal" style="max-width:100%;margin-bottom:3rem;">
+      <span class="label" style="color:var(--accent-light)">Get Involved</span>
+      <h2 style="color:#fff">Be part of something<br>bigger than your business.</h2>
+    </div>
+    <div class="join-grid">
+      <div class="join-panel bid reveal">
+        <h3>Join Wakefield BID</h3>
+        <p>If your business is within the BID boundary, your levy contribution is already at work. Get in touch to understand your membership, access all your benefits, and play an active role in shaping the city centre.</p>
+        <a href="#contact" class="btn btn-primary">Get in Touch</a>
+      </div>
+      <div class="join-panel safer reveal reveal-delay-1">
+        <img src="https://www.wakefieldbid.co.uk/wp-content/uploads/2025/05/sw-logo-913x1024.png" alt="Safer Wakefield" class="safer-logo" style="height:54px;width:auto;object-fit:contain;object-position:left;">
+        <h3>Join Safer Wakefield</h3>
+        <p>Connect your business to the city's fastest-growing crime reduction network. Hytera radios, the Safer Wakefield app, facial recognition intelligence, and 24/7 support — from just £30/month.</p>
+        <div class="safer-pricing">
+          <div class="price-chip">£30<span>per month</span></div>
+          <div class="price-chip">£90<span>quarterly</span></div>
+          <div class="price-chip">£360<span>annually</span></div>
+        </div>
+        <a href="#contact" class="btn btn-dark">Start Free Trial</a>
+      </div>
+    </div>
+
+    <!-- Partner logos -->
+    <div class="reveal" style="margin-top:3.5rem;text-align:center;">
+      <p style="font-family:var(--font-display);font-size:0.72rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:1.75rem;">Working in Partnership With</p>
+      <div style="display:flex;flex-wrap:wrap;gap:2rem;justify-content:center;align-items:center;opacity:0.6;filter:brightness(0) invert(1);">
+        <img src="https://www.wakefieldbid.co.uk/wp-content/uploads/2025/03/wyp-1024x538.png" alt="West Yorkshire Police" style="height:36px;width:auto;object-fit:contain;" loading="lazy">
+        <img src="https://www.wakefieldbid.co.uk/wp-content/uploads/2025/05/wakefield-council-logo-1.png" alt="Wakefield Council" style="height:36px;width:auto;object-fit:contain;" loading="lazy">
+        <img src="https://www.wakefieldbid.co.uk/wp-content/uploads/2025/05/shopsafe-icon-text-800-754x151-1.png" alt="ShopSafe" style="height:28px;width:auto;object-fit:contain;" loading="lazy">
+        <img src="https://www.wakefieldbid.co.uk/wp-content/uploads/2025/05/8507_NABCPLogo_AWtransparentbackground.png" alt="NABCP" style="height:36px;width:auto;object-fit:contain;" loading="lazy">
+        <img src="https://www.wakefieldbid.co.uk/wp-content/uploads/2025/05/ask-for-angela-logo.png" alt="Ask for Angela" style="height:36px;width:auto;object-fit:contain;" loading="lazy">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── CONTACT ─── -->
+<section id="contact">
+  <div class="container">
+    <div class="contact-grid">
+      <div class="contact-info reveal">
+        <span class="label">Contact Us</span>
+        <h2>Let's talk about<br>your business.</h2>
+        <p>Whether you're a levy payer wanting to get more from your membership, a new business in the city, or interested in Safer Wakefield — our team is here to help.</p>
+        <div class="contact-details">
+          <div class="contact-detail">
+            <div class="contact-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+            </div>
+            <div class="contact-detail-text">
+              <strong>Address</strong>
+              <span>20 Wood St, Wakefield, WF1 2ED</span>
+            </div>
+          </div>
+          <div class="contact-detail">
+            <div class="contact-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"/></svg>
+            </div>
+            <div class="contact-detail-text">
+              <strong>Phone</strong>
+              <a href="tel:+441924782337">01924 782337</a>
+            </div>
+          </div>
+          <div class="contact-detail">
+            <div class="contact-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+            </div>
+            <div class="contact-detail-text">
+              <strong>Email</strong>
+              <a href="mailto:info@wakefieldbid.co.uk">info@wakefieldbid.co.uk</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal reveal-delay-1">
+        <form class="contact-form" id="contactForm" novalidate>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="name">Your Name</label>
+              <input type="text" id="name" name="name" placeholder="Jane Smith" required>
+            </div>
+            <div class="form-group">
+              <label for="business">Business Name</label>
+              <input type="text" id="business" name="business" placeholder="Smith & Co.">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="email">Email Address</label>
+              <input type="email" id="email" name="email" placeholder="jane@example.co.uk" required>
+            </div>
+            <div class="form-group">
+              <label for="phone">Phone Number</label>
+              <input type="tel" id="phone" name="phone" placeholder="01924 000000">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="enquiry">Enquiry Type</label>
+            <select id="enquiry" name="enquiry">
+              <option value="">Please select…</option>
+              <option>BID Membership &amp; Benefits</option>
+              <option>Safer Wakefield</option>
+              <option>Events &amp; What's On</option>
+              <option>Training &amp; Learning Hub</option>
+              <option>General Enquiry</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" placeholder="Tell us a bit about your business and how we can help…" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary form-submit">Send Message</button>
+          <div class="form-thankyou" id="formThankyou" role="alert">
+            ✓ Thanks for getting in touch — a member of the BID team will be back to you within one working day.
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <img src="https://www.wakefieldbid.co.uk/wp-content/uploads/2022/09/logo-pink.png" alt="Wakefield BID" width="140" height="44">
+        <p>Wakefield Business Improvement District — investing in people, place and promotion for over 400 city-centre businesses since 2017.</p>
+        <div class="footer-socials">
+          <!-- Facebook -->
+          <a href="https://www.facebook.com/wakefieldbid" class="social-link" aria-label="Facebook" target="_blank" rel="noopener">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          </a>
+          <!-- Instagram -->
+          <a href="https://www.instagram.com/wakefieldbid" class="social-link" aria-label="Instagram" target="_blank" rel="noopener">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+          </a>
+          <!-- Twitter/X -->
+          <a href="https://twitter.com/wakefieldbid" class="social-link" aria-label="X (Twitter)" target="_blank" rel="noopener">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <!-- LinkedIn -->
+          <a href="https://www.linkedin.com/company/wakefield-bid" class="social-link" aria-label="LinkedIn" target="_blank" rel="noopener">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          </a>
+          <!-- TikTok -->
+          <a href="https://www.tiktok.com/@wakefieldbid" class="social-link" aria-label="TikTok" target="_blank" rel="noopener">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h5>Organisation</h5>
+        <ul>
+          <li><a href="https://www.wakefieldbid.co.uk/who-we-are/" target="_blank" rel="noopener">Who We Are</a></li>
+          <li><a href="https://www.wakefieldbid.co.uk/who-we-are/our-team/" target="_blank" rel="noopener">Our Team</a></li>
+          <li><a href="https://www.wakefieldbid.co.uk/who-we-are/our-board/" target="_blank" rel="noopener">Our Board</a></li>
+          <li><a href="https://www.wakefieldbid.co.uk/who-we-are/bid-information/" target="_blank" rel="noopener">BID Information</a></li>
+          <li><a href="https://www.wakefieldbid.co.uk/who-we-are/careers/" target="_blank" rel="noopener">Careers</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Initiatives</h5>
+        <ul>
+          <li><a href="#initiatives">Safer Wakefield</a></li>
+          <li><a href="#initiatives">Street Rangers</a></li>
+          <li><a href="#initiatives">Ey Up Wakefield</a></li>
+          <li><a href="#initiatives">Wakefield in Bloom</a></li>
+          <li><a href="#initiatives">Learning Hub</a></li>
+          <li><a href="#initiatives">BID Awards</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Contact</h5>
+        <ul>
+          <li><a href="tel:+441924782337">01924 782337</a></li>
+          <li><a href="mailto:info@wakefieldbid.co.uk">info@wakefieldbid.co.uk</a></li>
+          <li><a href="https://www.wakefieldbid.co.uk/news/" target="_blank" rel="noopener">News</a></li>
+          <li><a href="https://www.wakefieldbid.co.uk/whats-on/" target="_blank" rel="noopener">What's On</a></li>
+          <li><a href="https://www.wakefieldbid.co.uk/privacy-policy/" target="_blank" rel="noopener">Privacy Policy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; <span id="year"></span> Wakefield BID. All rights reserved. Registered address: 20 Wood St, Wakefield, WF1 2ED.</p>
+      <p class="sitebound-credit">Website by <a href="https://sitebound.co.uk" target="_blank" rel="noopener">Sitebound</a></p>
+    </div>
+  </div>
+</footer>
+
+<!-- Leaflet JS -->
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js" crossorigin=""></script>
+
+<script>
+  // ─── YEAR ───
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // ─── NAV ───
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 40);
+  }, { passive: true });
+
+  // ─── MOBILE NAV ───
+  const hamburger = document.getElementById('hamburger');
+  const navMobile = document.getElementById('navMobile');
+  const mobileClose = document.getElementById('mobileClose');
+  hamburger.addEventListener('click', () => navMobile.classList.add('open'));
+  mobileClose.addEventListener('click', () => navMobile.classList.remove('open'));
+  document.querySelectorAll('.mob-link').forEach(l => l.addEventListener('click', () => navMobile.classList.remove('open')));
+
+  // ─── REVEAL ───
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(el => {
+      if (el.isIntersecting) {
+        el.target.classList.add('visible');
+        observer.unobserve(el.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // ─── CONTACT FORM ───
+  document.getElementById('contactForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    this.style.display = 'none';
+    document.getElementById('formThankyou').style.display = 'block';
+  });
+
+  // ─── MAP ───
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof L === 'undefined') return;
+    initMap();
+  });
+
+  window.addEventListener('load', function() {
+    if (typeof L !== 'undefined' && !window._mapInited) initMap();
+  });
+
+  function initMap() {
+    if (window._mapInited) return;
+    window._mapInited = true;
+
+    const map = L.map('map', {
+      center: [53.6832, -1.4975],
+      zoom: 15,
+      zoomControl: true,
+      scrollWheelZoom: false
+    });
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 19
+    }).addTo(map);
+
+    const catColors = {
+      retail: '#f0a500',
+      hospitality: '#16a34a',
+      services: '#2563eb',
+      night: '#7c3aed'
+    };
+
+    function makeIcon(cat) {
+      const color = catColors[cat] || '#6b7280';
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 42" width="32" height="42">
+        <path d="M16 0C7.163 0 0 7.163 0 16c0 9.941 14 26 16 26s16-16.059 16-26C32 7.163 24.837 0 16 0z" fill="${color}"/>
+        <circle cx="16" cy="16" r="7" fill="white" opacity="0.9"/>
+      </svg>`;
+      return L.divIcon({
+        html: svg,
+        className: '',
+        iconSize: [32, 42],
+        iconAnchor: [16, 42],
+        popupAnchor: [0, -44]
+      });
+    }
+
+    const members = [
+      // RETAIL
+      { name: "Marks & Spencer", cat: "retail", lat: 53.6817, lng: -1.4942, desc: "Food Hall & Clothing, Trinity Walk" },
+      { name: "Primark", cat: "retail", lat: 53.6813, lng: -1.4936, desc: "Fashion & Homeware, Trinity Walk" },
+      { name: "Next", cat: "retail", lat: 53.6820, lng: -1.4945, desc: "Clothing & Home, Trinity Walk" },
+      { name: "Boots", cat: "retail", lat: 53.6835, lng: -1.4958, desc: "Pharmacy & Beauty, The Ridings" },
+      { name: "WH Smith", cat: "retail", lat: 53.6838, lng: -1.4963, desc: "Books, News & Stationery, The Ridings" },
+      { name: "H&M", cat: "retail", lat: 53.6832, lng: -1.4955, desc: "Fashion, The Ridings" },
+      { name: "Savers", cat: "retail", lat: 53.6844, lng: -1.4980, desc: "Health & Beauty, Kirkgate" },
+      { name: "Card Factory", cat: "retail", lat: 53.6840, lng: -1.4971, desc: "Cards & Gifts, The Ridings" },
+      { name: "JD Sports", cat: "retail", lat: 53.6825, lng: -1.4950, desc: "Sportswear, Trinity Walk" },
+      { name: "Poundland", cat: "retail", lat: 53.6847, lng: -1.4985, desc: "Value Retail, Market Area" },
+      { name: "Specsavers", cat: "retail", lat: 53.6830, lng: -1.4965, desc: "Opticians, The Ridings" },
+      { name: "Wool n Stuff", cat: "retail", lat: 53.6849, lng: -1.4978, desc: "Crafts & Haberdashery, Kirkgate" },
+      { name: "My Eco Baby CIC", cat: "retail", lat: 53.6852, lng: -1.4973, desc: "Sustainable Baby Products" },
+
+      // HOSPITALITY
+      { name: "Wagamama", cat: "hospitality", lat: 53.6810, lng: -1.4935, desc: "Asian Cuisine, Trinity Walk" },
+      { name: "Costa Coffee", cat: "hospitality", lat: 53.6841, lng: -1.4968, desc: "Coffee & Light Bites, The Ridings" },
+      { name: "Greggs", cat: "hospitality", lat: 53.6845, lng: -1.4975, desc: "Bakery, Market Street" },
+      { name: "The Hop", cat: "hospitality", lat: 53.6837, lng: -1.4993, desc: "Real Ale Pub, Bank Street" },
+      { name: "Tino's Italian", cat: "hospitality", lat: 53.6828, lng: -1.5005, desc: "Italian Restaurant, Westgate" },
+      { name: "Nando's", cat: "hospitality", lat: 53.6808, lng: -1.4940, desc: "Peri Peri Chicken, Trinity Walk" },
+      { name: "Brewery Tap", cat: "hospitality", lat: 53.6839, lng: -1.4988, desc: "Craft Beer, Sun Lane" },
+      { name: "Café Rouge", cat: "hospitality", lat: 53.6815, lng: -1.4943, desc: "French Brasserie, Trinity Walk" },
+      { name: "Wakefield Market Café", cat: "hospitality", lat: 53.6848, lng: -1.4982, desc: "Traditional Café, Wakefield Market" },
+
+      // SERVICES
+      { name: "Wakefield BID Office", cat: "services", lat: 53.6842, lng: -1.4983, desc: "Business Improvement District HQ, 20 Wood St" },
+      { name: "NatWest Bank", cat: "services", lat: 53.6836, lng: -1.4972, desc: "Banking Services, The Ridings" },
+      { name: "Lloyds Bank", cat: "services", lat: 53.6843, lng: -1.4977, desc: "Banking Services, Northgate" },
+      { name: "Post Office", cat: "services", lat: 53.6840, lng: -1.4969, desc: "Postal Services, The Ridings" },
+      { name: "Wakefield Library", cat: "services", lat: 53.6826, lng: -1.4999, desc: "Public Library, Burton Street" },
+      { name: "Trinity Walk Centre", cat: "services", lat: 53.6814, lng: -1.4938, desc: "Shopping Centre Management" },
+
+      // NIGHT ECONOMY
+      { name: "Revolution", cat: "night", lat: 53.6822, lng: -1.5008, desc: "Bar & Club, Westgate" },
+      { name: "Unit 13", cat: "night", lat: 53.6818, lng: -1.5012, desc: "Live Music Venue, Westgate" },
+      { name: "Warehouse 23", cat: "night", lat: 53.6820, lng: -1.5018, desc: "Nightclub & Events, Westgate" }
+    ];
+
+    // Count by category
+    const counts = { retail: 0, hospitality: 0, services: 0, night: 0 };
+    members.forEach(m => counts[m.cat]++);
+    Object.keys(counts).forEach(cat => {
+      const el = document.getElementById('count-' + cat);
+      if (el) el.textContent = counts[cat];
+    });
+
+    const markers = [];
+    members.forEach(m => {
+      const marker = L.marker([m.lat, m.lng], { icon: makeIcon(m.cat) });
+      const catLabel = { retail: 'Retail', hospitality: 'Hospitality & Food', services: 'Professional Services', night: 'Night Economy' }[m.cat];
+      const catColor = catColors[m.cat];
+      marker.bindPopup(`
+        <div class="map-popup">
+          <div class="map-popup-cat" style="color:${catColor}">${catLabel}</div>
+          <h4>${m.name}</h4>
+          <p>${m.desc}</p>
+        </div>
+      `, { maxWidth: 220 });
+      marker.addTo(map);
+      marker._bidCat = m.cat;
+      markers.push(marker);
+    });
+
+    // Filter buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        const cat = this.dataset.cat;
+        markers.forEach(m => {
+          if (cat === 'all' || m._bidCat === cat) {
+            if (!map.hasLayer(m)) m.addTo(map);
+          } else {
+            if (map.hasLayer(m)) map.removeLayer(m);
+          }
+        });
+      });
+    });
+  }
+</script>
+</body>
+</html>
