@@ -29,7 +29,7 @@ import { generateSignature } from './_taylr.js';
 
 const TAYLR_ENDPOINT = 'https://payments.taylr.io/hosted/';
 const SITE_ORIGIN    = 'https://www.credvantarecovery.co.uk';
-const REDIRECT_URL   = `${SITE_ORIGIN}/payment-complete`;
+const REDIRECT_URL   = `${SITE_ORIGIN}/payment-debug`; // TEMP: diagnostic — revert to /payment-complete after
 const CALLBACK_URL   = `${SITE_ORIGIN}/payment-callback`;
 
 export async function onRequestPost(context) {
