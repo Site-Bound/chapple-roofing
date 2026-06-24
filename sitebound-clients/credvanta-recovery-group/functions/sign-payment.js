@@ -69,6 +69,12 @@ export async function onRequestPost(context) {
       merchantWebsite:   SITE_ORIGIN,
       orderRef:          String(ref).trim().toUpperCase(),
       redirectURL:       REDIRECT_URL,
+      // 3-D Secure: on the Hosted page the gateway runs 3DS automatically
+      // when the merchant account is configured for it. threeDSRequired=Y
+      // is a fail-safe — it ABORTS the transaction if 3DS is not enabled on
+      // the account, so a payment can never complete without authentication.
+      // (Account 290684 must have 3DS enabled at Taylr for this to apply.)
+      threeDSRequired:   'Y',
       transactionUnique,
       type:              '1',
     };
