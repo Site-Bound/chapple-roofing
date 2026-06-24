@@ -7,8 +7,6 @@
    ═══════════════════════════════════════════════════════════════ */
 
 function captureParams(method, params) {
-  // Never expose the signature — it's not useful for diagnosis and
-  // there's no reason to show it in a browser response.
   const safe = Object.fromEntries(
     Object.entries(params).filter(([k]) => k !== 'signature')
   );
@@ -16,9 +14,11 @@ function captureParams(method, params) {
     JSON.stringify({
       _note: 'DIAGNOSTIC ONLY — do not share this URL output publicly',
       method,
-      fieldNames:  Object.keys(safe).sort(),
-      fieldValues: safe,
-      signaturePresent: 'signature' in params,
+      fieldNames:   Object.keys(safe).sort(),
+      fieldValues:  safe,
+      // Include the signature so we can compute which field subset Taylr signs.
+      // The hash value itself doesn't reveal the key.
+      taylrSignature: params.signature || null,
     }, null, 2),
     { status: 200, headers: { 'Content-Type': 'application/json' } }
   );
