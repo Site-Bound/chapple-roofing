@@ -71,14 +71,23 @@ export function classifyOutcome(params) {
 export async function recordPaymentAndReduceBalance(env, params) {
   const autoUpdateEnabled =
     String(env.PAYMENT_AUTO_UPDATE_BALANCE ?? 'true').trim().toLowerCase() !== 'false';
-  if (!autoUpdateEnabled)                            return { ok: false, reason: 'disabled' };
-  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_KEY) return { ok: false, reason: 'no-supabase-env' };
+  if (!autoUpdateEnabled) {
+    console.warn('[payment] PAYMENT_AUTO_UPDATE_BALANCE is disabled — skipping balance update');
+    return { ok: false, reason: 'disabled' };
+  }
+  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_KEY) {
+    console.error('[payment] SUPABASE_URL or SUPABASE_SERVICE_KEY env var missing — cannot update balance');
+    return { ok: false, reason: 'no-supabase-env' };
+  }
 
   const orderRef            = (params.orderRef || '').trim();
   const amountPence         = parseInt(params.amount || '0', 10);
   const amountReceivedPence = parseInt(params.amountReceived || '0', 10);
   const paidPence           = amountReceivedPence > 0 ? amountReceivedPence : amountPence;
-  if (!orderRef || !paidPence || paidPence <= 0)     return { ok: false, reason: 'no-amount-or-ref' };
+  if (!orderRef || !paidPence || paidPence <= 0) {
+    console.error('[payment] missing orderRef or amount — cannot update balance', { orderRef, amountPence, amountReceivedPence });
+    return { ok: false, reason: 'no-amount-or-ref' };
+  }
 
   const txnId   = params.transactionID || params.transactionUnique || null;
   const base    = `${env.SUPABASE_URL}/rest/v1`;
