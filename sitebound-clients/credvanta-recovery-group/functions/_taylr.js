@@ -25,14 +25,45 @@ export async function generateSignature(params, secret) {
     .join('');
 }
 
-/* Verify that the signature on an inbound response matches what we'd
-   compute from the rest of the fields. Constant-time comparison to
-   avoid timing attacks. */
+/* Verify that the signature on an inbound Taylr response matches what
+   we'd compute from the rest of the fields.
+
+   Some fields we include in the OUTGOING request (e.g. threeDSRequired,
+   customerEmail) are echoed back by Taylr in the response but are NOT
+   included in Taylr's response signature. Including them here causes a
+   hash mismatch. We strip them before computing the expected hash.
+
+   Constant-time comparison to avoid timing attacks. */
 export async function verifySignature(params, secret) {
   const supplied = params.signature || '';
   if (!supplied) return false;
-  const expected = await generateSignature(params, secret);
-  return timingSafeEqual(supplied.toLowerCase(), expected.toLowerCase());
+
+  // Fields that Taylr echoes back but does NOT include in their response
+  // signature (absent from every documented Taylr response example).
+  const TAYLR_RESPONSE_EXCLUDED = new Set(['threeDSRequired', 'customerEmail']);
+
+  const verifyParams = Object.fromEntries(
+    Object.entries(params).filter(([k]) => !TAYLR_RESPONSE_EXCLUDED.has(k))
+  );
+
+  // Log exactly which fields are being signed so we can diagnose mismatches.
+  const fieldNames = Object.keys(verifyParams)
+    .filter(k => k !== 'signature')
+    .sort()
+    .join(', ');
+  console.log('[taylr] verifySignature fields:', fieldNames);
+
+  const expected = await generateSignature(verifyParams, secret);
+  const match    = timingSafeEqual(supplied.toLowerCase(), expected.toLowerCase());
+
+  if (!match) {
+    console.error('[taylr] signature mismatch — supplied vs computed (first 12 chars):', {
+      supplied: supplied.slice(0, 12),
+      computed: expected.slice(0, 12),
+      totalFields: Object.keys(verifyParams).length - 1, // -1 for signature
+    });
+  }
+  return match;
 }
 
 /* PHP urlencode() equivalent — RFC 1738 with spaces as + and
