@@ -56,14 +56,14 @@ async function handleReturn(context, method) {
     return redirectTo(STATIC_PAGE);
   }
 
-  console.log(`[payment-complete] ${method} received`, {
-    orderRef:      params.orderRef,
-    responseCode:  params.responseCode,
-    responseStatus: params.responseStatus,
-    transactionID: params.transactionID,
-    hasSignature:  !!params.signature,
-    hasMerchantID: !!params.merchantID,
-  });
+  // DIAGNOSTIC: log all field names + values received from Taylr (no card data
+  // on hosted form returns; safe to log temporarily for debugging).
+  // Remove or reduce once the field set is confirmed.
+  const safeParams = Object.fromEntries(
+    Object.entries(params).filter(([k]) => k !== 'signature')
+  );
+  console.log(`[payment-complete] ${method} received — all fields:`, JSON.stringify(safeParams));
+  console.log(`[payment-complete] ${method} signature present:`, !!params.signature);
 
   // Verify the signature using the same SIGNING KEY we sign requests with.
   let verified = false;
