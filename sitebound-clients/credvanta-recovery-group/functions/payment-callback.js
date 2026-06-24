@@ -4,22 +4,26 @@
    of the browser redirect. Used for reliable reconciliation even if
    the customer closes their browser before /payment-complete loads.
 
+   Single Credvanta merchant account (merchant 290684). One merchant ID,
+   one signing key. Funds settle to Credvanta, who pay creditors directly.
+
    Environment variables required:
-     TAYLR_SIGNING_KEY: 5fbfb863c18792acbb4e36ca6c88411e73b34354fd331deeed9244f94e407221
-     PAYMENT_AUTO_UPDATE_BALANCE: true (enable balance updates on successful payment)
-     SUPABASE_URL, SUPABASE_SERVICE_KEY (required for balance update)
+     TAYLR_SIGNING_KEY: the live 290684 signing key
+     PAYMENT_AUTO_UPDATE_BALANCE: true (default — anything but "false" enables)
+     SUPABASE_URL, SUPABASE_SERVICE_KEY
 
    Behaviour:
      1. Parse the form body (application/x-www-form-urlencoded)
      2. Verify the inbound signature using TAYLR_SIGNING_KEY (constant-time)
      3. Classify outcome: success | declined | error
-     4. If verified AND payment was successful AND PAYMENT_AUTO_UPDATE_BALANCE=true:
-        - Fetch current live_cases balance for the orderRef
-        - Reduce balance by the payment amount
-        - Update status to 'Paid in Full' if balance reaches zero
-        - Log the update
-     5. Always return HTTP 200 to Taylr — they retry on non-2xx and
-        we don't want them to re-fire a successful notification.
+     4. If verified AND successful AND auto-update enabled:
+        - Log the payment to case_payments (case ref, client_id, amount,
+          authorisation code, transaction id) — UNIQUE on transaction_id
+        - Reduce live_cases.current_balance by the amount paid
+        - Mark 'Paid in Full' when the balance reaches zero
+     5. IDEMPOTENT: a duplicate callback (Taylr retry) is caught by the
+        unique transaction_id and will NOT reduce the balance a second time.
+     6. Always return HTTP 200 to Taylr.
 
    Security:
      - Constant-time signature comparison (in _taylr.js)
@@ -56,101 +60,148 @@ export async function onRequestPost(context) {
     return ok();
   }
 
-  const outcome = classifyOutcome(params);
-  const orderRef = (params.orderRef || '').trim();
-  const amountPence = parseInt(params.amount || '0', 10);
-  const txID = params.transactionID || '';
+  const outcome   = classifyOutcome(params);
+  const orderRef  = (params.orderRef || '').trim();
+  const amountPence         = parseInt(params.amount || '0', 10);
+  const amountReceivedPence = parseInt(params.amountReceived || '0', 10);
+  // amountReceived is the amount the acquirer actually authorised; fall
+  // back to the requested amount when it isn't present.
+  const paidPence = amountReceivedPence > 0 ? amountReceivedPence : amountPence;
+  const txID      = params.transactionID || '';
 
-  // Balance auto-update is ON unless explicitly disabled. We match
-  // case-insensitively and trim whitespace so a value of "True", "TRUE"
-  // or " true " set in the Cloudflare dashboard still counts as enabled.
-  // Only the literal string "false" turns it off.
+  // Balance auto-update is ON unless explicitly disabled (case-insensitive,
+  // trimmed) — only the literal string "false" turns it off.
   const autoUpdateEnabled =
     String(env.PAYMENT_AUTO_UPDATE_BALANCE ?? 'true').trim().toLowerCase() !== 'false';
 
-  console.log('[payment-callback] verified callback', {
-    outcome, orderRef, amountPence, txID, autoUpdateEnabled,
-    responseCode:    params.responseCode,
-    responseStatus:  params.responseStatus,
-    responseMessage: params.responseMessage,
-  });
-
-  // Successful payment — update the live_cases balance if enabled
-  let updateError = null;
-  if (outcome === 'success' && autoUpdateEnabled) {
-    try {
-      await reduceCaseBalance(env, orderRef, amountPence);
-    } catch (e) {
-      updateError = String(e && e.message || e);
-      console.error('[payment-callback] balance update failed', e);
-      // Still return 200 so Taylr doesn't retry — the payment was
-      // recorded correctly on their side, we just couldn't sync.
-    }
-  }
-
-  // Diagnostic mode — only reachable with a VALID signature (already
-  // verified above), so only a caller holding the signing key can use it.
-  // Returns non-secret booleans about config state to pinpoint failures.
-  // Never exposes keys or values.
+  // Diagnostic mode — READ-ONLY. Only reachable with a VALID signature, so
+  // only a caller holding the signing key can use it. Returns non-secret
+  // config booleans and mutates nothing (returns BEFORE any DB write).
   if (params.__debug === '1') {
     return new Response(JSON.stringify({
       verified,
       outcome,
       autoUpdateEnabled,
-      autoUpdateRaw:   env.PAYMENT_AUTO_UPDATE_BALANCE ?? null,
-      hasSupabaseUrl:  !!env.SUPABASE_URL,
-      hasServiceKey:   !!env.SUPABASE_SERVICE_KEY,
+      autoUpdateRaw:     env.PAYMENT_AUTO_UPDATE_BALANCE ?? null,
+      hasSupabaseUrl:    !!env.SUPABASE_URL,
+      hasServiceKey:     !!env.SUPABASE_SERVICE_KEY,
       orderRef,
-      amountPence,
-      updateError,
+      paidPence,
+      transactionID:     txID,
+      authorisationCode: params.authorisationCode || null,
     }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  }
+
+  console.log('[payment-callback] verified callback', {
+    outcome, orderRef, paidPence, txID, autoUpdateEnabled,
+    responseCode:   params.responseCode,
+    responseStatus: params.responseStatus,
+  });
+
+  // Successful payment — log it and reduce the balance (idempotently).
+  if (outcome === 'success' && autoUpdateEnabled) {
+    try {
+      await recordPaymentAndReduceBalance(env, {
+        orderRef,
+        paidPence,
+        authorisationCode: params.authorisationCode || '',
+        transactionID:     txID,
+        transactionUnique: params.transactionUnique || '',
+        xref:              params.xref || '',
+        responseMessage:   params.responseMessage || '',
+      });
+    } catch (e) {
+      console.error('[payment-callback] payment processing failed', e);
+      // Still return 200 so Taylr doesn't retry indefinitely. The payment
+      // succeeded on Taylr's side and is reconcilable from case_payments.
+    }
   }
 
   return ok();
 }
 
-/* ── Reduce live_cases.current_balance by the paid amount ───────
-   Looks up by case_reference_number = orderRef (exact match).
-   Marks the case 'Paid in Full' once the balance reaches zero. */
-async function reduceCaseBalance(env, orderRef, amountPence) {
-  if (!orderRef || !amountPence || amountPence <= 0) return;
+/* ── Log the payment + reduce the case balance (idempotent) ─────
+   1. Look up the case (client_id, balance, status) by orderRef.
+   2. Insert a row into case_payments. A UNIQUE constraint on
+      transaction_id makes this the idempotency guard — a duplicate
+      callback returns HTTP 409 and we stop without touching the balance.
+   3. Only when the payment is newly logged do we reduce the balance
+      and mark 'Paid in Full' at zero. */
+async function recordPaymentAndReduceBalance(env, p) {
+  const { orderRef, paidPence, authorisationCode, transactionID, transactionUnique, xref, responseMessage } = p;
+  if (!orderRef || !paidPence || paidPence <= 0) return;
   if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_KEY) {
-    console.warn('[payment-callback] Supabase env vars missing — skip balance update');
+    console.warn('[payment-callback] Supabase env vars missing — skip');
     return;
   }
 
+  const base    = `${env.SUPABASE_URL}/rest/v1`;
   const headers = {
     'apikey':        env.SUPABASE_SERVICE_KEY,
     'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY}`,
     'Content-Type':  'application/json',
   };
 
-  // Fetch current balance
-  const lookupUrl = `${env.SUPABASE_URL}/rest/v1/live_cases?case_reference_number=eq.${encodeURIComponent(orderRef)}&select=current_balance,status`;
-  const lookupRes = await fetch(lookupUrl, { headers });
+  // 1. Fetch the case (need client_id for the log, plus balance/status)
+  const lookupRes = await fetch(
+    `${base}/live_cases?case_reference_number=eq.${encodeURIComponent(orderRef)}&select=client_id,current_balance,status`,
+    { headers }
+  );
   if (!lookupRes.ok) throw new Error(`live_cases lookup failed: ${lookupRes.status}`);
   const rows = await lookupRes.json();
   if (rows.length === 0) {
-    console.warn(`[payment-callback] no case found for orderRef ${orderRef}`);
+    console.warn(`[payment-callback] no case found for orderRef ${orderRef} — payment not logged`);
     return;
   }
+  const caseRow      = rows[0];
+  const amountPounds = paidPence / 100;
+  const txnId        = transactionID || transactionUnique || null;
 
-  const amountPounds = amountPence / 100;
-  const newBalance = Math.max(0, Number(rows[0].current_balance || 0) - amountPounds);
-  const newStatus  = newBalance === 0 ? 'Paid in Full' : rows[0].status;
-
-  const patchUrl = `${env.SUPABASE_URL}/rest/v1/live_cases?case_reference_number=eq.${encodeURIComponent(orderRef)}`;
-  const patchRes = await fetch(patchUrl, {
-    method:  'PATCH',
+  // 2. Idempotency guard — log the payment first. A duplicate
+  //    transaction_id violates the UNIQUE constraint → 409 → stop.
+  const insertRes = await fetch(`${base}/case_payments`, {
+    method:  'POST',
     headers: { ...headers, 'Prefer': 'return=minimal' },
     body: JSON.stringify({
-      current_balance:    newBalance,
-      status:             newStatus,
-      last_payment_date:  new Date().toISOString().slice(0, 10),
+      case_reference_number: orderRef,
+      client_id:             caseRow.client_id || null,
+      amount:                amountPounds,
+      authorisation_code:    authorisationCode || null,
+      transaction_id:        txnId,
+      transaction_unique:    transactionUnique || null,
+      xref:                  xref || null,
+      response_message:      responseMessage || null,
+      status:                'success',
     }),
   });
+
+  if (insertRes.status === 409) {
+    console.log(`[payment-callback] duplicate callback for transaction ${txnId} — already processed, balance unchanged`);
+    return;
+  }
+  if (!insertRes.ok) {
+    const body = await insertRes.text().catch(() => '');
+    throw new Error(`case_payments insert failed: ${insertRes.status} ${body}`);
+  }
+
+  // 3. Newly logged — now reduce the balance
+  const newBalance = Math.max(0, Number(caseRow.current_balance || 0) - amountPounds);
+  const newStatus  = newBalance === 0 ? 'Paid in Full' : caseRow.status;
+
+  const patchRes = await fetch(
+    `${base}/live_cases?case_reference_number=eq.${encodeURIComponent(orderRef)}`,
+    {
+      method:  'PATCH',
+      headers: { ...headers, 'Prefer': 'return=minimal' },
+      body: JSON.stringify({
+        current_balance:   newBalance,
+        status:            newStatus,
+        last_payment_date: new Date().toISOString().slice(0, 10),
+      }),
+    }
+  );
   if (!patchRes.ok) throw new Error(`live_cases update failed: ${patchRes.status}`);
-  console.log(`[payment-callback] balance updated for ${orderRef}: £${amountPounds} paid, new balance £${newBalance}, status ${newStatus}`);
+  console.log(`[payment-callback] £${amountPounds} logged + balance for ${orderRef} now £${newBalance} (${newStatus}), auth ${authorisationCode || 'n/a'}`);
 }
 
 function parseFormBody(text) {

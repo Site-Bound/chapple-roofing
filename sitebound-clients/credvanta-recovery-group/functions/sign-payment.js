@@ -1,7 +1,11 @@
 /* ═══════════════════════════════════════════════════════════════
    Taylr payment signing — Cloudflare Pages Function
-   POST /sign-payment  { amount, ref, email, merchantId? }
+   POST /sign-payment  { amount, ref, email }
    Returns { endpoint, params } with SHA-512 signature
+
+   Single Credvanta merchant account (290684). The merchant ID always
+   comes from TAYLR_MERCHANT_ID — any merchantId in the request body is
+   ignored, so funds can only ever route to the Credvanta account.
 
    Environment variables required (set in Cloudflare Dashboard):
      TAYLR_MERCHANT_ID: 290684 (LIVE account)
@@ -34,11 +38,12 @@ export async function onRequestPost(context) {
     if (!SIGNING_KEY) return errorResponse('Payment configuration error — please contact support', 500, context.request);
 
     const body = await context.request.json();
-    const { amount, ref, email, merchantId } = body;
+    const { amount, ref, email } = body;
 
-    const MERCHANT_ID = (merchantId && String(merchantId).trim())
-      ? String(merchantId).trim()
-      : context.env.TAYLR_MERCHANT_ID;
+    // Single Credvanta merchant account. We always use the configured
+    // merchant ID and deliberately IGNORE any client-supplied merchantId,
+    // so a payment can only ever route to the Credvanta account (290684).
+    const MERCHANT_ID = context.env.TAYLR_MERCHANT_ID;
 
     if (!MERCHANT_ID)         return errorResponse('Payment configuration error — please contact support', 500, context.request);
     if (!amount || !ref)      return errorResponse('Missing required fields: amount and ref', 400, context.request);

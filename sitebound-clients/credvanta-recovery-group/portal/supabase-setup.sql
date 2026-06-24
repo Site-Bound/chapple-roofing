@@ -42,8 +42,33 @@ CREATE TABLE IF NOT EXISTS portal_reset_tokens (
   created_at  TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- ── 3. Payment log ────────────────────────────────────────────
+-- Every successful Taylr payment is recorded here by the
+-- /payment-callback Cloudflare Function. Captures what the client
+-- asked for: case reference, client ID, amount paid, and the
+-- acquirer authorisation code.
+--
+-- transaction_id (Taylr's gateway transactionID) is UNIQUE — this is
+-- the idempotency guard. If Taylr re-sends a callback, the duplicate
+-- INSERT is rejected (409) and the case balance is NOT reduced twice.
+CREATE TABLE IF NOT EXISTS case_payments (
+  id                     UUID          DEFAULT gen_random_uuid() PRIMARY KEY,
+  case_reference_number  TEXT          NOT NULL,   -- = live_cases.case_reference_number / Taylr orderRef
+  client_id              TEXT,                     -- = live_cases.client_id (creditor)
+  amount                 NUMERIC(12,2) NOT NULL,   -- amount paid, in pounds
+  authorisation_code     TEXT,                     -- Taylr authorisationCode
+  transaction_id         TEXT          UNIQUE,     -- Taylr transactionID (idempotency key)
+  transaction_unique     TEXT,                     -- our transactionUnique echoed back
+  xref                   TEXT,                     -- Taylr cross-reference
+  response_message       TEXT,
+  status                 TEXT          DEFAULT 'success',
+  created_at             TIMESTAMPTZ   DEFAULT NOW()
+);
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_portal_reset_token_hash ON portal_reset_tokens(token_hash);
+CREATE INDEX IF NOT EXISTS idx_case_payments_caseref   ON case_payments(case_reference_number);
+CREATE INDEX IF NOT EXISTS idx_case_payments_client    ON case_payments(client_id);
 
 -- Enable RLS with no policies — only the service_role (which bypasses
 -- RLS) can read or write. Our Cloudflare Functions use the service key,
@@ -52,10 +77,12 @@ CREATE INDEX IF NOT EXISTS idx_portal_reset_token_hash ON portal_reset_tokens(to
 -- security advisory.
 ALTER TABLE portal_clients      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE portal_reset_tokens ENABLE ROW LEVEL SECURITY;
+ALTER TABLE case_payments       ENABLE ROW LEVEL SECURITY;
 
 -- Grant access to service role (required after Supabase May 2026 change)
 GRANT ALL ON portal_clients      TO service_role;
 GRANT ALL ON portal_reset_tokens TO service_role;
+GRANT ALL ON case_payments       TO service_role;
 
 -- ─────────────────────────────────────────────────────────────
 -- IMPORTANT: client_ref in portal_clients MUST exactly match the
