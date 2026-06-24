@@ -31,7 +31,7 @@
        state based on an unsigned request.
    ═══════════════════════════════════════════════════════════════ */
 
-import { verifySignature, classifyOutcome } from './_taylr.js';
+import { verifySignature, classifyOutcome, recordPaymentAndReduceBalance } from './_taylr.js';
 
 export async function onRequestPost(context) {
   const { request: req, env } = context;
@@ -99,17 +99,11 @@ export async function onRequestPost(context) {
   });
 
   // Successful payment — log it and reduce the balance (idempotently).
+  // Shared with /payment-complete; the UNIQUE transaction_id prevents any
+  // double-processing if both the callback and the browser redirect fire.
   if (outcome === 'success' && autoUpdateEnabled) {
     try {
-      await recordPaymentAndReduceBalance(env, {
-        orderRef,
-        paidPence,
-        authorisationCode: params.authorisationCode || '',
-        transactionID:     txID,
-        transactionUnique: params.transactionUnique || '',
-        xref:              params.xref || '',
-        responseMessage:   params.responseMessage || '',
-      });
+      await recordPaymentAndReduceBalance(env, params);
     } catch (e) {
       console.error('[payment-callback] payment processing failed', e);
       // Still return 200 so Taylr doesn't retry indefinitely. The payment
@@ -118,90 +112,6 @@ export async function onRequestPost(context) {
   }
 
   return ok();
-}
-
-/* ── Log the payment + reduce the case balance (idempotent) ─────
-   1. Look up the case (client_id, balance, status) by orderRef.
-   2. Insert a row into case_payments. A UNIQUE constraint on
-      transaction_id makes this the idempotency guard — a duplicate
-      callback returns HTTP 409 and we stop without touching the balance.
-   3. Only when the payment is newly logged do we reduce the balance
-      and mark 'Paid in Full' at zero. */
-async function recordPaymentAndReduceBalance(env, p) {
-  const { orderRef, paidPence, authorisationCode, transactionID, transactionUnique, xref, responseMessage } = p;
-  if (!orderRef || !paidPence || paidPence <= 0) return;
-  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_KEY) {
-    console.warn('[payment-callback] Supabase env vars missing — skip');
-    return;
-  }
-
-  const base    = `${env.SUPABASE_URL}/rest/v1`;
-  const headers = {
-    'apikey':        env.SUPABASE_SERVICE_KEY,
-    'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY}`,
-    'Content-Type':  'application/json',
-  };
-
-  // 1. Fetch the case (need client_id for the log, plus balance/status)
-  const lookupRes = await fetch(
-    `${base}/live_cases?case_reference_number=eq.${encodeURIComponent(orderRef)}&select=client_id,current_balance,status`,
-    { headers }
-  );
-  if (!lookupRes.ok) throw new Error(`live_cases lookup failed: ${lookupRes.status}`);
-  const rows = await lookupRes.json();
-  if (rows.length === 0) {
-    console.warn(`[payment-callback] no case found for orderRef ${orderRef} — payment not logged`);
-    return;
-  }
-  const caseRow      = rows[0];
-  const amountPounds = paidPence / 100;
-  const txnId        = transactionID || transactionUnique || null;
-
-  // 2. Idempotency guard — log the payment first. A duplicate
-  //    transaction_id violates the UNIQUE constraint → 409 → stop.
-  const insertRes = await fetch(`${base}/case_payments`, {
-    method:  'POST',
-    headers: { ...headers, 'Prefer': 'return=minimal' },
-    body: JSON.stringify({
-      case_reference_number: orderRef,
-      client_id:             caseRow.client_id || null,
-      amount:                amountPounds,
-      authorisation_code:    authorisationCode || null,
-      transaction_id:        txnId,
-      transaction_unique:    transactionUnique || null,
-      xref:                  xref || null,
-      response_message:      responseMessage || null,
-      status:                'success',
-    }),
-  });
-
-  if (insertRes.status === 409) {
-    console.log(`[payment-callback] duplicate callback for transaction ${txnId} — already processed, balance unchanged`);
-    return;
-  }
-  if (!insertRes.ok) {
-    const body = await insertRes.text().catch(() => '');
-    throw new Error(`case_payments insert failed: ${insertRes.status} ${body}`);
-  }
-
-  // 3. Newly logged — now reduce the balance
-  const newBalance = Math.max(0, Number(caseRow.current_balance || 0) - amountPounds);
-  const newStatus  = newBalance === 0 ? 'Paid in Full' : caseRow.status;
-
-  const patchRes = await fetch(
-    `${base}/live_cases?case_reference_number=eq.${encodeURIComponent(orderRef)}`,
-    {
-      method:  'PATCH',
-      headers: { ...headers, 'Prefer': 'return=minimal' },
-      body: JSON.stringify({
-        current_balance:   newBalance,
-        status:            newStatus,
-        last_payment_date: new Date().toISOString().slice(0, 10),
-      }),
-    }
-  );
-  if (!patchRes.ok) throw new Error(`live_cases update failed: ${patchRes.status}`);
-  console.log(`[payment-callback] £${amountPounds} logged + balance for ${orderRef} now £${newBalance} (${newStatus}), auth ${authorisationCode || 'n/a'}`);
 }
 
 function parseFormBody(text) {

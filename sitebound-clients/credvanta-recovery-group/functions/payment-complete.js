@@ -6,7 +6,7 @@
    browser can display a success or failure state.
    ═══════════════════════════════════════════════════════════════ */
 
-import { verifySignature, classifyOutcome } from './_taylr.js';
+import { verifySignature, classifyOutcome, recordPaymentAndReduceBalance } from './_taylr.js';
 
 // Static receipt page. Renamed from payment-complete.html so it doesn't
 // collide with this Function endpoint at /payment-complete — Cloudflare
@@ -40,6 +40,22 @@ export async function onRequestPost(context) {
   }
 
   const outcome = classifyOutcome(params);
+
+  // Update Supabase HERE too — not only in the async /payment-callback.
+  // Taylr's browser redirect to this endpoint reliably fires (it's what
+  // shows the customer the receipt), whereas the separate server-to-server
+  // callback may not. Doing the idempotent update here guarantees the
+  // balance/payment-log are written even if the callback never arrives.
+  // The UNIQUE transaction_id means if the callback DOES also fire, it's a
+  // no-op. We await it so it completes before the Worker is torn down, and
+  // never let a failure block the customer's redirect.
+  if (verified && outcome === 'success') {
+    try {
+      await recordPaymentAndReduceBalance(env, params);
+    } catch (e) {
+      console.error('[payment-complete] balance update failed', e);
+    }
+  }
 
   const qs = new URLSearchParams({
     status:      verified ? outcome : 'error',
