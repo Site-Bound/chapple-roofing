@@ -28,39 +28,24 @@ export async function generateSignature(params, secret) {
 /* Verify that the signature on an inbound Taylr response matches what
    we'd compute from the rest of the fields.
 
-   Some fields we include in the OUTGOING request (e.g. threeDSRequired,
-   customerEmail) are echoed back by Taylr in the response but are NOT
-   included in Taylr's response signature. Including them here causes a
-   hash mismatch. We strip them before computing the expected hash.
+   Analysis confirmed (2026-06-25): Taylr signs EVERY field they return
+   in the response — including the ~90 informational fields (card details,
+   3DS data, AVS checks, etc.) in addition to the core transaction fields.
+   We must include all fields to produce the correct hash.
 
    Constant-time comparison to avoid timing attacks. */
 export async function verifySignature(params, secret) {
   const supplied = params.signature || '';
   if (!supplied) return false;
 
-  // Fields that Taylr echoes back but does NOT include in their response
-  // signature (absent from every documented Taylr response example).
-  const TAYLR_RESPONSE_EXCLUDED = new Set(['threeDSRequired', 'customerEmail']);
-
-  const verifyParams = Object.fromEntries(
-    Object.entries(params).filter(([k]) => !TAYLR_RESPONSE_EXCLUDED.has(k))
-  );
-
-  // Log exactly which fields are being signed so we can diagnose mismatches.
-  const fieldNames = Object.keys(verifyParams)
-    .filter(k => k !== 'signature')
-    .sort()
-    .join(', ');
-  console.log('[taylr] verifySignature fields:', fieldNames);
-
-  const expected = await generateSignature(verifyParams, secret);
+  const expected = await generateSignature(params, secret);
   const match    = timingSafeEqual(supplied.toLowerCase(), expected.toLowerCase());
 
   if (!match) {
     console.error('[taylr] signature mismatch — supplied vs computed (first 12 chars):', {
-      supplied: supplied.slice(0, 12),
-      computed: expected.slice(0, 12),
-      totalFields: Object.keys(verifyParams).length - 1, // -1 for signature
+      supplied:    supplied.slice(0, 12),
+      computed:    expected.slice(0, 12),
+      totalFields: Object.keys(params).length - 1,
     });
   }
   return match;
