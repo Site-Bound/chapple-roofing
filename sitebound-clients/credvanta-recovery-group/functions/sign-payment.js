@@ -49,8 +49,26 @@ export async function onRequestPost(context) {
     if (!amount || !ref)      return errorResponse('Missing required fields: amount and ref', 400, context.request);
 
     const amountPence = Math.round(parseFloat(amount) * 100);
-    if (!Number.isFinite(amountPence) || amountPence < 750) {
-      return errorResponse('Minimum payment amount is £7.50', 400, context.request);
+    if (!Number.isFinite(amountPence) || amountPence <= 0) {
+      return errorResponse('Invalid amount', 400, context.request);
+    }
+    if (amountPence < 750) {
+      // Sub-£7.50 amounts are only valid when the outstanding balance itself
+      // is below £7.50 and the debtor is paying the exact remaining amount.
+      const sbUrl = context.env.SUPABASE_URL;
+      const sbKey = context.env.SUPABASE_SERVICE_KEY;
+      if (!sbUrl || !sbKey) return errorResponse('Minimum payment amount is £7.50', 400, context.request);
+      const caseRef = String(ref).trim().toUpperCase();
+      const balRes  = await fetch(
+        `${sbUrl}/rest/v1/live_cases?case_reference_number=eq.${encodeURIComponent(caseRef)}&select=current_balance`,
+        { headers: { 'apikey': sbKey, 'Authorization': `Bearer ${sbKey}` } }
+      );
+      if (!balRes.ok) return errorResponse('Minimum payment amount is £7.50', 400, context.request);
+      const rows        = await balRes.json();
+      const balancePence = rows.length ? Math.round(parseFloat(rows[0].current_balance || 0) * 100) : 0;
+      if (balancePence > 750 || amountPence !== balancePence) {
+        return errorResponse('Minimum payment amount is £7.50', 400, context.request);
+      }
     }
 
     const transactionUnique = Date.now().toString(36) + Math.random().toString(36).slice(2, 7);

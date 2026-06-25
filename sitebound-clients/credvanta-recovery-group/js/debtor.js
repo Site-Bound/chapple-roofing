@@ -327,8 +327,20 @@ function validateModal(fields) {
       if (!blockPayment && amountField) {
         amountField.value = balance.toFixed(2);
         amountField.max   = balance.toFixed(2);
-        if (amountFull) amountFull.textContent = formatGBP(balance);
-        if (amountHint) amountHint.hidden = false;
+        if (balance <= 7.50) {
+          // Sub-minimum balance — lock to exact amount, full payment only
+          amountField.min      = balance.toFixed(2);
+          amountField.readOnly = true;
+          if (amountHint) {
+            amountHint.innerHTML = `Your outstanding balance is below the minimum payment — the full amount of <strong>${formatGBP(balance)}</strong> is required.`;
+            amountHint.hidden = false;
+          }
+        } else {
+          amountField.min      = '7.50';
+          amountField.readOnly = false;
+          if (amountFull) amountFull.textContent = formatGBP(balance);
+          if (amountHint) amountHint.hidden = false;
+        }
       }
 
       lookupBtn.disabled = false;
@@ -511,12 +523,14 @@ function validateModal(fields) {
   payBtn.disabled = false;
 
   payBtn.addEventListener('click', () => {
-    const invEl = document.getElementById('d-invoice');
+    const invEl   = document.getElementById('d-invoice');
+    const amtEl   = document.getElementById('d-amount');
     taylrPayment({
-      ref:        invEl?.value?.trim()            || '',
-      amount:     document.getElementById('d-amount')?.value || '',
-      email:      document.getElementById('d-email')?.value  || '',
-      merchantId: invEl?.dataset?.merchantId      || '',
+      ref:        invEl?.value?.trim()   || '',
+      amount:     amtEl?.value           || '',
+      email:      document.getElementById('d-email')?.value || '',
+      merchantId: invEl?.dataset?.merchantId || '',
+      minAmount:  parseFloat(amtEl?.min) || 7.50,
       btn:        payBtn,
       errorEl:    document.getElementById('d-card-errors'),
     });

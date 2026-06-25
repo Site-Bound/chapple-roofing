@@ -544,11 +544,17 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWDyBaEdV1quwp
    then submits a hidden form to the Taylr hosted payment page.
    ═══════════════════════════════════════════════════════════════ */
 
-async function taylrPayment({ ref, amount, email, merchantId, btn, errorEl }) {
+async function taylrPayment({ ref, amount, email, merchantId, minAmount = 7.50, btn, errorEl }) {
   /* Validate */
   const amtVal = parseFloat(amount);
-  if (!amount || isNaN(amtVal) || amtVal < 7.50) {
-    if (errorEl) { errorEl.textContent = 'The minimum payment amount is £7.50.'; errorEl.hidden = false; }
+  const minVal = parseFloat(minAmount) || 7.50;
+  if (!amount || isNaN(amtVal) || amtVal < minVal) {
+    if (errorEl) {
+      errorEl.textContent = minVal < 7.50
+        ? `The full outstanding balance of £${minVal.toFixed(2)} must be paid.`
+        : 'The minimum payment amount is £7.50.';
+      errorEl.hidden = false;
+    }
     return;
   }
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
