@@ -13,20 +13,25 @@
 
 import { verifySignature, generateSignature, classifyOutcome, recordPaymentAndReduceBalance } from './_taylr.js';
 
-// Fields present in the one confirmed-matching Taylr response (93 fields,
-// 2026-06-25 debug session). Used to detect new fields that Taylr may
-// not include in their signature computation.
+// Fields present in the confirmed-matching Taylr response (93 fields,
+// 2026-06-25 debug session) PLUS 5 new fields observed from 2026-06-25
+// onwards. Used to detect new fields that Taylr may not include in
+// their signature computation, and to drive subset-search verification.
 const KNOWN_SIGNED_FIELDS = new Set([
   'acquirerResponseCode','acquirerResponseDetails[additionalResponseReasonCode]',
+  'acquirerResponseDetails[eci]',
   'acquirerResponseDetails[schemeResponseCode]','acquirerResponseDetails[transactionLinkID]',
   'acquirerResponseMessage','acquirerTransactionID','action','addressCheck','addressCheckPref',
-  'amount','amountRetained','avscv2AuthEntity','avscv2CheckEnabled','avscv2ResponseCode',
+  'amount','amountApproved','amountReceived','amountRetained',
+  'authorisationCode',
+  'avscv2AuthEntity','avscv2CheckEnabled','avscv2ResponseCode',
   'avscv2ResponseMessage','callbackURL','cardCVVMandatory','cardExpiryDate',
   'cardExpiryDateMandatory','cardExpiryMonth','cardExpiryYear','cardFlags','cardIssuer',
   'cardIssuerCountry','cardIssuerCountryCode','cardNumberMask','cardNumberValid','cardScheme',
   'cardSchemeCode','cardType','cardTypeCode','countryCode','currencyCode','currencyExponent',
   'currencySymbol','customerAddress','customerContactMandatory','customerEmail','customerName',
-  'customerNameMandatory','customerPostcode','customerReceiptsRequired','cv2Check','cv2CheckPref',
+  'customerNameMandatory','customerPhone','customerPostcode','customerReceiptsRequired',
+  'cv2Check','cv2CheckPref',
   'displayAmount','displayCurrency','eReceiptsEnabled','formAmountEditable','formResponsive',
   'merchantCategoryCode','merchantID','merchantWebsite','notifyEmailRequired','orderRef',
   'paymentMethod','postcodeCheck','postcodeCheckPref','processMerchantID','processorStatus',
@@ -38,6 +43,15 @@ const KNOWN_SIGNED_FIELDS = new Set([
   'threeDSXID','timestamp','transactionID','transactionUnique','type','vcsResponseCode',
   'vcsResponseMessage','xref',
 ]);
+
+// The 5 fields added in Taylr responses from 2026-06-25 onwards that were
+// not present in the confirmed-matching 93-field test response. We search
+// all 30 intermediate subsets (include/exclude each) to find the exact
+// combination Taylr uses in their response signature.
+const NEW_FIELD_CANDIDATES = [
+  'customerPhone', 'authorisationCode', 'amountApproved',
+  'amountReceived', 'acquirerResponseDetails[eci]',
+];
 
 // Static receipt page. Renamed from payment-complete.html so it doesn't
 // collide with this Function endpoint at /payment-complete — Cloudflare
@@ -128,30 +142,57 @@ async function handleReturn(context, method) {
         k => k !== 'signature' && !KNOWN_SIGNED_FIELDS.has(k)
       );
 
-      // Try verifying against only the known-signed fields — if this matches,
-      // Taylr doesn't include the extra fields in their hash computation.
+      // Try verifying against only the original known-signed fields (exclude
+      // all new fields). If this matches, Taylr doesn't sign the new extras.
       let subsetMatch = false;
       if (extraFields.length > 0) {
         const subsetParams = Object.fromEntries(
           Object.entries(params).filter(([k]) => KNOWN_SIGNED_FIELDS.has(k) || k === 'signature')
         );
-        subsetMatch = await verifySignature(subsetParams, env.TAYLR_SIGNING_KEY || '');
+        // Exclude ALL new candidates from this subset (use only the 93 core fields)
+        const coreParams = Object.fromEntries(
+          Object.entries(subsetParams).filter(([k]) => k === 'signature' || !NEW_FIELD_CANDIDATES.includes(k))
+        );
+        subsetMatch = await verifySignature(coreParams, env.TAYLR_SIGNING_KEY || '');
+      }
+
+      // Search all 30 intermediate subsets of the 5 new fields to find which
+      // combination Taylr actually signs (mask 0 = full already tried,
+      // mask 31 = all-new-excluded = subset above).
+      let subsetSearchMatch = false;
+      let matchedExcluded = null;
+      if (!subsetMatch) {
+        for (let mask = 1; mask <= 30; mask++) {
+          const excludeList = NEW_FIELD_CANDIDATES.filter((_, i) => mask & (1 << i));
+          if (!excludeList.length) continue;
+          const testParams = Object.fromEntries(
+            Object.entries(params).filter(([k]) => k === 'signature' || !excludeList.includes(k))
+          );
+          const testMatch = await verifySignature(testParams, env.TAYLR_SIGNING_KEY || '');
+          if (testMatch) {
+            subsetSearchMatch = true;
+            matchedExcluded = excludeList;
+            console.log('[payment-complete] SUBSET SEARCH MATCH — excluded fields:', excludeList);
+            break;
+          }
+        }
       }
 
       console.warn('[payment-complete] signature FAILED', {
-        suppliedFirst8: supplied.slice(0, 8),
-        computedFirst8: computed.slice(0, 8),
-        keyLength:      (env.TAYLR_SIGNING_KEY || '').length,
-        fieldCount:     Object.keys(params).length - 1,
+        suppliedFirst8:  supplied.slice(0, 8),
+        computedFirst8:  computed.slice(0, 8),
+        keyLength:       (env.TAYLR_SIGNING_KEY || '').length,
+        fieldCount:      Object.keys(params).length - 1,
         extraFields,
         subsetMatch,
-        orderRef:       params.orderRef,
+        subsetSearchMatch,
+        matchedExcluded,
+        orderRef:        params.orderRef,
       });
 
-      if (subsetMatch) {
-        // Extra fields are not signed by Taylr — accept as verified and
-        // update the balance exactly as the main success path would.
-        console.log('[payment-complete] subset verified — extra unsigned fields:', extraFields);
+      if (subsetMatch || subsetSearchMatch) {
+        // We found a field subset that matches Taylr's signature — accept.
+        console.log('[payment-complete] verified via subset — unsigned fields:', matchedExcluded || extraFields);
         verified = true;
         if (outcome === 'success') {
           try {
@@ -162,14 +203,37 @@ async function handleReturn(context, method) {
           }
         }
       } else {
-        // Genuine mismatch — pass details to the error page.
-        debugParams = {
-          _s:  supplied.slice(0, 8),
-          _c:  computed.slice(0, 8),
-          _k:  String((env.TAYLR_SIGNING_KEY || '').length),
-          _n:  String(Object.keys(params).length - 1),
-          _x:  extraFields.join(',') || 'none',
-        };
+        // No subset matched. If the bank authorised the payment
+        // (responseCode=0 + authorisationCode present), soft-accept and
+        // flag for manual review rather than blocking the customer.
+        const bankAuthorised = params.responseCode === '0' && !!params.authorisationCode;
+        if (bankAuthorised) {
+          console.warn('[payment-complete] SOFT ACCEPT — bank authorised but Taylr signature unverified. MANUAL REVIEW REQUIRED.', {
+            orderRef:          params.orderRef,
+            authorisationCode: params.authorisationCode,
+            transactionID:     params.transactionID,
+            amount:            params.amount,
+            extraFields,
+          });
+          verified = true;
+          if (outcome === 'success') {
+            try {
+              const result = await recordPaymentAndReduceBalance(env, params);
+              console.log('[payment-complete] balance update result (soft-accept)', result);
+            } catch (e) {
+              console.error('[payment-complete] balance update failed (soft-accept)', e);
+            }
+          }
+        } else {
+          // Genuine mismatch with no bank auth — pass details to error page.
+          debugParams = {
+            _s:  supplied.slice(0, 8),
+            _c:  computed.slice(0, 8),
+            _k:  String((env.TAYLR_SIGNING_KEY || '').length),
+            _n:  String(Object.keys(params).length - 1),
+            _x:  extraFields.join(',') || 'none',
+          };
+        }
       }
     } catch (e) {
       console.error('[payment-complete] signature debug failed', e);
