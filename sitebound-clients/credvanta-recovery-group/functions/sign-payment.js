@@ -49,8 +49,8 @@ export async function onRequestPost(context) {
     if (!amount || !ref)      return errorResponse('Missing required fields: amount and ref', 400, context.request);
 
     const amountPence = Math.round(parseFloat(amount) * 100);
-    if (!Number.isFinite(amountPence) || amountPence <= 0) {
-      return errorResponse('Invalid amount', 400, context.request);
+    if (!Number.isFinite(amountPence) || amountPence < 750) {
+      return errorResponse('Minimum payment amount is £7.50', 400, context.request);
     }
 
     const transactionUnique = Date.now().toString(36) + Math.random().toString(36).slice(2, 7);

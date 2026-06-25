@@ -547,8 +547,8 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWDyBaEdV1quwp
 async function taylrPayment({ ref, amount, email, merchantId, btn, errorEl }) {
   /* Validate */
   const amtVal = parseFloat(amount);
-  if (!amount || isNaN(amtVal) || amtVal <= 0) {
-    if (errorEl) { errorEl.textContent = 'Please enter a valid amount.'; errorEl.hidden = false; }
+  if (!amount || isNaN(amtVal) || amtVal < 7.50) {
+    if (errorEl) { errorEl.textContent = 'The minimum payment amount is £7.50.'; errorEl.hidden = false; }
     return;
   }
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
