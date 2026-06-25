@@ -204,9 +204,11 @@
         if (_s && _c) {
           const box = document.createElement('div');
           box.style.cssText = 'margin-top:20px;padding:10px 14px;background:#f3f4f6;border-radius:8px;font-size:0.72rem;color:#6b7280;font-family:monospace;text-align:left;line-height:1.8';
+          const _x = params.get('_x') || 'none';
           box.innerHTML = '<strong style="color:#374151">Diagnostic (share with support):</strong><br>'
             + 'Supplied: <strong>' + _s + '</strong> &nbsp; Computed: <strong>' + _c + '</strong><br>'
-            + 'Key length: ' + (params.get('_k') || '?') + ' &nbsp; Fields: ' + (params.get('_n') || '?');
+            + 'Key length: ' + (params.get('_k') || '?') + ' &nbsp; Fields: ' + (params.get('_n') || '?') + '<br>'
+            + 'Extra fields: <strong>' + _x + '</strong>';
           document.querySelector('.pc-card').appendChild(box);
         }
       } else {
