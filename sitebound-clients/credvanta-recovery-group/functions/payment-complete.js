@@ -241,12 +241,13 @@ async function handleReturn(context, method) {
   }
 
   const qs = new URLSearchParams({
-    status:          verified ? outcome : 'error',
-    orderRef:        params.orderRef     || '',
-    transactionID:   params.transactionID || '',
-    amount:          params.amount       || '',
-    responseMessage: params.responseMessage || '',
-    verified:        verified ? '1' : '0',
+    status:           verified ? outcome : 'error',
+    orderRef:         params.orderRef          || '',
+    transactionID:    params.transactionID     || '',
+    amount:           params.amount            || '',
+    responseMessage:  params.responseMessage   || '',
+    authorisationCode: params.authorisationCode || '',
+    verified:         verified ? '1' : '0',
     ...debugParams,
   });
 

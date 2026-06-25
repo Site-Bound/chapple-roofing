@@ -92,6 +92,8 @@
       color: var(--gray-600);
       margin: 16px 0 28px;
       display: none;
+      text-align: left;
+      line-height: 2;
     }
     .pc-ref strong { color: var(--navy); }
     .pc-actions {
@@ -132,7 +134,8 @@
       <p id="pc-message-primary">Please wait a moment.</p>
       <p id="pc-message-secondary" style="display:none"></p>
       <div class="pc-ref" id="pc-ref-block">
-        <strong>Reference:</strong> <span id="pc-ref-val">—</span>
+        <strong>Reference:</strong> <span id="pc-ref-val">—</span><br>
+        <span id="pc-auth-row" style="display:none"><strong>Authorisation Code:</strong> <span id="pc-auth-val">—</span></span>
       </div>
       <p style="font-size:0.82rem;color:var(--gray-400);margin-bottom:28px">
         If you have any questions please call us on <a href="tel:08009757066" style="color:var(--blue)">0800 975 7066</a>.
@@ -154,6 +157,7 @@
       const orderRef = params.get('orderRef') || '';
       const message  = params.get('responseMessage') || '';
       const amount   = params.get('amount') || '';
+      const authCode = params.get('authorisationCode') || '';
 
       const iconBox      = document.getElementById('pc-icon');
       const titleEl      = document.getElementById('pc-title');
@@ -161,6 +165,8 @@
       const secondary    = document.getElementById('pc-message-secondary');
       const refBlock     = document.getElementById('pc-ref-block');
       const refVal       = document.getElementById('pc-ref-val');
+      const authRow      = document.getElementById('pc-auth-row');
+      const authVal      = document.getElementById('pc-auth-val');
       const actions      = document.getElementById('pc-actions');
 
       const ICON_SUCCESS = '<svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 4L12 14.01l-3-3" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -223,6 +229,10 @@
       if (orderRef) {
         refVal.textContent = orderRef;
         refBlock.style.display = 'block';
+      }
+      if (authCode) {
+        authVal.textContent = authCode;
+        authRow.style.display = '';
       }
     })();
   </script>
