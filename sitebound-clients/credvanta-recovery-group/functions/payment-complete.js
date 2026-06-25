@@ -11,7 +11,7 @@
    the query string is checked.
    ═══════════════════════════════════════════════════════════════ */
 
-import { verifySignature, classifyOutcome, recordPaymentAndReduceBalance } from './_taylr.js';
+import { verifySignature, generateSignature, classifyOutcome, recordPaymentAndReduceBalance } from './_taylr.js';
 
 // Static receipt page. Renamed from payment-complete.html so it doesn't
 // collide with this Function endpoint at /payment-complete — Cloudflare
@@ -84,6 +84,7 @@ async function handleReturn(context, method) {
   // The UNIQUE transaction_id means if the callback DOES also fire, it's a
   // no-op. We await it so it completes before the Worker is torn down, and
   // never let a failure block the customer's redirect.
+  let debugParams = {};
   if (verified && outcome === 'success') {
     try {
       const result = await recordPaymentAndReduceBalance(env, params);
@@ -92,11 +93,28 @@ async function handleReturn(context, method) {
       console.error('[payment-complete] balance update failed', e);
     }
   } else if (!verified) {
-    console.warn('[payment-complete] signature FAILED — not updating balance', {
-      orderRef: params.orderRef,
-      merchantID: params.merchantID,
-      signingKeySet: !!env.TAYLR_SIGNING_KEY,
-    });
+    // Compute mismatch detail so we can show it on the error page without
+    // requiring Cloudflare log access. Only the first 8 hex chars of each
+    // hash are exposed — non-sensitive but enough to diagnose the cause.
+    try {
+      const computed = await generateSignature(params, env.TAYLR_SIGNING_KEY || '');
+      const supplied = params.signature || '';
+      debugParams = {
+        _s: supplied.slice(0, 8),
+        _c: computed.slice(0, 8),
+        _k: String((env.TAYLR_SIGNING_KEY || '').length),
+        _n: String(Object.keys(params).length - 1),
+      };
+      console.warn('[payment-complete] signature FAILED', {
+        suppliedFirst8: supplied.slice(0, 8),
+        computedFirst8: computed.slice(0, 8),
+        keyLength:      (env.TAYLR_SIGNING_KEY || '').length,
+        fieldCount:     Object.keys(params).length - 1,
+        orderRef:       params.orderRef,
+      });
+    } catch (e) {
+      console.error('[payment-complete] signature debug failed', e);
+    }
   }
 
   const qs = new URLSearchParams({
@@ -106,6 +124,7 @@ async function handleReturn(context, method) {
     amount:          params.amount       || '',
     responseMessage: params.responseMessage || '',
     verified:        verified ? '1' : '0',
+    ...debugParams,
   });
 
   return redirectTo(`${STATIC_PAGE}?${qs.toString()}`);

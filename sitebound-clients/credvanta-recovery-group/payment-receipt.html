@@ -195,6 +195,20 @@
         secondary.textContent = message ? 'Details: ' + message : '';
         secondary.style.display = message ? '' : 'none';
         actions.innerHTML = '<a href="/debtor.html" class="btn btn-primary">Return to Portal</a><a href="tel:08009757066" class="btn btn-outline">Call 0800 975 7066</a>';
+
+        // Diagnostic section — only visible to the operator during debugging.
+        // Shows first 8 chars of supplied vs computed hash + key length so we
+        // can identify whether the Cloudflare env var or the algorithm is at
+        // fault without needing log access. Remove once issue is resolved.
+        const _s = params.get('_s'), _c = params.get('_c');
+        if (_s && _c) {
+          const box = document.createElement('div');
+          box.style.cssText = 'margin-top:20px;padding:10px 14px;background:#f3f4f6;border-radius:8px;font-size:0.72rem;color:#6b7280;font-family:monospace;text-align:left;line-height:1.8';
+          box.innerHTML = '<strong style="color:#374151">Diagnostic (share with support):</strong><br>'
+            + 'Supplied: <strong>' + _s + '</strong> &nbsp; Computed: <strong>' + _c + '</strong><br>'
+            + 'Key length: ' + (params.get('_k') || '?') + ' &nbsp; Fields: ' + (params.get('_n') || '?');
+          document.querySelector('.pc-card').appendChild(box);
+        }
       } else {
         // No status param — likely a stale bookmark / direct visit
         iconBox.innerHTML = ICON_INFO;

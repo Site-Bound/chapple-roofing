@@ -51,12 +51,13 @@ export async function verifySignature(params, secret) {
   return match;
 }
 
-/* PHP urlencode() equivalent — RFC 1738 with spaces as + and
-   the reserved punctuation set encoded. */
+/* PHP urlencode() equivalent — RFC 1738 with spaces as +.
+   PHP encodes every non-alphanumeric character except -_., including
+   the characters that encodeURIComponent leaves unencoded: ! ~ * ' ( ) */
 function phpUrlencode(str) {
   return encodeURIComponent(str)
     .replace(/%20/g, '+')
-    .replace(/[!'()*]/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase());
+    .replace(/[!~'()*]/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase());
 }
 
 function timingSafeEqual(a, b) {
