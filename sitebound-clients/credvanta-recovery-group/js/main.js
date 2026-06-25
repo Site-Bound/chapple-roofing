@@ -322,45 +322,43 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWDyBaEdV1quwp
     submitBtn.disabled = true;
     submitBtn.innerHTML = 'Submitting… <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" opacity=".3"/><path d="M12 2a10 10 0 0110 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="animation:spin .8s linear infinite;transform-origin:center"/></svg>';
 
-    /* ── Encode all uploaded files as base64 ── */
-    const encodedFiles = await Promise.all(
-      uploadedFiles.map(file => new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload  = () => resolve({
-          name: file.name,
-          type: file.type || 'application/octet-stream',
-          // strip the "data:...;base64," prefix — Apps Script only needs the raw base64
-          data: reader.result.split(',')[1],
-        });
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      }))
-    );
+    /* ── Encode uploaded files as base64 ──
+       Wrapped in its own try-catch so a file-read failure doesn't
+       block the submission — we fall back to sending without files. */
+    let encodedFiles = [];
+    try {
+      encodedFiles = await Promise.all(
+        uploadedFiles.map(file => new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload  = () => resolve({
+            name: file.name,
+            type: file.type || 'application/octet-stream',
+            data: reader.result.split(',')[1],
+          });
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        }))
+      );
+    } catch (e) {
+      console.error('[claim submit] file encoding failed — submitting without files:', e);
+    }
 
-    /* ── Build URL-encoded payload ──
-       We use URLSearchParams + no-cors because Google Apps Script
-       web apps do not support arbitrary CORS preflight requests.
-       The trade-off is we cannot read the response — but the data
-       is reliably written to the Sheet regardless.           ── */
+    /* ── Build URL-encoded payload ── */
     const payload = new URLSearchParams({
       status:                   'complete',
       draftId:                  getDraftId(),
-      // Claimant
       name:                     document.getElementById('ms-name')?.value     || '',
       business:                 document.getElementById('ms-business')?.value || '',
       email:                    document.getElementById('ms-email')?.value    || '',
       phone:                    document.getElementById('ms-phone')?.value    || '',
       consent:                  document.getElementById('ms-consent')?.checked ? 'Yes' : 'No',
-      // Debtor company + contact details (matches new sheet columns F-K)
       debtor_company:           document.getElementById('ms-debtor')?.value          || '',
       debtor_contact_name:      document.getElementById('ms-debtor-contact')?.value  || '',
       debtor_contact_email:     document.getElementById('ms-debtor-email')?.value    || '',
       debtor_contact_telephone: document.getElementById('ms-debtor-tel')?.value      || '',
       debtor_contact_mobile:    document.getElementById('ms-debtor-mobile')?.value   || '',
       debtor_address:           document.getElementById('ms-debtor-address')?.value  || '',
-      // Backward-compatible alias — Apps Script falls back to this if debtor_company is empty
       debtor:                   document.getElementById('ms-debtor')?.value          || '',
-      // Debt details
       amount:                   document.getElementById('ms-amount')?.value      || '',
       invoiceDate:              document.getElementById('ms-date')?.value        || '',
       description:              document.getElementById('ms-description')?.value || '',
@@ -368,31 +366,25 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWDyBaEdV1quwp
       files:                    JSON.stringify(encodedFiles),
     });
 
-    try {
-      if (APPS_SCRIPT_URL && !APPS_SCRIPT_URL.includes('REPLACE')) {
-        await fetch(APPS_SCRIPT_URL, {
-          method:  'POST',
-          mode:    'no-cors', // required for Apps Script — response not readable, data IS sent
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body:    payload.toString(),
-        });
-      }
-      // Show success regardless — no-cors means we can't read confirmation,
-      // but Apps Script will have received and saved the data.
-      showSuccess();
-    } catch {
-      // Network error — still show success optimistically,
-      // log to console so developer can investigate if needed.
-      console.error('Submission network error');
-      showSuccess();
+    /* ── Fire and forget — same pattern as sendEnquiry() ──
+       Apps Script web apps process synchronously and can take 10–30 s
+       when uploading files to Google Drive. Awaiting the response caused
+       the button to spin for the full duration. Since we use no-cors and
+       cannot read the response anyway, we dispatch and show success
+       immediately — Apps Script will write the data regardless. */
+    if (APPS_SCRIPT_URL && !APPS_SCRIPT_URL.includes('REPLACE')) {
+      fetch(APPS_SCRIPT_URL, {
+        method:  'POST',
+        mode:    'no-cors',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body:    payload.toString(),
+      }).catch(e => console.error('[claim submit]', e));
     }
 
-    function showSuccess() {
-      clearDraft(); // remove saved progress now that submission is complete
-      track.closest('.ms-viewport').hidden = true;
-      msNav.hidden = true;
-      successEl.hidden = false;
-    }
+    clearDraft();
+    track.closest('.ms-viewport').hidden = true;
+    msNav.hidden = true;
+    successEl.hidden = false;
   });
 
   /* ── File upload ── */
