@@ -305,7 +305,7 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWDyBaEdV1quwp
 
   /* ── Navigation ── */
   nextBtn.addEventListener('click', () => {
-    if (!validateSlide(currentStep)) return;
+    if (!validateSlide(currentStep)) { requestAnimationFrame(updateViewportHeight); return; }
     saveDraft();
     if (currentStep === 1) sendEnquiry(); // capture contact + consent immediately
     if (currentStep < TOTAL_STEPS) setStep(currentStep + 1);
@@ -317,7 +317,7 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWDyBaEdV1quwp
 
   /* ── Submit ── */
   submitBtn.addEventListener('click', async () => {
-    if (!validateSlide(TOTAL_STEPS)) return;
+    if (!validateSlide(TOTAL_STEPS)) { requestAnimationFrame(updateViewportHeight); return; }
 
     submitBtn.disabled = true;
     submitBtn.innerHTML = 'Submitting… <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" opacity=".3"/><path d="M12 2a10 10 0 0110 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="animation:spin .8s linear infinite;transform-origin:center"/></svg>';

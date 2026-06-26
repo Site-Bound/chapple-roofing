@@ -512,7 +512,8 @@ address { font-style: normal; }
   text-align: center;
 }
 .ms-success[hidden] { display: none !important; }
-/* Ensure nav buttons respect [hidden] — .btn { display:inline-flex } overrides native hidden */
+/* Ensure nav and its buttons respect [hidden] — display:flex/inline-flex overrides native hidden */
+#msNav[hidden] { display: none !important; }
 #msBack[hidden], #msSubmit[hidden], #msNext[hidden] { display: none !important; }
 .ms-success-icon { color: #22c55e; }
 .ms-success h3 {
